@@ -1,11 +1,6 @@
-import { Plus_Jakarta_Sans } from "next/font/google";
+import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-plus-jakarta"
-});
 
 export const metadata = {
   title: "ServiceFlow SaaS",
@@ -15,7 +10,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <body className={plusJakartaSans.variable}>
+      <body className="font-sans">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

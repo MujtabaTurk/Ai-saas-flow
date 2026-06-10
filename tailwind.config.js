@@ -53,10 +53,9 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)"
       },
       fontFamily: {
-        sans: ["var(--font-plus-jakarta)", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["Plus Jakarta Sans Variable", "ui-sans-serif", "system-ui", "sans-serif"]
       }
     }
   },
   plugins: [require("tailwindcss-animate")]
 };
-
