@@ -1,0 +1,19 @@
+{
+  "title": "سپر ایڈمن",
+  "revenue": {
+    "mrr": "ماہانہ آمدنی",
+    "arr": "سالانہ آمدنی"
+  },
+  "subscriptions": {
+    "active": "فعال سبسکرپشنز"
+  },
+  "users": {
+    "total": "کل یوزرز"
+  },
+  "businesses": {
+    "active": "فعال بزنسز"
+  },
+  "risk": {
+    "failedPayments": "ناکام ادائیگیاں"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Facturación",
+  "currentPlan": "Plan actual",
+  "manageBilling": "Gestionar facturación",
+  "checkout": {
+    "success": "Checkout completado.",
+    "canceled": "Checkout cancelado."
+  },
+  "plan": {
+    "trial": "Prueba",
+    "basic": "Basic",
+    "pro": "Pro"
+  }
+}

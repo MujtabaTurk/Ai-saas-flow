@@ -1,0 +1,14 @@
+{
+  "title": "بلنگ",
+  "currentPlan": "موجودہ پلان",
+  "manageBilling": "بلنگ مینیج کریں",
+  "checkout": {
+    "success": "چیک آؤٹ مکمل ہو گیا۔",
+    "canceled": "چیک آؤٹ منسوخ ہو گیا۔"
+  },
+  "plan": {
+    "trial": "ٹرائل",
+    "basic": "بیسک",
+    "pro": "پرو"
+  }
+}

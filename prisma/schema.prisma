@@ -1,0 +1,398 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum PlatformRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum BusinessStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELED
+  COMPLETED
+  NO_SHOW
+}
+
+enum BookingSource {
+  PUBLIC
+  DASHBOARD
+  AI_ASSISTANT
+}
+
+enum PlanCode {
+  TRIAL
+  BASIC
+  PRO
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  UNPAID
+  PAUSED
+}
+
+enum WebhookProcessingStatus {
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model User {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  name             String?
+  email            String?              @unique
+  emailVerified    DateTime?
+  image            String?
+  passwordHash     String?
+  platformRole     PlatformRole         @default(ADMIN)
+  accounts         Account[]
+  sessions         Session[]
+  resetTokens      PasswordResetToken[]
+  ownedBusinesses  Business[]           @relation("BusinessOwner")
+  customerProfiles Customer[]           @relation("CustomerUser")
+  createdBookings  Booking[]            @relation("BookingCreatedBy")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+}
+
+model Account {
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  userId       String   @db.ObjectId
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([userId, usedAt, expiresAt])
+}
+
+model Business {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  ownerId        String         @db.ObjectId
+  slug           String         @unique
+  name           String
+  legalName      String?
+  description    String?
+  industry       String?
+  website        String?
+  email          String?
+  phone          String?
+  addressLine1   String?
+  addressLine2   String?
+  city           String?
+  country        String?
+  logoUrl        String?
+  stripeCustomerId String?
+  status         BusinessStatus @default(ACTIVE)
+  timezone       String         @default("UTC")
+  currency       String         @default("usd")
+  locale         String         @default("en")
+  owner          User           @relation("BusinessOwner", fields: [ownerId], references: [id])
+  settings       BusinessSettings?
+  services       Service[]
+  bookings       Booking[]
+  bookingOccupancies BookingOccupancy[]
+  customers      Customer[]
+  availabilities Availability[]
+  unavailableDates UnavailableDate[]
+  subscriptions  Subscription[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([ownerId])
+  @@index([ownerId, status])
+  @@index([stripeCustomerId])
+  @@index([status])
+  @@index([industry])
+  @@index([createdAt])
+}
+
+model BusinessSettings {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  businessId            String   @unique @db.ObjectId
+  bookingLeadTimeMin    Int      @default(120)
+  bookingWindowDays     Int      @default(30)
+  cancellationWindowMin Int      @default(1440)
+  allowGuestBookings    Boolean  @default(true)
+  autoConfirmBookings   Boolean  @default(false)
+  business              Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Service {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  businessId      String         @db.ObjectId
+  name            String
+  slug            String
+  description     String?
+  durationMin     Int
+  bufferBeforeMin Int            @default(0)
+  bufferAfterMin  Int            @default(0)
+  priceCents      Int?
+  currency        String         @default("usd")
+  requiresPayment Boolean        @default(false)
+  isActive        Boolean        @default(true)
+  sortOrder       Int            @default(0)
+  business        Business       @relation(fields: [businessId], references: [id])
+  bookings        Booking[]
+  availabilities  Availability[]
+  unavailableDates UnavailableDate[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@unique([businessId, slug])
+  @@index([businessId])
+  @@index([businessId, isActive])
+  @@index([businessId, sortOrder])
+  @@index([businessId, createdAt])
+  @@index([businessId, requiresPayment])
+}
+
+model Customer {
+  id             String    @id @default(auto()) @map("_id") @db.ObjectId
+  businessId     String    @db.ObjectId
+  userId         String?   @db.ObjectId
+  name           String
+  email          String
+  phone          String?
+  notes          String?
+  locale         String?
+  timezone       String?
+  marketingOptIn Boolean   @default(false)
+  business       Business  @relation(fields: [businessId], references: [id])
+  user           User?     @relation("CustomerUser", fields: [userId], references: [id])
+  bookings       Booking[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([businessId, email])
+  @@index([businessId])
+  @@index([userId])
+}
+
+model Booking {
+  id                 String        @id @default(auto()) @map("_id") @db.ObjectId
+  businessId         String        @db.ObjectId
+  serviceId          String        @db.ObjectId
+  customerId         String        @db.ObjectId
+  createdByUserId    String?       @db.ObjectId
+  bookingNumber      String
+  idempotencyKey     String
+  customerAccessTokenHash String
+  customerName       String
+  customerEmail      String
+  customerPhone      String?
+  serviceNameSnapshot String
+  serviceDurationMinSnapshot Int
+  servicePriceCentsSnapshot Int?
+  serviceCurrencySnapshot String
+  bufferBeforeMinSnapshot Int @default(0)
+  bufferAfterMinSnapshot Int @default(0)
+  paymentRequiredSnapshot Boolean @default(false)
+  startsAt           DateTime
+  endsAt             DateTime
+  timezone           String
+  status             BookingStatus @default(PENDING)
+  source             BookingSource @default(PUBLIC)
+  notes              String?
+  internalNotes      String?
+  cancellationReason String?
+  canceledAt         DateTime?
+  confirmedAt        DateTime?
+  completedAt        DateTime?
+  business           Business      @relation(fields: [businessId], references: [id])
+  service            Service       @relation(fields: [serviceId], references: [id])
+  customer           Customer      @relation(fields: [customerId], references: [id])
+  createdByUser      User?         @relation("BookingCreatedBy", fields: [createdByUserId], references: [id])
+  occupancies        BookingOccupancy[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  
+  @@unique([businessId, bookingNumber])
+  @@unique([businessId, idempotencyKey])
+  @@index([businessId])
+  @@index([businessId, startsAt])
+  @@index([businessId, status])
+  @@index([businessId, status, startsAt])
+  @@index([businessId, serviceId, startsAt])
+  @@index([businessId, customerEmail])
+  @@index([businessId, createdAt])
+  @@index([businessId, source])
+  @@index([serviceId])
+  @@index([customerId])
+}
+
+model BookingOccupancy {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  businessId  String   @db.ObjectId
+  bookingId   String   @db.ObjectId
+  resourceKey String   @default("BUSINESS")
+  bucketStart DateTime
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([businessId, resourceKey, bucketStart])
+  @@index([businessId, bucketStart])
+  @@index([bookingId])
+}
+
+model Availability {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  businessId      String    @db.ObjectId
+  serviceId       String?   @db.ObjectId
+  dayOfWeek       DayOfWeek
+  startTime       String
+  endTime         String
+  slotDurationMin Int       @default(30)
+  bufferBeforeMin Int       @default(0)
+  bufferAfterMin  Int       @default(0)
+  isActive        Boolean   @default(true)
+  business        Business  @relation(fields: [businessId], references: [id])
+  service         Service?  @relation(fields: [serviceId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, dayOfWeek])
+  @@index([businessId, dayOfWeek, isActive])
+  @@index([businessId, serviceId, dayOfWeek])
+  @@index([businessId, serviceId, isActive])
+  @@index([serviceId])
+}
+
+model UnavailableDate {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  businessId  String    @db.ObjectId
+  serviceId   String?   @db.ObjectId
+  startsAt    DateTime
+  endsAt      DateTime
+  reason      String?
+  isFullDay   Boolean   @default(false)
+  business    Business  @relation(fields: [businessId], references: [id])
+  service     Service?  @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([businessId, startsAt])
+  @@index([businessId, startsAt, endsAt])
+  @@index([businessId, serviceId, startsAt])
+  @@index([businessId, isFullDay])
+  @@index([serviceId])
+}
+
+model Subscription {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  businessId           String             @db.ObjectId
+  planCode             PlanCode           @default(TRIAL)
+  status               SubscriptionStatus @default(TRIALING)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  stripePriceId        String?
+  stripeProductId      String?
+  latestInvoiceId      String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  trialEndsAt          DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  canceledAt           DateTime?
+  lastPaymentAt        DateTime?
+  lastPaymentFailedAt  DateTime?
+  business             Business           @relation(fields: [businessId], references: [id])
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  @@index([businessId])
+  @@index([planCode])
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+}
+
+model StripeWebhookEvent {
+  id            String                  @id @default(auto()) @map("_id") @db.ObjectId
+  stripeEventId String                  @unique
+  type          String
+  livemode      Boolean
+  status        WebhookProcessingStatus @default(PROCESSING)
+  attempts      Int                     @default(1)
+  lastError     String?
+  processedAt   DateTime?
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

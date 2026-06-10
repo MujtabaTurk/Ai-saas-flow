@@ -1,0 +1,14 @@
+{
+  "title": "الفوترة",
+  "currentPlan": "الباقة الحالية",
+  "manageBilling": "إدارة الفوترة",
+  "checkout": {
+    "success": "اكتمل الدفع.",
+    "canceled": "تم إلغاء الدفع."
+  },
+  "plan": {
+    "trial": "تجربة",
+    "basic": "أساسي",
+    "pro": "احترافي"
+  }
+}

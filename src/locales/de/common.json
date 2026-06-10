@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ServiceFlow SaaS"
+  },
+  "language": {
+    "label": "Sprache"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "services": "Services",
+    "bookings": "Buchungen",
+    "customers": "Kunden",
+    "availability": "Verfügbarkeit",
+    "billing": "Abrechnung",
+    "settings": "Einstellungen",
+    "overview": "Übersicht",
+    "businesses": "Unternehmen",
+    "users": "Benutzer",
+    "plans": "Pläne",
+    "subscriptions": "Abonnements"
+  },
+  "actions": {
+    "startBuilding": "Loslegen",
+    "viewArchitecture": "Architektur ansehen",
+    "goHome": "Zur Startseite"
+  },
+  "status": {
+    "active": "Aktiv",
+    "suspended": "Gesperrt",
+    "archived": "Archiviert"
+  },
+  "landing": {
+    "badge": "ServiceFlow SaaS",
+    "title": "Frische Buchungsabläufe für wachsende Dienstleistungsunternehmen.",
+    "description": "Eine mandantenfähige Buchungs- und Abonnementplattform mit Next.js, Prisma, MongoDB, NextAuth, Stripe, React Query, Formik, Yup, Tailwind und shadcn/ui.",
+    "featureDescription": "ServiceFlow ist auf Unternehmensbesitz, Planlimits und kundenorientierte Buchungswege ausgelegt.",
+    "features": [
+      "Mandantensicher",
+      "Abonnementbereit",
+      "Buchungsfokussiert"
+    ]
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "description": "Die gesuchte Seite existiert nicht oder wurde verschoben."
+  },
+  "loading": {
+    "message": "ServiceFlow wird geladen..."
+  }
+}

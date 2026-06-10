@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ServiceFlow SaaS"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "services": "Services",
+    "bookings": "Bookings",
+    "customers": "Customers",
+    "availability": "Availability",
+    "billing": "Billing",
+    "settings": "Settings",
+    "overview": "Overview",
+    "businesses": "Businesses",
+    "users": "Users",
+    "plans": "Plans",
+    "subscriptions": "Subscriptions"
+  },
+  "actions": {
+    "startBuilding": "Start building",
+    "viewArchitecture": "View architecture",
+    "goHome": "Go home"
+  },
+  "status": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "archived": "Archived"
+  },
+  "landing": {
+    "badge": "ServiceFlow SaaS",
+    "title": "Fresh booking workflows for growing service businesses.",
+    "description": "A multi-tenant booking and subscription platform foundation built with Next.js, Prisma, MongoDB, NextAuth, Stripe, React Query, Formik, Yup, Tailwind, and shadcn/ui.",
+    "featureDescription": "ServiceFlow is structured around business ownership, plan limits, and customer-facing booking journeys.",
+    "features": [
+      "Tenant-safe",
+      "Subscription-ready",
+      "Booking-first"
+    ]
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist or may have moved."
+  },
+  "loading": {
+    "message": "Loading ServiceFlow..."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Bookings",
+  "create": "Create booking",
+  "cancel": "Cancel booking",
+  "statuses": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "canceled": "Canceled",
+    "completed": "Completed",
+    "noShow": "No-show"
+  },
+  "slot": {
+    "noAvailableSlots": "No available times for this date."
+  },
+  "customer": {
+    "name": "Name",
+    "email": "Email"
+  }
+}

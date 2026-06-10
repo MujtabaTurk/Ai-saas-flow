@@ -1,0 +1,19 @@
+{
+  "title": "بکنگز",
+  "create": "بکنگ بنائیں",
+  "cancel": "بکنگ منسوخ کریں",
+  "statuses": {
+    "pending": "زیر التوا",
+    "confirmed": "تصدیق شدہ",
+    "canceled": "منسوخ",
+    "completed": "مکمل",
+    "noShow": "حاضر نہیں ہوا"
+  },
+  "slot": {
+    "noAvailableSlots": "اس تاریخ کے لیے کوئی وقت دستیاب نہیں۔"
+  },
+  "customer": {
+    "name": "نام",
+    "email": "ای میل"
+  }
+}

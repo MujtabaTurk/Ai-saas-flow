@@ -1,0 +1,14 @@
+{
+  "title": "Abrechnung",
+  "currentPlan": "Aktueller Plan",
+  "manageBilling": "Abrechnung verwalten",
+  "checkout": {
+    "success": "Checkout abgeschlossen.",
+    "canceled": "Checkout wurde abgebrochen."
+  },
+  "plan": {
+    "trial": "Testphase",
+    "basic": "Basic",
+    "pro": "Pro"
+  }
+}

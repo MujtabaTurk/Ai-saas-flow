@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ServiceFlow SaaS"
+  },
+  "language": {
+    "label": "زبان"
+  },
+  "navigation": {
+    "dashboard": "ڈیش بورڈ",
+    "services": "سروسز",
+    "bookings": "بکنگز",
+    "customers": "کسٹمرز",
+    "availability": "دستیابی",
+    "billing": "بلنگ",
+    "settings": "سیٹنگز",
+    "overview": "جائزہ",
+    "businesses": "بزنسز",
+    "users": "یوزرز",
+    "plans": "پلانز",
+    "subscriptions": "سبسکرپشنز"
+  },
+  "actions": {
+    "startBuilding": "شروع کریں",
+    "viewArchitecture": "آرکیٹیکچر دیکھیں",
+    "goHome": "ہوم پر جائیں"
+  },
+  "status": {
+    "active": "فعال",
+    "suspended": "معطل",
+    "archived": "آرکائیو"
+  },
+  "landing": {
+    "badge": "ServiceFlow SaaS",
+    "title": "ترقی کرتے سروس بزنسز کے لیے تازہ بکنگ ورک فلو۔",
+    "description": "Next.js، Prisma، MongoDB، NextAuth، Stripe، React Query، Formik، Yup، Tailwind، اور shadcn/ui کے ساتھ بنایا گیا ملٹی ٹیننٹ بکنگ اور سبسکرپشن پلیٹ فارم۔",
+    "featureDescription": "ServiceFlow بزنس اونرشپ، پلان لمٹس، اور کسٹمر بکنگ جرنیز کے گرد بنایا گیا ہے۔",
+    "features": [
+      "ٹیننٹ محفوظ",
+      "سبسکرپشن تیار",
+      "بکنگ پہلے"
+    ]
+  },
+  "notFound": {
+    "title": "صفحہ نہیں ملا",
+    "description": "آپ جس صفحے کو تلاش کر رہے ہیں وہ موجود نہیں یا منتقل ہو چکا ہے۔"
+  },
+  "loading": {
+    "message": "ServiceFlow لوڈ ہو رہا ہے..."
+  }
+}

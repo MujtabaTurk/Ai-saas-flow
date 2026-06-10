@@ -1,0 +1,14 @@
+{
+  "title": "Billing",
+  "currentPlan": "Current plan",
+  "manageBilling": "Manage billing",
+  "checkout": {
+    "success": "Checkout finished.",
+    "canceled": "Checkout was canceled."
+  },
+  "plan": {
+    "trial": "Trial",
+    "basic": "Basic",
+    "pro": "Pro"
+  }
+}

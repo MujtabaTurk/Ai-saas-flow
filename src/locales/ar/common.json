@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ServiceFlow SaaS"
+  },
+  "language": {
+    "label": "اللغة"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "services": "الخدمات",
+    "bookings": "الحجوزات",
+    "customers": "العملاء",
+    "availability": "التوفر",
+    "billing": "الفوترة",
+    "settings": "الإعدادات",
+    "overview": "نظرة عامة",
+    "businesses": "الأعمال",
+    "users": "المستخدمون",
+    "plans": "الباقات",
+    "subscriptions": "الاشتراكات"
+  },
+  "actions": {
+    "startBuilding": "ابدأ البناء",
+    "viewArchitecture": "عرض البنية",
+    "goHome": "العودة للرئيسية"
+  },
+  "status": {
+    "active": "نشط",
+    "suspended": "معلق",
+    "archived": "مؤرشف"
+  },
+  "landing": {
+    "badge": "ServiceFlow SaaS",
+    "title": "سير عمل حجز منعش للأعمال الخدمية النامية.",
+    "description": "أساس لمنصة حجز واشتراكات متعددة المستأجرين مبنية باستخدام Next.js و Prisma و MongoDB و NextAuth و Stripe و React Query و Formik و Yup و Tailwind و shadcn/ui.",
+    "featureDescription": "تم تنظيم ServiceFlow حول ملكية الأعمال وحدود الباقات ورحلات الحجز الموجهة للعملاء.",
+    "features": [
+      "آمن للمستأجرين",
+      "جاهز للاشتراكات",
+      "مصمم للحجوزات"
+    ]
+  },
+  "notFound": {
+    "title": "الصفحة غير موجودة",
+    "description": "الصفحة التي تبحث عنها غير موجودة أو ربما تم نقلها."
+  },
+  "loading": {
+    "message": "جار تحميل ServiceFlow..."
+  }
+}

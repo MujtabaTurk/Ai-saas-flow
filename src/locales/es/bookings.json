@@ -1,0 +1,19 @@
+{
+  "title": "Reservas",
+  "create": "Crear reserva",
+  "cancel": "Cancelar reserva",
+  "statuses": {
+    "pending": "Pendiente",
+    "confirmed": "Confirmada",
+    "canceled": "Cancelada",
+    "completed": "Completada",
+    "noShow": "No asistió"
+  },
+  "slot": {
+    "noAvailableSlots": "No hay horarios disponibles para esta fecha."
+  },
+  "customer": {
+    "name": "Nombre",
+    "email": "Correo electrónico"
+  }
+}

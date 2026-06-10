@@ -1,0 +1,19 @@
+{
+  "title": "الحجوزات",
+  "create": "إنشاء حجز",
+  "cancel": "إلغاء الحجز",
+  "statuses": {
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "canceled": "ملغى",
+    "completed": "مكتمل",
+    "noShow": "لم يحضر"
+  },
+  "slot": {
+    "noAvailableSlots": "لا توجد أوقات متاحة لهذا التاريخ."
+  },
+  "customer": {
+    "name": "الاسم",
+    "email": "البريد الإلكتروني"
+  }
+}

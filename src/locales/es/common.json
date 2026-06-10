@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ServiceFlow SaaS"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "navigation": {
+    "dashboard": "Panel",
+    "services": "Servicios",
+    "bookings": "Reservas",
+    "customers": "Clientes",
+    "availability": "Disponibilidad",
+    "billing": "Facturación",
+    "settings": "Configuración",
+    "overview": "Resumen",
+    "businesses": "Negocios",
+    "users": "Usuarios",
+    "plans": "Planes",
+    "subscriptions": "Suscripciones"
+  },
+  "actions": {
+    "startBuilding": "Empezar",
+    "viewArchitecture": "Ver arquitectura",
+    "goHome": "Ir al inicio"
+  },
+  "status": {
+    "active": "Activo",
+    "suspended": "Suspendido",
+    "archived": "Archivado"
+  },
+  "landing": {
+    "badge": "ServiceFlow SaaS",
+    "title": "Flujos de reserva frescos para negocios de servicios en crecimiento.",
+    "description": "Una base de plataforma multiinquilino de reservas y suscripciones construida con Next.js, Prisma, MongoDB, NextAuth, Stripe, React Query, Formik, Yup, Tailwind y shadcn/ui.",
+    "featureDescription": "ServiceFlow está estructurado alrededor de propiedad del negocio, límites de plan y recorridos de reserva para clientes.",
+    "features": [
+      "Seguro por tenant",
+      "Listo para suscripciones",
+      "Primero reservas"
+    ]
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o pudo haber sido movida."
+  },
+  "loading": {
+    "message": "Cargando ServiceFlow..."
+  }
+}

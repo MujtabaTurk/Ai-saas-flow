@@ -1,0 +1,19 @@
+{
+  "title": "Buchungen",
+  "create": "Buchung erstellen",
+  "cancel": "Buchung stornieren",
+  "statuses": {
+    "pending": "Ausstehend",
+    "confirmed": "Bestätigt",
+    "canceled": "Storniert",
+    "completed": "Abgeschlossen",
+    "noShow": "Nicht erschienen"
+  },
+  "slot": {
+    "noAvailableSlots": "Für dieses Datum sind keine Zeiten verfügbar."
+  },
+  "customer": {
+    "name": "Name",
+    "email": "E-Mail"
+  }
+}

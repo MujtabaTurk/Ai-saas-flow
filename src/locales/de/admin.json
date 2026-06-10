@@ -1,0 +1,19 @@
+{
+  "title": "Super Admin",
+  "revenue": {
+    "mrr": "MRR",
+    "arr": "ARR"
+  },
+  "subscriptions": {
+    "active": "Aktive Abonnements"
+  },
+  "users": {
+    "total": "Benutzer gesamt"
+  },
+  "businesses": {
+    "active": "Aktive Unternehmen"
+  },
+  "risk": {
+    "failedPayments": "Fehlgeschlagene Zahlungen"
+  }
+}

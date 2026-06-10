@@ -1,0 +1,8 @@
+{
+  "title": "Services",
+  "create": "Create service",
+  "edit": "Edit service",
+  "delete": "Delete service",
+  "activate": "Activate",
+  "deactivate": "Deactivate"
+}
