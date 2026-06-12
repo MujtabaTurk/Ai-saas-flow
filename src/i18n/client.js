@@ -6,6 +6,7 @@ import { initReactI18next } from "react-i18next";
 import { resources } from "@/i18n/resources";
 import {
   defaultLanguage,
+  languageCookieName,
   languageStorageKey,
   namespaces,
   supportedLanguages
@@ -25,9 +26,15 @@ if (!i18n.isInitialized) {
         escapeValue: false
       },
       detection: {
-        order: ["localStorage", "navigator", "htmlTag"],
-        caches: ["localStorage"],
-        lookupLocalStorage: languageStorageKey
+        order: ["cookie", "localStorage", "htmlTag", "navigator"],
+        caches: ["cookie", "localStorage"],
+        lookupCookie: languageCookieName,
+        lookupLocalStorage: languageStorageKey,
+        cookieMinutes: 60 * 24 * 365,
+        cookieOptions: {
+          path: "/",
+          sameSite: "lax"
+        }
       },
       react: {
         useSuspense: false
@@ -36,4 +43,3 @@ if (!i18n.isInitialized) {
 }
 
 export { i18n };
-

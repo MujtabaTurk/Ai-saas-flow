@@ -78,6 +78,7 @@ export const authOptions = {
         const context = await resolveSessionContext(userId);
         token.platformRole = context.platformRole || user?.platformRole || token.platformRole || "USER";
         token.activeBusinessId = context.activeBusinessId;
+        token.activeBusinessMembershipId = context.activeBusinessMembershipId;
         token.activeBusinessSlug = context.activeBusinessSlug;
         token.activeBusinessName = context.activeBusinessName;
         token.activeBusinessStatus = context.activeBusinessStatus;
@@ -93,6 +94,8 @@ export const authOptions = {
         session.user.id = token.id;
         session.user.platformRole = token.platformRole || "USER";
         session.user.activeBusinessId = token.activeBusinessId || null;
+        session.user.activeBusinessMembershipId =
+          token.activeBusinessMembershipId || null;
         session.user.activeBusinessSlug = token.activeBusinessSlug || null;
         session.user.activeBusinessName = token.activeBusinessName || null;
         session.user.activeBusinessStatus = token.activeBusinessStatus || null;

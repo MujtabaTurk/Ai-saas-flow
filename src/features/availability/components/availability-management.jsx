@@ -53,6 +53,14 @@ export function AvailabilityManagement({
     [unavailableDatesQuery.data?.unavailableDates]
   );
   const unavailableSummary = unavailableDatesQuery.data?.summary;
+  const access =
+    availabilityQuery.data?.access || unavailableDatesQuery.data?.access || null;
+  const effectiveReadOnly = isReadOnly || access?.isReadOnly === true;
+  const canConfigure =
+    !effectiveReadOnly &&
+    !availabilityQuery.isLoading &&
+    !availabilityQuery.isError &&
+    access?.canConfigure === true;
   const services = useMemo(() => servicesQuery.data?.services || [], [servicesQuery.data?.services]);
 
   const groupedAvailability = useMemo(
@@ -177,14 +185,24 @@ export function AvailabilityManagement({
         </div>
       ) : null}
 
-      {isReadOnly ? (
+      {effectiveReadOnly ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           This business is suspended. Scheduling configuration is available in read-only mode.
         </div>
       ) : null}
 
+      {access &&
+      !access.subscriptionEntitled &&
+      !access.canConfigure &&
+      !effectiveReadOnly ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          An active subscription is required to add, edit, or activate scheduling configuration.
+          Existing ranges can still be deactivated or deleted.
+        </div>
+      ) : null}
+
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div className="flex gap-2 rounded-2xl border border-growth-border bg-white p-1">
+        <div className="flex flex-wrap gap-2 rounded-2xl border border-growth-border bg-white p-1">
           <Button
             size="sm"
             variant={tab === "weekly" ? "default" : "ghost"}
@@ -207,7 +225,7 @@ export function AvailabilityManagement({
           </Button>
         </div>
         <Button
-          disabled={isReadOnly}
+          disabled={!canConfigure}
           onClick={() => {
             setMode("create");
             setSelectedItem(null);
@@ -302,7 +320,7 @@ export function AvailabilityManagement({
                             </div>
                             <div className="flex flex-wrap gap-2">
                               <Button
-                                disabled={isReadOnly}
+                                disabled={!canConfigure}
                                 size="sm"
                                 variant="outline"
                                 onClick={() => {
@@ -313,7 +331,11 @@ export function AvailabilityManagement({
                                 Edit
                               </Button>
                               <Button
-                                disabled={isReadOnly || statusMutation.isPending}
+                                disabled={
+                                  effectiveReadOnly ||
+                                  statusMutation.isPending ||
+                                  (!range.isActive && !canConfigure)
+                                }
                                 size="sm"
                                 variant="outline"
                                 onClick={() =>
@@ -328,7 +350,10 @@ export function AvailabilityManagement({
                                 {range.isActive ? "Deactivate" : "Activate"}
                               </Button>
                               <Button
-                                disabled={isReadOnly || deleteAvailabilityMutation.isPending}
+                                disabled={
+                                  effectiveReadOnly ||
+                                  deleteAvailabilityMutation.isPending
+                                }
                                 size="sm"
                                 variant="destructive"
                                 onClick={() => {
@@ -427,7 +452,7 @@ export function AvailabilityManagement({
                         </div>
                         <div className="flex gap-2">
                           <Button
-                            disabled={isReadOnly}
+                            disabled={!canConfigure}
                             size="sm"
                             variant="outline"
                             onClick={() => {
@@ -438,7 +463,10 @@ export function AvailabilityManagement({
                             Edit
                           </Button>
                           <Button
-                            disabled={isReadOnly || deleteUnavailableMutation.isPending}
+                            disabled={
+                              effectiveReadOnly ||
+                              deleteUnavailableMutation.isPending
+                            }
                             size="sm"
                             variant="destructive"
                             onClick={() => {

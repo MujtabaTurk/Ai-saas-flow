@@ -1,17 +1,22 @@
 import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
+import { getLanguageDirection } from "@/i18n/settings";
+import { resolveRequestLanguage } from "@/i18n/server";
 
 export const metadata = {
   title: "ServiceFlow SaaS",
   description: "AI-assisted booking and subscription platform for service businesses."
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const language = await resolveRequestLanguage();
+  const direction = getLanguageDirection(language);
+
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang={language} dir={direction} suppressHydrationWarning>
       <body className="font-sans">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders initialLanguage={language}>{children}</AppProviders>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +11,7 @@ import { resetPasswordSchema } from "@/features/auth/validation/reset-password-s
 import { FieldError } from "./field-error";
 
 export function ResetPasswordForm() {
+  const { t } = useTranslation("auth");
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
 
@@ -36,7 +38,7 @@ export function ResetPasswordForm() {
       if (!response.ok) {
         helpers.setStatus({
           type: "error",
-          message: payload?.error?.message || "Could not reset your password."
+          message: payload?.error?.message || t("resetPassword.error")
         });
         helpers.setErrors(payload?.error?.details || {});
         return;
@@ -69,7 +71,7 @@ export function ResetPasswordForm() {
           <p>{formik.status.message}</p>
           {formik.status.type === "success" ? (
             <Link className="mt-2 block font-semibold text-primary hover:underline" href="/login">
-              Go to login
+              {t("resetPassword.goLogin")}
             </Link>
           ) : null}
         </div>
@@ -77,12 +79,14 @@ export function ResetPasswordForm() {
 
       {!token ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Missing reset token. Please request a new reset link.
+          {t("resetPassword.missingToken")}
         </div>
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="password">New password</Label>
+        <Label htmlFor="password">
+          {t("resetPassword.newPassword")}
+        </Label>
         <Input
           id="password"
           name="password"
@@ -96,7 +100,9 @@ export function ResetPasswordForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Label htmlFor="confirmPassword">
+          {t("resetPassword.confirmPassword")}
+        </Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -110,9 +116,10 @@ export function ResetPasswordForm() {
       </div>
 
       <Button className="w-full" disabled={formik.isSubmitting || !token} type="submit">
-        {formik.isSubmitting ? "Updating password..." : "Reset password"}
+        {formik.isSubmitting
+          ? t("resetPassword.submitting")
+          : t("resetPassword.submit")}
       </Button>
     </form>
   );
 }
-

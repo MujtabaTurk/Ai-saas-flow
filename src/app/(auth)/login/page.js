@@ -2,22 +2,29 @@ import Link from "next/link";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { isGoogleProviderEnabled } from "@/features/auth/auth-options";
+import {
+  getServerTranslator,
+  resolveRequestLanguage
+} from "@/i18n/server";
 
 export const metadata = {
   title: "Login | ServiceFlow"
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const language = await resolveRequestLanguage();
+  const t = await getServerTranslator(language, "auth");
+
   return (
     <AuthLayout
-      eyebrow="Welcome back"
-      title="Sign in to ServiceFlow"
-      description="Manage your bookings, services, customers, and subscription."
+      eyebrow={t("login.eyebrow")}
+      title={t("login.title")}
+      description={t("login.description")}
       footer={
         <>
-          New to ServiceFlow?{" "}
+          {t("login.newUser")}{" "}
           <Link className="font-semibold text-primary hover:underline" href="/register">
-            Create an account
+            {t("login.createAccount")}
           </Link>
         </>
       }

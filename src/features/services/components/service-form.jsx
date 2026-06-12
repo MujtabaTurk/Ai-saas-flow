@@ -38,7 +38,14 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
         await onSubmit(mapServiceFormToApiPayload(values), helpers);
       } catch (error) {
         helpers.setStatus(error.message || "Could not save service.");
-        helpers.setErrors(error.details || {});
+        helpers.setErrors({
+          ...(error.details || {}),
+          ...(error.details?.priceCents
+            ? {
+                price: error.details.priceCents
+              }
+            : {})
+        });
       }
     }
   });
@@ -99,6 +106,7 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
             type="number"
             min="5"
             max="480"
+            step="5"
             value={formik.values.durationMin}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -127,6 +135,7 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
             type="number"
             min="0"
             max="240"
+            step="5"
             value={formik.values.bufferBeforeMin}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -142,6 +151,7 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
             type="number"
             min="0"
             max="240"
+            step="5"
             value={formik.values.bufferAfterMin}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}

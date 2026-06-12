@@ -4,6 +4,7 @@ import {
   syncStripeSubscription
 } from "@/features/billing/server";
 import { getStripe } from "@/features/billing/stripe";
+import { notifySubscriptionEvent } from "@/features/notifications/events";
 import { fail, ok } from "@/lib/api/api-response";
 import { AppError } from "@/lib/api/errors";
 import { handleApiError } from "@/lib/api/handle-api-error";
@@ -136,10 +137,10 @@ async function syncInvoiceSubscription(invoice, paymentField) {
   const subscriptionId = getStripeId(invoice.subscription);
 
   if (!subscriptionId) {
-    return;
+    return null;
   }
 
-  await retrieveAndSyncStripeSubscription(subscriptionId);
+  const subscription = await retrieveAndSyncStripeSubscription(subscriptionId);
   await prisma.subscription.updateMany({
     where: {
       stripeSubscriptionId: subscriptionId
@@ -154,6 +155,8 @@ async function syncInvoiceSubscription(invoice, paymentField) {
         : {})
     }
   });
+
+  return subscription;
 }
 
 async function handleCheckoutSessionCompleted(session) {
@@ -166,31 +169,98 @@ async function handleCheckoutSessionCompleted(session) {
   }
 
   if (subscriptionId) {
-    await retrieveAndSyncStripeSubscription(subscriptionId);
+    return retrieveAndSyncStripeSubscription(subscriptionId);
   }
+
+  return null;
+}
+
+function getSubscriptionNotification(eventType, subscription) {
+  if (!subscription) {
+    return null;
+  }
+
+  const planLabel = subscription.planCode.toLowerCase();
+
+  if (eventType === "invoice.paid") {
+    return {
+      type: "PAYMENT_SUCCEEDED",
+      title: "Subscription payment received",
+      message: `Payment for the ${planLabel} plan was received successfully.`
+    };
+  }
+
+  if (eventType === "invoice.payment_failed") {
+    return {
+      type: "PAYMENT_FAILED",
+      title: "Subscription payment failed",
+      message: `Payment for the ${planLabel} plan failed. Update the billing method to prevent service interruption.`
+    };
+  }
+
+  if (
+    eventType === "customer.subscription.deleted" ||
+    subscription.status === "CANCELED"
+  ) {
+    return {
+      type: "SUBSCRIPTION_CANCELED",
+      title: "Subscription canceled",
+      message: `The ${planLabel} subscription was canceled.`
+    };
+  }
+
+  if (subscription.status === "PAST_DUE") {
+    return {
+      type: "SUBSCRIPTION_PAST_DUE",
+      title: "Subscription payment is past due",
+      message: `The ${planLabel} subscription is past due. Review the billing details to restore full access.`
+    };
+  }
+
+  if (["ACTIVE", "TRIALING"].includes(subscription.status)) {
+    return {
+      type: "SUBSCRIPTION_ACTIVE",
+      title: "Subscription active",
+      message: `The ${planLabel} plan is ${subscription.status.toLowerCase()}.`
+    };
+  }
+
+  return null;
 }
 
 async function handleStripeEvent(event) {
   const object = event.data.object;
+  let subscription = null;
 
   switch (event.type) {
     case "checkout.session.completed":
-      await handleCheckoutSessionCompleted(object);
+      subscription = await handleCheckoutSessionCompleted(object);
       break;
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
-      await syncStripeSubscription(object);
+      subscription = await syncStripeSubscription(object);
       break;
     case "invoice.paid":
-      await syncInvoiceSubscription(object, "lastPaymentAt");
+      subscription = await syncInvoiceSubscription(object, "lastPaymentAt");
       break;
     case "invoice.payment_failed":
-      await syncInvoiceSubscription(object, "lastPaymentFailedAt");
+      subscription = await syncInvoiceSubscription(
+        object,
+        "lastPaymentFailedAt"
+      );
       break;
     default:
       break;
   }
+
+  return {
+    subscription,
+    notification:
+      event.type === "checkout.session.completed"
+        ? null
+        : getSubscriptionNotification(event.type, subscription)
+  };
 }
 
 export async function POST(request) {
@@ -233,7 +303,17 @@ export async function POST(request) {
     }
 
     try {
-      await handleStripeEvent(event);
+      const result = await handleStripeEvent(event);
+
+      if (result.subscription && result.notification) {
+        await notifySubscriptionEvent({
+          businessId: result.subscription.businessId,
+          subscriptionId: result.subscription.id,
+          eventId: event.id,
+          ...result.notification
+        });
+      }
+
       await markWebhookProcessed(event.id);
     } catch (processingError) {
       await markWebhookFailed(event.id, processingError);

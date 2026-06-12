@@ -1,8 +1,27 @@
 import { DAYS_OF_WEEK } from "@/features/availability/constants";
+import { isSuperAdmin } from "@/features/auth/permissions";
+import { getSubscriptionEntitlement } from "@/features/billing/status";
 
 export const availabilityOrder = [{ dayOfWeek: "asc" }, { startTime: "asc" }];
 
 export const unavailableDateOrder = [{ startsAt: "asc" }];
+
+export function buildAvailabilityAccess(business, user) {
+  const subscription = business?.subscriptions?.[0] || null;
+  const entitlement = getSubscriptionEntitlement(subscription);
+  const hasPlatformOverride = isSuperAdmin(user);
+  const isReadOnly = business?.status !== "ACTIVE" && !hasPlatformOverride;
+
+  return {
+    businessStatus: business?.status || null,
+    planCode: entitlement.planCode,
+    subscriptionStatus: entitlement.status,
+    subscriptionEntitled: entitlement.isEntitled,
+    entitlementReason: entitlement.reason,
+    isReadOnly,
+    canConfigure: !isReadOnly && (entitlement.isEntitled || hasPlatformOverride)
+  };
+}
 
 export function buildAvailabilitySummary({ availability, timezone }) {
   const activeRanges = availability.filter((range) => range.isActive);

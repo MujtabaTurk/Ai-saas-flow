@@ -1,8 +1,10 @@
 import { availabilityStatusSchema } from "@/features/availability/validation/availability-schema";
 import {
+  assertAvailabilityEntitlement,
   assertNoAvailabilityOverlap,
   assertAvailabilityWriteAccess,
-  availabilitySelect,
+  findTenantAvailability,
+  getRequestedBusinessId,
   normalizeAvailabilityInput,
   requireAvailabilityContext
 } from "@/features/availability/server";
@@ -15,15 +17,14 @@ export const runtime = "nodejs";
 
 export async function PATCH(request, { params }) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
     const { availabilityId } = await params;
-    const currentAvailability = await prisma.availability.findFirst({
-      where: {
-        id: availabilityId,
-        businessId: business.id
-      },
-      select: availabilitySelect
+    const currentAvailability = await findTenantAvailability({
+      businessId: business.id,
+      availabilityId
     });
 
     if (!currentAvailability) {
@@ -38,6 +39,7 @@ export async function PATCH(request, { params }) {
     }
 
     if (data.isActive && !currentAvailability.isActive) {
+      assertAvailabilityEntitlement(user, business);
       await assertNoAvailabilityOverlap({
         businessId: business.id,
         availabilityId,
@@ -45,14 +47,23 @@ export async function PATCH(request, { params }) {
       });
     }
 
-    const availability = await prisma.availability.update({
+    const result = await prisma.availability.updateMany({
       where: {
-        id: availabilityId
+        id: availabilityId,
+        businessId: business.id
       },
       data: {
         isActive: data.isActive
-      },
-      select: availabilitySelect
+      }
+    });
+
+    if (result.count === 0) {
+      return fail("Working-hours range not found.", 404);
+    }
+
+    const availability = await findTenantAvailability({
+      businessId: business.id,
+      availabilityId
     });
 
     return ok({

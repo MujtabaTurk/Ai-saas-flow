@@ -6,11 +6,17 @@
     "label": "Language"
   },
   "navigation": {
+    "activity": "Activity",
+    "notifications": "Notifications",
     "dashboard": "Dashboard",
+    "analytics": "Analytics",
     "services": "Services",
     "bookings": "Bookings",
     "customers": "Customers",
+    "reviews": "Reviews",
+    "aiAssistant": "AI Assistant",
     "availability": "Availability",
+    "team": "Team",
     "billing": "Billing",
     "settings": "Settings",
     "overview": "Overview",
@@ -22,7 +28,8 @@
   "actions": {
     "startBuilding": "Start building",
     "viewArchitecture": "View architecture",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "signOut": "Sign out"
   },
   "status": {
     "active": "Active",

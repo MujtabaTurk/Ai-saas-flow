@@ -1,11 +1,13 @@
 import { createUnavailablePeriod } from "@/features/availability/unavailable-period";
 import { unavailableDateSchema } from "@/features/availability/validation/availability-schema";
 import {
+  assertAvailabilityEntitlement,
   assertNoUnavailableDateOverlap,
   assertAvailabilityWriteAccess,
   assertServiceBelongsToBusiness,
-  requireAvailabilityContext,
-  unavailableDateSelect
+  findTenantUnavailableDate,
+  getRequestedBusinessId,
+  requireAvailabilityContext
 } from "@/features/availability/server";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
@@ -14,22 +16,18 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-async function getUnavailableDate(unavailableDateId, businessId) {
-  return prisma.unavailableDate.findFirst({
-    where: {
-      id: unavailableDateId,
-      businessId
-    },
-    select: unavailableDateSelect
-  });
-}
-
 export async function PATCH(request, { params }) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
+    assertAvailabilityEntitlement(user, business);
     const { unavailableDateId } = await params;
-    const currentUnavailableDate = await getUnavailableDate(unavailableDateId, business.id);
+    const currentUnavailableDate = await findTenantUnavailableDate({
+      businessId: business.id,
+      unavailableDateId
+    });
 
     if (!currentUnavailableDate) {
       return fail("Unavailable date not found.", 404);
@@ -52,12 +50,21 @@ export async function PATCH(request, { params }) {
       endsAt: input.endsAt
     });
 
-    const unavailableDate = await prisma.unavailableDate.update({
+    const result = await prisma.unavailableDate.updateMany({
       where: {
-        id: unavailableDateId
+        id: unavailableDateId,
+        businessId: business.id
       },
-      data: input,
-      select: unavailableDateSelect
+      data: input
+    });
+
+    if (result.count === 0) {
+      return fail("Unavailable date not found.", 404);
+    }
+
+    const unavailableDate = await findTenantUnavailableDate({
+      businessId: business.id,
+      unavailableDateId
     });
 
     return ok({
@@ -69,22 +76,35 @@ export async function PATCH(request, { params }) {
   }
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(request, { params }) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
     const { unavailableDateId } = await params;
-    const currentUnavailableDate = await getUnavailableDate(unavailableDateId, business.id);
+    const currentUnavailableDate = await findTenantUnavailableDate({
+      businessId: business.id,
+      unavailableDateId,
+      select: {
+        id: true
+      }
+    });
 
     if (!currentUnavailableDate) {
       return fail("Unavailable date not found.", 404);
     }
 
-    await prisma.unavailableDate.delete({
+    const result = await prisma.unavailableDate.deleteMany({
       where: {
-        id: unavailableDateId
+        id: unavailableDateId,
+        businessId: business.id
       }
     });
+
+    if (result.count === 0) {
+      return fail("Unavailable date not found.", 404);
+    }
 
     return ok({
       unavailableDateId,

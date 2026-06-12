@@ -1,9 +1,11 @@
 import { availabilitySchema } from "@/features/availability/validation/availability-schema";
 import {
+  assertAvailabilityEntitlement,
   assertNoAvailabilityOverlap,
   assertAvailabilityWriteAccess,
   assertServiceBelongsToBusiness,
-  availabilitySelect,
+  findTenantAvailability,
+  getRequestedBusinessId,
   normalizeAvailabilityInput,
   requireAvailabilityContext
 } from "@/features/availability/server";
@@ -14,22 +16,18 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-async function getAvailability(availabilityId, businessId) {
-  return prisma.availability.findFirst({
-    where: {
-      id: availabilityId,
-      businessId
-    },
-    select: availabilitySelect
-  });
-}
-
 export async function PATCH(request, { params }) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
+    assertAvailabilityEntitlement(user, business);
     const { availabilityId } = await params;
-    const currentAvailability = await getAvailability(availabilityId, business.id);
+    const currentAvailability = await findTenantAvailability({
+      businessId: business.id,
+      availabilityId
+    });
 
     if (!currentAvailability) {
       return fail("Working-hours range not found.", 404);
@@ -51,12 +49,21 @@ export async function PATCH(request, { params }) {
       isActive: currentAvailability.isActive
     });
 
-    const availability = await prisma.availability.update({
+    const result = await prisma.availability.updateMany({
       where: {
-        id: availabilityId
+        id: availabilityId,
+        businessId: business.id
       },
-      data: input,
-      select: availabilitySelect
+      data: input
+    });
+
+    if (result.count === 0) {
+      return fail("Working-hours range not found.", 404);
+    }
+
+    const availability = await findTenantAvailability({
+      businessId: business.id,
+      availabilityId
     });
 
     return ok({
@@ -68,22 +75,35 @@ export async function PATCH(request, { params }) {
   }
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(request, { params }) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
     const { availabilityId } = await params;
-    const currentAvailability = await getAvailability(availabilityId, business.id);
+    const currentAvailability = await findTenantAvailability({
+      businessId: business.id,
+      availabilityId,
+      select: {
+        id: true
+      }
+    });
 
     if (!currentAvailability) {
       return fail("Working-hours range not found.", 404);
     }
 
-    await prisma.availability.delete({
+    const result = await prisma.availability.deleteMany({
       where: {
-        id: availabilityId
+        id: availabilityId,
+        businessId: business.id
       }
     });
+
+    if (result.count === 0) {
+      return fail("Working-hours range not found.", 404);
+    }
 
     return ok({
       availabilityId,

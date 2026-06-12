@@ -1,30 +1,29 @@
 import { formatDateTimeInTimezone, zonedDateTimeToUtc, addDaysToDateValue } from "@/features/availability/time";
+import {
+  buildBookingCreationAccess,
+  getBookingPlanPeriod
+} from "@/features/bookings/access";
 import { BOOKING_STATUSES } from "@/features/bookings/constants";
-import { getBookingLimit } from "@/features/bookings/policy";
 import { prisma } from "@/lib/prisma";
 
 const ACTIVE_BOOKING_STATUSES = [BOOKING_STATUSES.PENDING, BOOKING_STATUSES.CONFIRMED];
 
-function getSubscriptionPeriod(subscription) {
-  return {
-    start: subscription?.currentPeriodStart || new Date(0),
-    end: subscription?.currentPeriodEnd || subscription?.trialEndsAt || new Date("9999-12-31")
-  };
-}
-
 export async function buildBookingSummary({
   business,
   filteredWhere,
+  scopeWhere = {},
+  user = null,
   now = new Date()
 }) {
   const subscription = business.subscriptions?.[0] || null;
-  const { start: planPeriodStart, end: planPeriodEnd } = getSubscriptionPeriod(subscription);
-  const bookingLimit = getBookingLimit(subscription?.planCode);
+  const { start: planPeriodStart, end: planPeriodEnd } =
+    getBookingPlanPeriod(subscription);
   const localToday = formatDateTimeInTimezone(now, business.timezone).date;
   const todayStart = zonedDateTimeToUtc(localToday, "00:00", business.timezone);
   const tomorrowStart = zonedDateTimeToUtc(addDaysToDateValue(localToday, 1), "00:00", business.timezone);
   const baseWhere = {
-    businessId: business.id
+    businessId: business.id,
+    ...scopeWhere
   };
   const statusValues = Object.values(BOOKING_STATUSES);
   const [
@@ -57,7 +56,7 @@ export async function buildBookingSummary({
     }),
     prisma.booking.count({
       where: {
-        ...baseWhere,
+        businessId: business.id,
         createdAt: {
           gte: planPeriodStart,
           lt: planPeriodEnd
@@ -78,6 +77,15 @@ export async function buildBookingSummary({
     acc[status] = statusCounts[index];
     return acc;
   }, {});
+  const access = buildBookingCreationAccess({
+    business,
+    bookingCount: planUsed,
+    user,
+    now
+  });
+  const canManageConfiguration =
+    user?.platformRole === "SUPER_ADMIN" ||
+    ["OWNER", "ADMIN"].includes(user?.businessRole);
 
   return {
     filteredTotal,
@@ -92,13 +100,21 @@ export async function buildBookingSummary({
       countsByStatus[BOOKING_STATUSES.COMPLETED] +
       countsByStatus[BOOKING_STATUSES.NO_SHOW],
     plan: {
-      code: subscription?.planCode || null,
-      status: subscription?.status || null,
-      limit: bookingLimit,
+      code: access.planCode,
+      status: access.subscriptionStatus,
+      subscriptionEntitled: access.subscriptionEntitled,
+      limit: access.bookingLimit,
       used: planUsed,
-      remaining: bookingLimit === null ? null : Math.max(bookingLimit - planUsed, 0),
+      remaining: access.remainingBookings,
       periodStart: planPeriodStart,
       periodEnd: planPeriodEnd
+    },
+    access: {
+      ...access,
+      canCreate: access.canCreate && canManageConfiguration,
+      canConfigure: access.canConfigure && canManageConfiguration,
+      canAssign: user?.platformRole === "SUPER_ADMIN" || user?.businessRole === "OWNER",
+      isStaffScope: user?.businessRole === "STAFF"
     },
     localToday
   };

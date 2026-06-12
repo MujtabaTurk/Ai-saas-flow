@@ -1,7 +1,22 @@
 export const bookingQueryKeys = {
   all: ["bookings"],
-  list: (businessId, filters = {}) => [...bookingQueryKeys.all, "list", businessId || "current", filters],
+  listRoot: (businessId) => [
+    ...bookingQueryKeys.all,
+    "list",
+    businessId || "current"
+  ],
+  list: (businessId, filters = {}) => [
+    ...bookingQueryKeys.listRoot(businessId),
+    filters
+  ],
   settings: (businessId) => [...bookingQueryKeys.all, "settings", businessId || "current"],
+  dashboardSlots: (businessId, serviceId, date) => [
+    ...bookingQueryKeys.all,
+    "dashboard-slots",
+    businessId || "current",
+    serviceId,
+    date
+  ],
   publicBusiness: (businessSlug) => [...bookingQueryKeys.all, "public-business", businessSlug],
   publicSlots: (businessSlug, serviceId, date) => [
     ...bookingQueryKeys.all,
@@ -18,4 +33,3 @@ export const bookingQueryKeys = {
     token
   ]
 };
-

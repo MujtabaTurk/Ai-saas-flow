@@ -1,15 +1,24 @@
 import { hashToken } from "@/features/auth/password";
+import {
+  assertBusinessAccess,
+  canManageBusiness,
+  isBusinessStaff
+} from "@/features/auth/permissions";
 import { formatDateTimeInTimezone } from "@/features/availability/time";
-import { isSubscriptionEntitled } from "@/features/billing/status";
 import { createCustomerAccessToken } from "@/features/bookings/access-token";
+import {
+  assertBookingCreationAllowed,
+  getBookingCreationAccess
+} from "@/features/bookings/access";
 import { createBookingNumber } from "@/features/bookings/booking-number";
 import { isSameLocalCalendarDay } from "@/features/bookings/date";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { createOccupancyBuckets } from "@/features/bookings/occupancy";
-import { canCreateBookingForPlan, getBookingLimit } from "@/features/bookings/policy";
 import { getAvailableSlotsForBusiness } from "@/features/bookings/slot-service";
 import { normalizeEmail } from "@/features/auth/normalize-email";
 import { AppError, NotFoundError } from "@/lib/api/errors";
+import { requireCurrentUser } from "@/lib/auth/session";
+import { isValidMongoObjectId } from "@/lib/mongodb";
 import { prisma } from "@/lib/prisma";
 
 export const bookingSelect = {
@@ -17,6 +26,7 @@ export const bookingSelect = {
   businessId: true,
   serviceId: true,
   customerId: true,
+  assignedMemberId: true,
   bookingNumber: true,
   customerName: true,
   customerEmail: true,
@@ -53,10 +63,34 @@ export const bookingSelect = {
       email: true,
       phone: true
     }
+  },
+  assignedMember: {
+    select: {
+      id: true,
+      role: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
   }
 };
 
+export function getRequestedBusinessId(request) {
+  return new URL(request.url).searchParams.get("businessId");
+}
+
 export async function getBusinessForBooking(businessLocator) {
+  if (
+    businessLocator.id &&
+    !isValidMongoObjectId(businessLocator.id)
+  ) {
+    throw new NotFoundError("Business not found.");
+  }
+
   const where = businessLocator.id
     ? { id: businessLocator.id }
     : { slug: businessLocator.slug };
@@ -69,6 +103,8 @@ export async function getBusinessForBooking(businessLocator) {
       name: true,
       description: true,
       logoUrl: true,
+      email: true,
+      phone: true,
       status: true,
       timezone: true,
       currency: true,
@@ -97,34 +133,70 @@ export async function getBusinessForBooking(businessLocator) {
   return business;
 }
 
-async function assertBookingPlanAllowsCreation(business) {
-  const subscription = business.subscriptions[0];
-  const now = new Date();
+export async function requireBookingContext(requestedBusinessId = null) {
+  const user = await requireCurrentUser();
+  const businessId = requestedBusinessId || user.activeBusinessId;
 
-  if (!isSubscriptionEntitled(subscription, now)) {
-    throw new AppError("An active subscription is required before accepting bookings.", 402);
+  if (!businessId) {
+    throw new AppError(
+      "Business onboarding or an explicit business selection is required before managing bookings.",
+      409
+    );
   }
 
-  const entitlementEnd =
-    subscription.currentPeriodEnd || subscription.trialEndsAt;
+  if (!isValidMongoObjectId(businessId)) {
+    throw new AppError("Choose a valid business.", 422);
+  }
 
-  const periodStart = subscription.currentPeriodStart || new Date(0);
-  const periodEnd = entitlementEnd || new Date("9999-12-31");
-  const bookingCount = await prisma.booking.count({
+  assertBusinessAccess(user, businessId);
+
+  if (isBusinessStaff(user) && !user.activeBusinessMembershipId) {
+    throw new AppError("An active team membership is required.", 403);
+  }
+
+  return {
+    user,
+    business: await getBusinessForBooking({
+      id: businessId
+    })
+  };
+}
+
+export function assertBookingOperationalAccess(user, booking) {
+  if (canManageBusiness(user, booking.businessId)) {
+    return;
+  }
+
+  if (
+    isBusinessStaff(user) &&
+    user.activeBusinessMembershipId &&
+    booking.assignedMemberId === user.activeBusinessMembershipId
+  ) {
+    return;
+  }
+
+  throw new AppError(
+    "You can only manage bookings assigned to your team membership.",
+    403
+  );
+}
+
+export async function findTenantBooking({
+  businessId,
+  bookingId,
+  select = bookingSelect
+}) {
+  if (!isValidMongoObjectId(bookingId)) {
+    return null;
+  }
+
+  return prisma.booking.findFirst({
     where: {
-      businessId: business.id,
-      createdAt: {
-        gte: periodStart,
-        lt: periodEnd
-      }
-    }
+      id: bookingId,
+      businessId
+    },
+    select
   });
-
-  if (!canCreateBookingForPlan(subscription.planCode, bookingCount)) {
-    throw new AppError("This business has reached its booking limit for the current plan period.", 403, {
-      limit: getBookingLimit(subscription.planCode)
-    });
-  }
 }
 
 export async function createBooking({
@@ -133,18 +205,6 @@ export async function createBooking({
   source,
   createdByUserId = null
 }) {
-  if (business.status !== "ACTIVE") {
-    throw new AppError("This business is not accepting new bookings.", 403);
-  }
-
-  const settings = getBookingSettings(business.settings);
-
-  if (source === "PUBLIC" && !settings.allowGuestBookings) {
-    throw new AppError("Guest bookings are disabled for this business.", 403);
-  }
-
-  await assertBookingPlanAllowsCreation(business);
-
   const existingBooking = await prisma.booking.findUnique({
     where: {
       businessId_idempotencyKey: {
@@ -163,6 +223,15 @@ export async function createBooking({
       idempotentReplay: true
     };
   }
+
+  const settings = getBookingSettings(business.settings);
+
+  if (source === "PUBLIC" && !settings.allowGuestBookings) {
+    throw new AppError("Guest bookings are disabled for this business.", 403);
+  }
+
+  const creationAccess = await getBookingCreationAccess({ business });
+  assertBookingCreationAllowed(creationAccess);
 
   const service = await prisma.service.findFirst({
     where: {

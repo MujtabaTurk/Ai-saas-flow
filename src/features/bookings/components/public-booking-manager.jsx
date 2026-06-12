@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,23 +10,46 @@ import {
   useCancelPublicBooking,
   usePublicBooking
 } from "@/features/bookings/hooks/use-bookings";
+import { PublicReviewForm } from "@/features/reviews/components/public-review-form";
+import { usePublicBookingReview } from "@/features/reviews/hooks/use-reviews";
+import { formatLocalizedDateTime } from "@/i18n/format";
+
+function formatStatus(status, t) {
+  const key =
+    status === "NO_SHOW"
+      ? "noShow"
+      : status.toLowerCase();
+
+  return t(`bookings:statuses.${key}`);
+}
 
 export function PublicBookingManager({ businessSlug, bookingNumber, token }) {
+  const { t, i18n } = useTranslation(["public", "bookings"]);
+  const language = i18n.resolvedLanguage || i18n.language;
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState(null);
   const bookingQuery = usePublicBooking(businessSlug, bookingNumber, token);
+  const reviewQuery = usePublicBookingReview(
+    businessSlug,
+    bookingNumber,
+    token
+  );
   const cancelMutation = useCancelPublicBooking(businessSlug, bookingNumber, token);
 
   if (!token) {
     return (
       <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        This booking link is invalid or incomplete.
+        {t("booking.invalidLink")}
       </div>
     );
   }
 
   if (bookingQuery.isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading booking...</p>;
+    return (
+      <p className="text-sm text-muted-foreground">
+        {t("booking.loading")}
+      </p>
+    );
   }
 
   if (bookingQuery.error) {
@@ -53,44 +77,84 @@ export function PublicBookingManager({ businessSlug, bookingNumber, token }) {
       <CardHeader>
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle>{booking.serviceNameSnapshot}</CardTitle>
-          <Badge>{booking.status}</Badge>
+          <Badge>{formatStatus(booking.status, t)}</Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-4 text-sm text-muted-foreground">
         {message ? <div className="rounded-2xl bg-growth-dashboard p-4">{message}</div> : null}
-        <p>Reference: {booking.bookingNumber}</p>
         <p>
-          Appointment:{" "}
-          {new Intl.DateTimeFormat("en", {
-            timeZone: booking.timezone,
-            dateStyle: "full",
-            timeStyle: "short"
-          }).format(new Date(booking.startsAt))}
+          {t("booking.reference")}: {booking.bookingNumber}
         </p>
         <p>
-          Cancellation deadline:{" "}
-          {new Intl.DateTimeFormat("en", {
-            timeZone: booking.timezone,
-            dateStyle: "medium",
-            timeStyle: "short"
-          }).format(new Date(data.cancellationDeadline))}
+          {t("booking.appointment")}:{" "}
+          {formatLocalizedDateTime(
+            booking.startsAt,
+            booking.timezone,
+            language,
+            {
+              dateStyle: "full",
+              timeStyle: "short"
+            }
+          )}
+        </p>
+        <p>
+          {t("booking.cancellationDeadline")}:{" "}
+          {formatLocalizedDateTime(
+            data.cancellationDeadline,
+            booking.timezone,
+            language,
+            {
+              dateStyle: "medium",
+              timeStyle: "short"
+            }
+          )}
         </p>
         {data.canCancel ? (
           <div className="space-y-3 border-t border-growth-border pt-4">
             <Input
-              placeholder="Optional cancellation reason"
+              placeholder={t("booking.cancellationReason")}
               value={reason}
               onChange={(event) => setReason(event.target.value)}
             />
             <Button variant="destructive" disabled={cancelMutation.isPending} onClick={cancelBooking}>
-              {cancelMutation.isPending ? "Canceling..." : "Cancel booking"}
+              {cancelMutation.isPending
+                ? t("booking.canceling")
+                : t("booking.cancel")}
             </Button>
           </div>
         ) : (
           <p className="rounded-2xl bg-growth-dashboard p-4">
-            This booking can no longer be canceled online.
+            {t("booking.cannotCancel")}
           </p>
         )}
+        {booking.status === "COMPLETED" ? (
+          <div className="space-y-3 border-t border-growth-border pt-4">
+            <div>
+              <h2 className="text-lg font-bold text-growth-sidebar">
+                {t("review.experience")}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("review.description")}
+              </p>
+            </div>
+            {reviewQuery.isLoading ? (
+              <p className="text-sm text-muted-foreground">
+                {t("review.loading")}
+              </p>
+            ) : reviewQuery.error ? (
+              <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {reviewQuery.error.message}
+              </p>
+            ) : (
+              <PublicReviewForm
+                bookingNumber={bookingNumber}
+                businessSlug={businessSlug}
+                review={reviewQuery.data?.review}
+                token={token}
+              />
+            )}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

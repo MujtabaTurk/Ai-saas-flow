@@ -35,13 +35,20 @@
   html[dir="rtl"] body {
     direction: rtl;
   }
+
+  html[dir="rtl"] input[type="email"],
+  html[dir="rtl"] input[type="tel"],
+  html[dir="rtl"] input[type="url"] {
+    direction: ltr;
+    text-align: right;
+  }
 }
 
 @layer utilities {
   @media (min-width: 1024px) {
     html[dir="rtl"] .app-shell-sidebar {
-      left: auto;
-      right: 0;
+      inset-inline-start: auto;
+      inset-inline-end: 0;
     }
 
     html[dir="rtl"] .app-shell-main {

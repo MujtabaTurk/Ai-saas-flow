@@ -44,16 +44,22 @@ export function ServiceManagement({
   const summary = servicesQuery.data?.summary;
   const activeCount = summary?.active ?? services.filter((service) => service.isActive).length;
   const inactiveCount = summary?.inactive ?? Math.max(services.length - activeCount, 0);
+  const effectiveReadOnly = isReadOnly || summary?.isReadOnly === true;
   const serviceLimitLabel =
     summary?.serviceLimit === null
       ? "Unlimited services"
       : summary?.serviceLimit
         ? `${services.length}/${summary.serviceLimit} services used`
         : "Service limit unavailable";
-  const canCreateService = !isReadOnly && !servicesQuery.isLoading && summary?.canCreate !== false;
+  const canCreateService =
+    !effectiveReadOnly &&
+    !servicesQuery.isLoading &&
+    !servicesQuery.isError &&
+    summary?.canCreate === true;
 
   async function handleCreate(values, helpers) {
     setErrorMessage(null);
+    setMessage(null);
     const result = await createMutation.mutateAsync(values);
     setMessage(result.message);
     helpers.resetForm();
@@ -62,6 +68,7 @@ export function ServiceManagement({
 
   async function handleUpdate(values) {
     setErrorMessage(null);
+    setMessage(null);
     const result = await updateMutation.mutateAsync({
       serviceId: selectedService.id,
       values
@@ -80,6 +87,7 @@ export function ServiceManagement({
 
     try {
       setErrorMessage(null);
+      setMessage(null);
       const result = await deleteMutation.mutateAsync(service.id);
       setMessage(result.message);
     } catch (error) {
@@ -90,6 +98,7 @@ export function ServiceManagement({
   async function handleStatus(service) {
     try {
       setErrorMessage(null);
+      setMessage(null);
       const result = await statusMutation.mutateAsync({
         serviceId: service.id,
         isActive: !service.isActive
@@ -155,7 +164,7 @@ export function ServiceManagement({
         </div>
       ) : null}
 
-      {isReadOnly ? (
+      {effectiveReadOnly ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           This business is suspended. Services are available in read-only mode.
         </div>
@@ -203,8 +212,8 @@ export function ServiceManagement({
               </Button>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-growth-border">
-              <table className="w-full border-collapse text-left text-sm">
+            <div className="overflow-x-auto rounded-2xl border border-growth-border">
+              <table className="w-full min-w-[760px] border-collapse text-left text-sm">
                 <thead className="bg-growth-mint/50 text-growth-sidebar">
                   <tr>
                     <th className="px-4 py-3 font-semibold">Service</th>
@@ -237,7 +246,7 @@ export function ServiceManagement({
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap justify-end gap-2">
                           <Button
-                            disabled={isReadOnly}
+                            disabled={effectiveReadOnly}
                             size="sm"
                             type="button"
                             variant="outline"
@@ -252,7 +261,11 @@ export function ServiceManagement({
                             size="sm"
                             type="button"
                             variant="outline"
-                            disabled={isReadOnly || statusMutation.isPending}
+                            disabled={
+                              effectiveReadOnly ||
+                              statusMutation.isPending ||
+                              (!service.isActive && summary?.canActivate !== true)
+                            }
                             onClick={() => handleStatus(service)}
                           >
                             {service.isActive ? "Deactivate" : "Activate"}
@@ -261,7 +274,7 @@ export function ServiceManagement({
                             size="sm"
                             type="button"
                             variant="destructive"
-                            disabled={isReadOnly || deleteMutation.isPending}
+                            disabled={effectiveReadOnly || deleteMutation.isPending}
                             onClick={() => handleDelete(service)}
                           >
                             Delete

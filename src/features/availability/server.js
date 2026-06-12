@@ -1,9 +1,12 @@
 import {
   assertBusinessManagement,
-  assertBusinessWriteAccess
+  assertBusinessWriteAccess,
+  isSuperAdmin
 } from "@/features/auth/permissions";
+import { isSubscriptionEntitled } from "@/features/billing/status";
 import { AppError, NotFoundError } from "@/lib/api/errors";
 import { requireCurrentUser } from "@/lib/auth/session";
+import { isValidMongoObjectId } from "@/lib/mongodb";
 import { prisma } from "@/lib/prisma";
 
 export const availabilitySelect = {
@@ -45,23 +48,48 @@ export const unavailableDateSelect = {
   updatedAt: true
 };
 
-export async function requireAvailabilityContext() {
-  const user = await requireCurrentUser();
+export function getRequestedBusinessId(request) {
+  return new URL(request.url).searchParams.get("businessId");
+}
 
-  if (!user.activeBusinessId) {
-    throw new AppError("Business onboarding is required before managing availability.", 409);
+export async function requireAvailabilityContext(requestedBusinessId = null) {
+  const user = await requireCurrentUser();
+  const businessId = requestedBusinessId || user.activeBusinessId;
+
+  if (!businessId) {
+    throw new AppError(
+      "Business onboarding or an explicit business selection is required before managing availability.",
+      409
+    );
   }
 
-  assertBusinessManagement(user, user.activeBusinessId);
+  if (!isValidMongoObjectId(businessId)) {
+    throw new AppError("Choose a valid business.", 422);
+  }
+
+  assertBusinessManagement(user, businessId);
 
   const business = await prisma.business.findUnique({
     where: {
-      id: user.activeBusinessId
+      id: businessId
     },
     select: {
       id: true,
       status: true,
-      timezone: true
+      timezone: true,
+      subscriptions: {
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 1,
+        select: {
+          planCode: true,
+          status: true,
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+          trialEndsAt: true
+        }
+      }
     }
   });
 
@@ -79,9 +107,25 @@ export function assertAvailabilityWriteAccess(user, business) {
   assertBusinessWriteAccess(user, business);
 }
 
+export function assertAvailabilityEntitlement(user, business) {
+  if (
+    !isSuperAdmin(user) &&
+    !isSubscriptionEntitled(business?.subscriptions?.[0])
+  ) {
+    throw new AppError(
+      "An active subscription is required before configuring availability.",
+      402
+    );
+  }
+}
+
 export async function assertServiceBelongsToBusiness(serviceId, businessId) {
   if (!serviceId) {
     return;
+  }
+
+  if (!isValidMongoObjectId(serviceId)) {
+    throw new NotFoundError("Service not found for this business.");
   }
 
   const service = await prisma.service.findFirst({
@@ -97,6 +141,42 @@ export async function assertServiceBelongsToBusiness(serviceId, businessId) {
   if (!service) {
     throw new NotFoundError("Service not found for this business.");
   }
+}
+
+export async function findTenantAvailability({
+  businessId,
+  availabilityId,
+  select = availabilitySelect
+}) {
+  if (!isValidMongoObjectId(availabilityId)) {
+    return null;
+  }
+
+  return prisma.availability.findFirst({
+    where: {
+      id: availabilityId,
+      businessId
+    },
+    select
+  });
+}
+
+export async function findTenantUnavailableDate({
+  businessId,
+  unavailableDateId,
+  select = unavailableDateSelect
+}) {
+  if (!isValidMongoObjectId(unavailableDateId)) {
+    return null;
+  }
+
+  return prisma.unavailableDate.findFirst({
+    where: {
+      id: unavailableDateId,
+      businessId
+    },
+    select
+  });
 }
 
 export function normalizeAvailabilityInput(data) {

@@ -19,12 +19,27 @@ function DocumentLanguageEffect() {
   return null;
 }
 
-export function I18nProvider({ children }) {
+function LanguageSync({ language }) {
+  useEffect(() => {
+    if (
+      i18n.resolvedLanguage !== language &&
+      i18n.language !== language
+    ) {
+      void i18n.changeLanguage(language);
+    }
+  }, [language]);
+
+  return null;
+}
+
+export function I18nProvider({ children, initialLanguage }) {
+  const language = normalizeLanguageCode(initialLanguage);
+
   return (
     <I18nextProvider i18n={i18n}>
+      <LanguageSync language={language} />
       <DocumentLanguageEffect />
       {children}
     </I18nextProvider>
   );
 }
-

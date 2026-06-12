@@ -17,14 +17,14 @@ import { availabilityQueryKeys } from "@/features/availability/query-keys";
 export function useAvailability(businessId) {
   return useQuery({
     queryKey: availabilityQueryKeys.weekly(businessId),
-    queryFn: fetchAvailability
+    queryFn: () => fetchAvailability(businessId)
   });
 }
 
 export function useCreateAvailability(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createAvailability,
+    mutationFn: (values) => createAvailability({ businessId, values }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.weekly(businessId) })
   });
 }
@@ -32,7 +32,8 @@ export function useCreateAvailability(businessId) {
 export function useUpdateAvailability(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ availabilityId, values }) => updateAvailability(availabilityId, values),
+    mutationFn: ({ availabilityId, values }) =>
+      updateAvailability({ businessId, availabilityId, values }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.weekly(businessId) })
   });
 }
@@ -40,7 +41,8 @@ export function useUpdateAvailability(businessId) {
 export function useDeleteAvailability(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteAvailability,
+    mutationFn: (availabilityId) =>
+      deleteAvailability({ businessId, availabilityId }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.weekly(businessId) })
   });
 }
@@ -48,7 +50,8 @@ export function useDeleteAvailability(businessId) {
 export function useUpdateAvailabilityStatus(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ availabilityId, isActive }) => updateAvailabilityStatus(availabilityId, isActive),
+    mutationFn: ({ availabilityId, isActive }) =>
+      updateAvailabilityStatus({ businessId, availabilityId, isActive }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.weekly(businessId) })
   });
 }
@@ -56,14 +59,14 @@ export function useUpdateAvailabilityStatus(businessId) {
 export function useUnavailableDates(businessId) {
   return useQuery({
     queryKey: availabilityQueryKeys.unavailableDates(businessId),
-    queryFn: fetchUnavailableDates
+    queryFn: () => fetchUnavailableDates(businessId)
   });
 }
 
 export function useCreateUnavailableDate(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createUnavailableDate,
+    mutationFn: (values) => createUnavailableDate({ businessId, values }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.unavailableDates(businessId) })
   });
 }
@@ -71,7 +74,8 @@ export function useCreateUnavailableDate(businessId) {
 export function useUpdateUnavailableDate(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ unavailableDateId, values }) => updateUnavailableDate(unavailableDateId, values),
+    mutationFn: ({ unavailableDateId, values }) =>
+      updateUnavailableDate({ businessId, unavailableDateId, values }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.unavailableDates(businessId) })
   });
 }
@@ -79,7 +83,8 @@ export function useUpdateUnavailableDate(businessId) {
 export function useDeleteUnavailableDate(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: deleteUnavailableDate,
+    mutationFn: (unavailableDateId) =>
+      deleteUnavailableDate({ businessId, unavailableDateId }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: availabilityQueryKeys.unavailableDates(businessId) })
   });
 }

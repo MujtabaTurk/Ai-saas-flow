@@ -1,7 +1,11 @@
 import { getBusinessForBooking } from "@/features/bookings/server";
+import { getBookingCreationAccess } from "@/features/bookings/access";
+import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { getAvailableSlotsForBusiness } from "@/features/bookings/slot-service";
+import { isValidDateValue } from "@/features/availability/time";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
+import { isValidMongoObjectId } from "@/lib/mongodb";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -13,18 +17,22 @@ export async function GET(request, { params }) {
     const serviceId = searchParams.get("serviceId");
     const dateValue = searchParams.get("date");
 
-    if (!serviceId || !dateValue || !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+    if (!isValidMongoObjectId(serviceId) || !isValidDateValue(dateValue)) {
       return fail("Service and a valid date are required.", 422);
     }
 
     const business = await getBusinessForBooking({
       slug: businessSlug
     });
+    const access = await getBookingCreationAccess({ business });
+    const settings = getBookingSettings(business.settings);
 
-    if (business.status !== "ACTIVE") {
+    if (!access.canCreate || !settings.allowGuestBookings) {
       return ok({
         date: dateValue,
         timezone: business.timezone,
+        acceptingBookings: false,
+        blockedReason: access.createBlockedReason || "GUEST_BOOKING_DISABLED",
         slots: []
       });
     }
@@ -57,6 +65,8 @@ export async function GET(request, { params }) {
     return ok({
       date: dateValue,
       timezone: business.timezone,
+      acceptingBookings: true,
+      blockedReason: null,
       slots: slots.map(({ startsAt, endsAt, timezone }) => ({
         startsAt,
         endsAt,
@@ -67,4 +77,3 @@ export async function GET(request, { params }) {
     return handleApiError(error);
   }
 }
-

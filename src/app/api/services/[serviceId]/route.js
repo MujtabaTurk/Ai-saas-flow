@@ -1,56 +1,33 @@
-import {
-  assertBusinessManagement,
-  assertBusinessWriteAccess
-} from "@/features/auth/permissions";
 import { normalizeServiceInput } from "@/features/services/service-normalizer";
 import { serviceSelect } from "@/features/services/service-response";
-import { serviceFormSchema } from "@/features/services/validation/service-schema";
+import {
+  assertServiceWriteAccess,
+  findTenantService,
+  getRequestedBusinessId,
+  requireServiceBusiness
+} from "@/features/services/server";
+import { serviceApiSchema } from "@/features/services/validation/service-schema";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { validateRequest } from "@/lib/api/validate-request";
-import { getCurrentSession } from "@/lib/auth/session";
+import { requireCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-async function getOwnedService(serviceId, user, requireWriteAccess = false) {
-  const service = await prisma.service.findUnique({
-    where: { id: serviceId },
-    select: {
-      ...serviceSelect,
-      business: {
-        select: {
-          id: true,
-          status: true
-        }
-      }
-    }
-  });
-
-  if (!service) {
-    return null;
-  }
-
-  assertBusinessManagement(user, service.businessId);
-
-  if (requireWriteAccess) {
-    assertBusinessWriteAccess(user, service.business);
-  }
-
-  const { business: _business, ...ownedService } = service;
-  return ownedService;
-}
-
-export async function GET(_request, { params }) {
+export async function GET(request, { params }) {
   try {
-    const session = await getCurrentSession();
-
-    if (!session?.user?.id) {
-      return fail("Authentication is required.", 401);
-    }
-
+    const user = await requireCurrentUser();
+    const business = await requireServiceBusiness(
+      user,
+      getRequestedBusinessId(request)
+    );
     const { serviceId } = await params;
-    const service = await getOwnedService(serviceId, session.user);
+    const service = await findTenantService({
+      businessId: business.id,
+      serviceId,
+      select: serviceSelect
+    });
 
     if (!service) {
       return fail("Service not found.", 404);
@@ -64,21 +41,25 @@ export async function GET(_request, { params }) {
 
 export async function PATCH(request, { params }) {
   try {
-    const session = await getCurrentSession();
-
-    if (!session?.user?.id) {
-      return fail("Authentication is required.", 401);
-    }
-
+    const user = await requireCurrentUser();
+    const business = await requireServiceBusiness(
+      user,
+      getRequestedBusinessId(request)
+    );
+    assertServiceWriteAccess(user, business);
     const { serviceId } = await params;
-    const currentService = await getOwnedService(serviceId, session.user, true);
+    const currentService = await findTenantService({
+      businessId: business.id,
+      serviceId,
+      select: serviceSelect
+    });
 
     if (!currentService) {
       return fail("Service not found.", 404);
     }
 
     const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(serviceFormSchema, payload || {});
+    const { data, errors } = await validateRequest(serviceApiSchema, payload || {});
 
     if (errors) {
       return fail("Please check the service form.", 422, errors);
@@ -104,9 +85,21 @@ export async function PATCH(request, { params }) {
       });
     }
 
-    const service = await prisma.service.update({
-      where: { id: serviceId },
-      data: normalized,
+    const result = await prisma.service.updateMany({
+      where: {
+        id: serviceId,
+        businessId: business.id
+      },
+      data: normalized
+    });
+
+    if (result.count === 0) {
+      return fail("Service not found.", 404);
+    }
+
+    const service = await findTenantService({
+      businessId: business.id,
+      serviceId,
       select: serviceSelect
     });
 
@@ -115,20 +108,32 @@ export async function PATCH(request, { params }) {
       message: "Service updated successfully."
     });
   } catch (error) {
+    if (error?.code === "P2002") {
+      return fail("A service with this slug already exists.", 409, {
+        slug: "A service with this slug already exists."
+      });
+    }
+
     return handleApiError(error);
   }
 }
 
-export async function DELETE(_request, { params }) {
+export async function DELETE(request, { params }) {
   try {
-    const session = await getCurrentSession();
-
-    if (!session?.user?.id) {
-      return fail("Authentication is required.", 401);
-    }
-
+    const user = await requireCurrentUser();
+    const business = await requireServiceBusiness(
+      user,
+      getRequestedBusinessId(request)
+    );
+    assertServiceWriteAccess(user, business);
     const { serviceId } = await params;
-    const currentService = await getOwnedService(serviceId, session.user, true);
+    const currentService = await findTenantService({
+      businessId: business.id,
+      serviceId,
+      select: {
+        id: true
+      }
+    });
 
     if (!currentService) {
       return fail("Service not found.", 404);
@@ -137,17 +142,20 @@ export async function DELETE(_request, { params }) {
     const [bookingCount, availabilityCount, unavailableDateCount] = await Promise.all([
       prisma.booking.count({
         where: {
-          serviceId
+          serviceId,
+          businessId: business.id
         }
       }),
       prisma.availability.count({
         where: {
-          serviceId
+          serviceId,
+          businessId: business.id
         }
       }),
       prisma.unavailableDate.count({
         where: {
-          serviceId
+          serviceId,
+          businessId: business.id
         }
       })
     ]);
@@ -163,9 +171,16 @@ export async function DELETE(_request, { params }) {
       );
     }
 
-    await prisma.service.delete({
-      where: { id: serviceId }
+    const result = await prisma.service.deleteMany({
+      where: {
+        id: serviceId,
+        businessId: business.id
+      }
     });
+
+    if (result.count === 0) {
+      return fail("Service not found.", 404);
+    }
 
     return ok({
       serviceId,

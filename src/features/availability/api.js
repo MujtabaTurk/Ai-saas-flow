@@ -10,13 +10,22 @@ async function parseResponse(response, fallbackMessage) {
   return payload.data;
 }
 
-export async function fetchAvailability() {
-  const response = await fetch("/api/availability");
+function withBusinessId(path, businessId) {
+  if (!businessId) {
+    return path;
+  }
+
+  const separator = path.includes("?") ? "&" : "?";
+  return `${path}${separator}businessId=${encodeURIComponent(businessId)}`;
+}
+
+export async function fetchAvailability(businessId) {
+  const response = await fetch(withBusinessId("/api/availability", businessId));
   return parseResponse(response, "Could not load weekly availability.");
 }
 
-export async function createAvailability(values) {
-  const response = await fetch("/api/availability", {
+export async function createAvailability({ businessId, values }) {
+  const response = await fetch(withBusinessId("/api/availability", businessId), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(values)
@@ -25,64 +34,91 @@ export async function createAvailability(values) {
   return parseResponse(response, "Could not create working hours.");
 }
 
-export async function updateAvailability(availabilityId, values) {
-  const response = await fetch(`/api/availability/${availabilityId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values)
-  });
+export async function updateAvailability({ businessId, availabilityId, values }) {
+  const response = await fetch(
+    withBusinessId(`/api/availability/${availabilityId}`, businessId),
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values)
+    }
+  );
 
   return parseResponse(response, "Could not update working hours.");
 }
 
-export async function deleteAvailability(availabilityId) {
-  const response = await fetch(`/api/availability/${availabilityId}`, {
-    method: "DELETE"
-  });
+export async function deleteAvailability({ businessId, availabilityId }) {
+  const response = await fetch(
+    withBusinessId(`/api/availability/${availabilityId}`, businessId),
+    {
+      method: "DELETE"
+    }
+  );
 
   return parseResponse(response, "Could not delete working hours.");
 }
 
-export async function updateAvailabilityStatus(availabilityId, isActive) {
-  const response = await fetch(`/api/availability/${availabilityId}/status`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ isActive })
-  });
+export async function updateAvailabilityStatus({
+  businessId,
+  availabilityId,
+  isActive
+}) {
+  const response = await fetch(
+    withBusinessId(`/api/availability/${availabilityId}/status`, businessId),
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ isActive })
+    }
+  );
 
   return parseResponse(response, "Could not update availability status.");
 }
 
-export async function fetchUnavailableDates() {
-  const response = await fetch("/api/unavailable-dates");
+export async function fetchUnavailableDates(businessId) {
+  const response = await fetch(
+    withBusinessId("/api/unavailable-dates", businessId)
+  );
   return parseResponse(response, "Could not load unavailable dates.");
 }
 
-export async function createUnavailableDate(values) {
-  const response = await fetch("/api/unavailable-dates", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values)
-  });
+export async function createUnavailableDate({ businessId, values }) {
+  const response = await fetch(
+    withBusinessId("/api/unavailable-dates", businessId),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values)
+    }
+  );
 
   return parseResponse(response, "Could not create unavailable date.");
 }
 
-export async function updateUnavailableDate(unavailableDateId, values) {
-  const response = await fetch(`/api/unavailable-dates/${unavailableDateId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(values)
-  });
+export async function updateUnavailableDate({
+  businessId,
+  unavailableDateId,
+  values
+}) {
+  const response = await fetch(
+    withBusinessId(`/api/unavailable-dates/${unavailableDateId}`, businessId),
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(values)
+    }
+  );
 
   return parseResponse(response, "Could not update unavailable date.");
 }
 
-export async function deleteUnavailableDate(unavailableDateId) {
-  const response = await fetch(`/api/unavailable-dates/${unavailableDateId}`, {
-    method: "DELETE"
-  });
+export async function deleteUnavailableDate({ businessId, unavailableDateId }) {
+  const response = await fetch(
+    withBusinessId(`/api/unavailable-dates/${unavailableDateId}`, businessId),
+    {
+      method: "DELETE"
+    }
+  );
 
   return parseResponse(response, "Could not delete unavailable date.");
 }
-

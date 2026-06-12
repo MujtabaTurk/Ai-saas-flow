@@ -1,7 +1,9 @@
 import * as Yup from "yup";
 
 export const bookingRequestSchema = Yup.object({
-  serviceId: Yup.string().required("Service is required."),
+  serviceId: Yup.string()
+    .matches(/^[a-f\d]{24}$/i, "Choose a valid service.")
+    .required("Service is required."),
   startsAt: Yup.string().datetime("Choose a valid booking time.").required("Booking time is required."),
   customerName: Yup.string()
     .trim()
@@ -32,6 +34,14 @@ export const bookingStatusSchema = Yup.object({
     .nullable()
     .default(null),
   internalNotes: Yup.string().trim().max(1000, "Internal notes must be 1000 characters or fewer.").nullable()
+});
+
+export const bookingNotesSchema = Yup.object({
+  internalNotes: Yup.string()
+    .trim()
+    .max(1000, "Internal notes must be 1000 characters or fewer.")
+    .nullable()
+    .default(null)
 });
 
 export const customerCancellationSchema = Yup.object({

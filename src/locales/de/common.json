@@ -6,6 +6,12 @@
     "label": "Sprache"
   },
   "navigation": {
+    "analytics": "Analysen",
+    "team": "Team",
+    "reviews": "Bewertungen",
+    "aiAssistant": "KI-Assistent",
+    "activity": "Aktivität",
+    "notifications": "Benachrichtigungen",
     "dashboard": "Dashboard",
     "services": "Services",
     "bookings": "Buchungen",
@@ -22,7 +28,8 @@
   "actions": {
     "startBuilding": "Loslegen",
     "viewArchitecture": "Architektur ansehen",
-    "goHome": "Zur Startseite"
+    "goHome": "Zur Startseite",
+    "signOut": "Abmelden"
   },
   "status": {
     "active": "Aktiv",

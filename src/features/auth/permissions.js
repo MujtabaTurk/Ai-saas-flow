@@ -90,6 +90,7 @@ export function getAuthorizationSummary(user) {
     canAccessDashboard: canAccessDashboard(user),
     needsBusinessOnboarding: needsBusinessOnboarding(user),
     activeBusinessId: user?.activeBusinessId || null,
+    activeBusinessMembershipId: user?.activeBusinessMembershipId || null,
     activeBusinessStatus: user?.activeBusinessStatus || null,
     businessRole: user?.businessRole || null,
     customerId: user?.customerId || null,

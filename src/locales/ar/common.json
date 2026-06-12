@@ -6,6 +6,12 @@
     "label": "اللغة"
   },
   "navigation": {
+    "analytics": "التحليلات",
+    "team": "Team",
+    "reviews": "التقييمات",
+    "aiAssistant": "مساعد الذكاء الاصطناعي",
+    "activity": "النشاط",
+    "notifications": "الإشعارات",
     "dashboard": "لوحة التحكم",
     "services": "الخدمات",
     "bookings": "الحجوزات",
@@ -22,7 +28,8 @@
   "actions": {
     "startBuilding": "ابدأ البناء",
     "viewArchitecture": "عرض البنية",
-    "goHome": "العودة للرئيسية"
+    "goHome": "العودة للرئيسية",
+    "signOut": "تسجيل الخروج"
   },
   "status": {
     "active": "نشط",

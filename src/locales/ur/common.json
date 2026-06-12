@@ -6,6 +6,12 @@
     "label": "زبان"
   },
   "navigation": {
+    "analytics": "تجزیات",
+    "team": "Team",
+    "reviews": "جائزے",
+    "aiAssistant": "اے آئی اسسٹنٹ",
+    "activity": "سرگرمی",
+    "notifications": "اطلاعات",
     "dashboard": "ڈیش بورڈ",
     "services": "سروسز",
     "bookings": "بکنگز",
@@ -22,7 +28,8 @@
   "actions": {
     "startBuilding": "شروع کریں",
     "viewArchitecture": "آرکیٹیکچر دیکھیں",
-    "goHome": "ہوم پر جائیں"
+    "goHome": "ہوم پر جائیں",
+    "signOut": "سائن آؤٹ"
   },
   "status": {
     "active": "فعال",

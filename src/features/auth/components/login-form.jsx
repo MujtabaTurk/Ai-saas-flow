@@ -4,6 +4,7 @@ import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,9 +12,15 @@ import { loginSchema } from "@/features/auth/validation/login-schema";
 import { FieldError } from "./field-error";
 
 export function LoginForm({ googleEnabled = false }) {
+  const { t } = useTranslation("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const requestedCallbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl =
+    requestedCallbackUrl?.startsWith("/") &&
+    !requestedCallbackUrl.startsWith("//")
+      ? requestedCallbackUrl
+      : "/dashboard";
 
   const formik = useFormik({
     initialValues: {
@@ -32,7 +39,7 @@ export function LoginForm({ googleEnabled = false }) {
       });
 
       if (result?.error) {
-        helpers.setStatus("Invalid email or password.");
+        helpers.setStatus(t("login.invalid"));
         return;
       }
 
@@ -50,7 +57,7 @@ export function LoginForm({ googleEnabled = false }) {
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("login.email")}</Label>
         <Input
           id="email"
           name="email"
@@ -65,9 +72,9 @@ export function LoginForm({ googleEnabled = false }) {
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("login.password")}</Label>
           <Link className="text-sm font-medium text-primary hover:underline" href="/forgot-password">
-            Forgot?
+            {t("login.forgot")}
           </Link>
         </div>
         <Input
@@ -83,7 +90,7 @@ export function LoginForm({ googleEnabled = false }) {
       </div>
 
       <Button className="w-full" disabled={formik.isSubmitting} type="submit">
-        {formik.isSubmitting ? "Signing in..." : "Sign in"}
+        {formik.isSubmitting ? t("login.submitting") : t("login.submit")}
       </Button>
 
       {googleEnabled ? (
@@ -93,7 +100,7 @@ export function LoginForm({ googleEnabled = false }) {
           variant="outline"
           onClick={() => signIn("google", { callbackUrl })}
         >
-          Continue with Google
+          {t("login.google")}
         </Button>
       ) : null}
     </form>

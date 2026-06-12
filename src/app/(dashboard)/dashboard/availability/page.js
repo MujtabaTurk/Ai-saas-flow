@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { isSuperAdmin } from "@/features/auth/permissions";
 import { AvailabilityManagement } from "@/features/availability/components/availability-management";
 import { getCurrentSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -49,7 +50,9 @@ export default async function AvailabilityPage() {
         <AvailabilityManagement
           businessId={business.id}
           timezone={business.timezone}
-          isReadOnly={business.status !== "ACTIVE"}
+          isReadOnly={
+            business.status !== "ACTIVE" && !isSuperAdmin(session.user)
+          }
         />
       </div>
     </AppShell>

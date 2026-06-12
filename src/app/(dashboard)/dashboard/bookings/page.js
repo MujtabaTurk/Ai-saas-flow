@@ -52,6 +52,7 @@ export default async function BookingsPage() {
           businessId={business.id}
           timezone={business.timezone}
           isReadOnly={business.status !== "ACTIVE"}
+          businessRole={session.user.businessRole}
         />
       </div>
     </AppShell>

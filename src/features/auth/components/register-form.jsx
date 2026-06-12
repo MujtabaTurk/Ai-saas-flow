@@ -1,8 +1,9 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +11,15 @@ import { registerSchema } from "@/features/auth/validation/register-schema";
 import { FieldError } from "./field-error";
 
 export function RegisterForm() {
+  const { t } = useTranslation("auth");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedCallbackUrl = searchParams.get("callbackUrl");
+  const callbackUrl =
+    requestedCallbackUrl?.startsWith("/") &&
+    !requestedCallbackUrl.startsWith("//")
+      ? requestedCallbackUrl
+      : "/onboarding";
   const formik = useFormik({
     initialValues: {
       name: "",
@@ -32,7 +41,7 @@ export function RegisterForm() {
       const payload = await response.json();
 
       if (!response.ok) {
-        helpers.setStatus(payload?.error?.message || "Could not create your account.");
+        helpers.setStatus(payload?.error?.message || t("register.error"));
         helpers.setErrors(payload?.error?.details || {});
         return;
       }
@@ -41,10 +50,10 @@ export function RegisterForm() {
         email: values.email,
         password: values.password,
         redirect: false,
-        callbackUrl: "/onboarding"
+        callbackUrl
       });
 
-      router.push(result?.url || "/onboarding");
+      router.push(result?.url || callbackUrl);
       router.refresh();
     }
   });
@@ -58,7 +67,7 @@ export function RegisterForm() {
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="name">Name</Label>
+        <Label htmlFor="name">{t("register.name")}</Label>
         <Input
           id="name"
           name="name"
@@ -71,7 +80,7 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("register.email")}</Label>
         <Input
           id="email"
           name="email"
@@ -85,7 +94,7 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("register.password")}</Label>
         <Input
           id="password"
           name="password"
@@ -99,7 +108,9 @@ export function RegisterForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="confirmPassword">Confirm password</Label>
+        <Label htmlFor="confirmPassword">
+          {t("register.confirmPassword")}
+        </Label>
         <Input
           id="confirmPassword"
           name="confirmPassword"
@@ -113,9 +124,10 @@ export function RegisterForm() {
       </div>
 
       <Button className="w-full" disabled={formik.isSubmitting} type="submit">
-        {formik.isSubmitting ? "Creating account..." : "Create account"}
+        {formik.isSubmitting
+          ? t("register.submitting")
+          : t("register.submit")}
       </Button>
     </form>
   );
 }
-

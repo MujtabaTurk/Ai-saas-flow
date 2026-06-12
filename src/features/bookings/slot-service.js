@@ -1,4 +1,5 @@
 import { addDaysToDateValue, formatDateTimeInTimezone, zonedDateTimeToUtc } from "@/features/availability/time";
+import { isSubscriptionEntitled } from "@/features/billing/status";
 import { generateAvailableSlots, getDayOfWeek } from "@/features/availability/slots";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { prisma } from "@/lib/prisma";
@@ -11,7 +12,11 @@ export async function getAvailableSlotsForBusiness({
 }) {
   const settings = getBookingSettings(business.settings);
 
-  if (business.status !== "ACTIVE" || !service.isActive) {
+  if (
+    business.status !== "ACTIVE" ||
+    !service.isActive ||
+    !isSubscriptionEntitled(business.subscriptions?.[0], now)
+  ) {
     return [];
   }
 

@@ -35,10 +35,52 @@ export async function resolveSessionContext(userId) {
     return {
       platformRole,
       activeBusinessId: business.id,
+      activeBusinessMembershipId: null,
       activeBusinessSlug: business.slug,
       activeBusinessName: business.name,
       activeBusinessStatus: business.status,
       businessRole: "OWNER",
+      customerId: null,
+      customerBusinessId: null
+    };
+  }
+
+  const membership = await prisma.businessMembership.findFirst({
+    where: {
+      userId,
+      isActive: true,
+      business: {
+        status: {
+          not: "ARCHIVED"
+        }
+      }
+    },
+    orderBy: {
+      joinedAt: "asc"
+    },
+    select: {
+      id: true,
+      role: true,
+      business: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true
+        }
+      }
+    }
+  });
+
+  if (membership) {
+    return {
+      platformRole,
+      activeBusinessId: membership.business.id,
+      activeBusinessMembershipId: membership.id,
+      activeBusinessSlug: membership.business.slug,
+      activeBusinessName: membership.business.name,
+      activeBusinessStatus: membership.business.status,
+      businessRole: membership.role,
       customerId: null,
       customerBusinessId: null
     };
@@ -60,6 +102,7 @@ export async function resolveSessionContext(userId) {
   return {
     platformRole,
     activeBusinessId: null,
+    activeBusinessMembershipId: null,
     activeBusinessSlug: null,
     activeBusinessName: null,
     activeBusinessStatus: null,

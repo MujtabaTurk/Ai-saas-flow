@@ -6,11 +6,17 @@
     "label": "Idioma"
   },
   "navigation": {
+    "analytics": "Analítica",
+    "activity": "Actividad",
+    "notifications": "Notificaciones",
     "dashboard": "Panel",
     "services": "Servicios",
     "bookings": "Reservas",
     "customers": "Clientes",
+    "reviews": "Reseñas",
+    "aiAssistant": "Asistente de IA",
     "availability": "Disponibilidad",
+    "team": "Equipo",
     "billing": "Facturación",
     "settings": "Configuración",
     "overview": "Resumen",
@@ -22,7 +28,8 @@
   "actions": {
     "startBuilding": "Empezar",
     "viewArchitecture": "Ver arquitectura",
-    "goHome": "Ir al inicio"
+    "goHome": "Ir al inicio",
+    "signOut": "Cerrar sesión"
   },
   "status": {
     "active": "Activo",

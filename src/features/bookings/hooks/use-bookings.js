@@ -3,12 +3,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   cancelPublicBooking,
+  createDashboardBooking,
   createPublicBooking,
   fetchBookingSettings,
   fetchBookings,
+  fetchDashboardSlots,
   fetchPublicBooking,
   fetchPublicSlots,
   updateBookingSettings,
+  updateBookingAssignment,
+  updateBookingNotes,
   updateBookingStatus
 } from "@/features/bookings/api";
 import { bookingQueryKeys } from "@/features/bookings/query-keys";
@@ -16,36 +20,111 @@ import { bookingQueryKeys } from "@/features/bookings/query-keys";
 export function useBookings(businessId, filters) {
   return useQuery({
     queryKey: bookingQueryKeys.list(businessId, filters),
-    queryFn: () => fetchBookings(filters)
+    queryFn: () => fetchBookings(businessId, filters)
   });
 }
 
-export function useUpdateBookingStatus(businessId, filters) {
+export function useCreateDashboardBooking(businessId) {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ bookingId, values }) => updateBookingStatus(bookingId, values),
+    mutationFn: (values) =>
+      createDashboardBooking({
+        businessId,
+        values
+      }),
     onSuccess: () =>
       queryClient.invalidateQueries({
-        queryKey: bookingQueryKeys.list(businessId, filters)
+        queryKey: bookingQueryKeys.listRoot(businessId)
       })
+  });
+}
+
+export function useUpdateBookingStatus(businessId) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, values }) =>
+      updateBookingStatus({
+        businessId,
+        bookingId,
+        values
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: bookingQueryKeys.listRoot(businessId)
+      })
+  });
+}
+
+export function useUpdateBookingNotes(businessId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ bookingId, internalNotes }) =>
+      updateBookingNotes({
+        businessId,
+        bookingId,
+        internalNotes
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: bookingQueryKeys.listRoot(businessId)
+      })
+  });
+}
+
+export function useUpdateBookingAssignment(businessId) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ bookingId, membershipId }) =>
+      updateBookingAssignment({
+        businessId,
+        bookingId,
+        membershipId
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: bookingQueryKeys.listRoot(businessId)
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["team", businessId || "current"]
+      });
+    }
   });
 }
 
 export function useBookingSettings(businessId) {
   return useQuery({
     queryKey: bookingQueryKeys.settings(businessId),
-    queryFn: fetchBookingSettings
+    queryFn: () => fetchBookingSettings(businessId)
   });
 }
 
 export function useUpdateBookingSettings(businessId) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: updateBookingSettings,
+    mutationFn: (values) =>
+      updateBookingSettings({
+        businessId,
+        values
+      }),
     onSuccess: () =>
       queryClient.invalidateQueries({
         queryKey: bookingQueryKeys.settings(businessId)
       })
+  });
+}
+
+export function useDashboardSlots(businessId, serviceId, date) {
+  return useQuery({
+    queryKey: bookingQueryKeys.dashboardSlots(
+      businessId,
+      serviceId,
+      date
+    ),
+    queryFn: () => fetchDashboardSlots(businessId, serviceId, date),
+    enabled: Boolean(businessId && serviceId && date)
   });
 }
 
@@ -85,4 +164,3 @@ export function useCancelPublicBooking(businessSlug, bookingNumber, token) {
       })
   });
 }
-

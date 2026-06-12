@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { forgotPasswordSchema } from "@/features/auth/validation/forgot-password
 import { FieldError } from "./field-error";
 
 export function ForgotPasswordForm() {
+  const { t } = useTranslation("auth");
   const formik = useFormik({
     initialValues: {
       email: ""
@@ -29,7 +31,7 @@ export function ForgotPasswordForm() {
       if (!response.ok) {
         helpers.setStatus({
           type: "error",
-          message: payload?.error?.message || "Could not prepare a reset link."
+          message: payload?.error?.message || t("forgotPassword.error")
         });
         helpers.setErrors(payload?.error?.details || {});
         return;
@@ -56,14 +58,14 @@ export function ForgotPasswordForm() {
           <p>{formik.status.message}</p>
           {formik.status.devResetUrl ? (
             <Link className="mt-2 block font-semibold text-primary hover:underline" href={formik.status.devResetUrl}>
-              Open development reset link
+              {t("forgotPassword.devLink")}
             </Link>
           ) : null}
         </div>
       ) : null}
 
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("forgotPassword.email")}</Label>
         <Input
           id="email"
           name="email"
@@ -77,9 +79,10 @@ export function ForgotPasswordForm() {
       </div>
 
       <Button className="w-full" disabled={formik.isSubmitting} type="submit">
-        {formik.isSubmitting ? "Preparing link..." : "Send reset link"}
+        {formik.isSubmitting
+          ? t("forgotPassword.preparing")
+          : t("forgotPassword.submit")}
       </Button>
     </form>
   );
 }
-

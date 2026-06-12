@@ -1,13 +1,16 @@
 import { availabilitySchema } from "@/features/availability/validation/availability-schema";
 import {
   availabilityOrder,
+  buildAvailabilityAccess,
   buildAvailabilitySummary
 } from "@/features/availability/availability-response";
 import {
+  assertAvailabilityEntitlement,
   assertNoAvailabilityOverlap,
   assertAvailabilityWriteAccess,
   assertServiceBelongsToBusiness,
   availabilitySelect,
+  getRequestedBusinessId,
   normalizeAvailabilityInput,
   requireAvailabilityContext
 } from "@/features/availability/server";
@@ -18,9 +21,11 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { business } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     const availability = await prisma.availability.findMany({
       where: {
         businessId: business.id
@@ -35,6 +40,7 @@ export async function GET() {
         availability,
         timezone: business.timezone
       }),
+      access: buildAvailabilityAccess(business, user),
       timezone: business.timezone
     });
   } catch (error) {
@@ -44,8 +50,11 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
+    assertAvailabilityEntitlement(user, business);
     const payload = await request.json().catch(() => null);
     const { data, errors } = await validateRequest(availabilitySchema, payload || {});
 

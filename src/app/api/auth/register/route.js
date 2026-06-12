@@ -34,7 +34,8 @@ export async function POST(request) {
       data: {
         name: data.name.trim(),
         email,
-        passwordHash
+        passwordHash,
+        platformRole: "USER"
       },
       select: {
         id: true,

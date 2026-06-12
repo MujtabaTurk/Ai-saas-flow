@@ -2,6 +2,7 @@ import { appConfig } from "@/config/app";
 import { forgotPasswordSchema } from "@/features/auth/validation/forgot-password-schema";
 import { createPasswordResetToken } from "@/features/auth/password";
 import { normalizeEmail } from "@/features/auth/normalize-email";
+import { sendTransactionalEmail } from "@/features/notifications/email-provider";
 import { ok, fail } from "@/lib/api/api-response";
 import { validateRequest } from "@/lib/api/validate-request";
 import { prisma } from "@/lib/prisma";
@@ -41,10 +42,25 @@ export async function POST(request) {
     }
   });
 
+  const resetUrl = `${appConfig.url.replace(/\/+$/, "")}/reset-password?token=${encodeURIComponent(token)}`;
+
+  try {
+    await sendTransactionalEmail({
+      to: email,
+      subject: "Reset your ServiceFlow password",
+      message:
+        "Use the secure link below to reset your password. This link expires in one hour.",
+      actionUrl: resetUrl,
+      actionLabel: "Reset password",
+      idempotencyKey: `password-reset:${tokenHash}`
+    });
+  } catch (emailError) {
+    console.error("Could not send password-reset email.", emailError);
+  }
+
   if (process.env.NODE_ENV !== "production") {
-    response.devResetUrl = `${appConfig.url}/reset-password?token=${token}`;
+    response.devResetUrl = resetUrl;
   }
 
   return ok(response);
 }
-

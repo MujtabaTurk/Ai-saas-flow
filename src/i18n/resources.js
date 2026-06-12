@@ -5,6 +5,7 @@ import enBookings from "@/locales/en/bookings.json";
 import enCommon from "@/locales/en/common.json";
 import enDashboard from "@/locales/en/dashboard.json";
 import enServices from "@/locales/en/services.json";
+import enPublic from "@/locales/en/public.json";
 import deAdmin from "@/locales/de/admin.json";
 import deAuth from "@/locales/de/auth.json";
 import deBilling from "@/locales/de/billing.json";
@@ -12,6 +13,7 @@ import deBookings from "@/locales/de/bookings.json";
 import deCommon from "@/locales/de/common.json";
 import deDashboard from "@/locales/de/dashboard.json";
 import deServices from "@/locales/de/services.json";
+import dePublic from "@/locales/de/public.json";
 import arAdmin from "@/locales/ar/admin.json";
 import arAuth from "@/locales/ar/auth.json";
 import arBilling from "@/locales/ar/billing.json";
@@ -19,6 +21,7 @@ import arBookings from "@/locales/ar/bookings.json";
 import arCommon from "@/locales/ar/common.json";
 import arDashboard from "@/locales/ar/dashboard.json";
 import arServices from "@/locales/ar/services.json";
+import arPublic from "@/locales/ar/public.json";
 import esAdmin from "@/locales/es/admin.json";
 import esAuth from "@/locales/es/auth.json";
 import esBilling from "@/locales/es/billing.json";
@@ -26,6 +29,7 @@ import esBookings from "@/locales/es/bookings.json";
 import esCommon from "@/locales/es/common.json";
 import esDashboard from "@/locales/es/dashboard.json";
 import esServices from "@/locales/es/services.json";
+import esPublic from "@/locales/es/public.json";
 import urAdmin from "@/locales/ur/admin.json";
 import urAuth from "@/locales/ur/auth.json";
 import urBilling from "@/locales/ur/billing.json";
@@ -33,6 +37,7 @@ import urBookings from "@/locales/ur/bookings.json";
 import urCommon from "@/locales/ur/common.json";
 import urDashboard from "@/locales/ur/dashboard.json";
 import urServices from "@/locales/ur/services.json";
+import urPublic from "@/locales/ur/public.json";
 
 export const resources = {
   en: {
@@ -42,7 +47,8 @@ export const resources = {
     bookings: enBookings,
     common: enCommon,
     dashboard: enDashboard,
-    services: enServices
+    services: enServices,
+    public: enPublic
   },
   de: {
     admin: deAdmin,
@@ -51,7 +57,8 @@ export const resources = {
     bookings: deBookings,
     common: deCommon,
     dashboard: deDashboard,
-    services: deServices
+    services: deServices,
+    public: dePublic
   },
   ar: {
     admin: arAdmin,
@@ -60,7 +67,8 @@ export const resources = {
     bookings: arBookings,
     common: arCommon,
     dashboard: arDashboard,
-    services: arServices
+    services: arServices,
+    public: arPublic
   },
   es: {
     admin: esAdmin,
@@ -69,7 +77,8 @@ export const resources = {
     bookings: esBookings,
     common: esCommon,
     dashboard: esDashboard,
-    services: esServices
+    services: esServices,
+    public: esPublic
   },
   ur: {
     admin: urAdmin,
@@ -78,7 +87,7 @@ export const resources = {
     bookings: urBookings,
     common: urCommon,
     dashboard: urDashboard,
-    services: urServices
+    services: urServices,
+    public: urPublic
   }
 };
-

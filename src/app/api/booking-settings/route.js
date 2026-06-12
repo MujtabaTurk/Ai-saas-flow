@@ -1,33 +1,35 @@
 import {
-  assertBusinessManagement,
   assertBusinessWriteAccess
 } from "@/features/auth/permissions";
+import { buildBookingConfigurationAccess } from "@/features/bookings/access";
 import { DEFAULT_BOOKING_SETTINGS } from "@/features/bookings/constants";
+import {
+  getRequestedBusinessId,
+  requireBookingContext
+} from "@/features/bookings/server";
 import { bookingSettingsSchema } from "@/features/bookings/validation/booking-schema";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { validateRequest } from "@/lib/api/validate-request";
-import { getCurrentSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const session = await getCurrentSession();
-
-    if (!session?.user?.activeBusinessId) {
-      return fail("Business access is required.", 401);
-    }
+    const { business, user } = await requireBookingContext(
+      getRequestedBusinessId(request)
+    );
 
     const settings = await prisma.businessSettings.findUnique({
       where: {
-        businessId: session.user.activeBusinessId
+        businessId: business.id
       }
     });
 
     return ok({
-      settings: settings || DEFAULT_BOOKING_SETTINGS
+      settings: settings || DEFAULT_BOOKING_SETTINGS,
+      access: buildBookingConfigurationAccess(business, user)
     });
   } catch (error) {
     return handleApiError(error);
@@ -36,13 +38,19 @@ export async function GET() {
 
 export async function PATCH(request) {
   try {
-    const session = await getCurrentSession();
+    const { business, user } = await requireBookingContext(
+      getRequestedBusinessId(request)
+    );
+    assertBusinessWriteAccess(user, business);
+    const access = buildBookingConfigurationAccess(business, user);
 
-    if (!session?.user?.activeBusinessId) {
-      return fail("Business access is required.", 401);
+    if (!access.canConfigure) {
+      return fail(
+        "An active subscription is required before updating booking settings.",
+        402
+      );
     }
 
-    assertBusinessManagement(session.user, session.user.activeBusinessId);
     const payload = await request.json().catch(() => null);
     const { data, errors } = await validateRequest(bookingSettingsSchema, payload || {});
 
@@ -50,28 +58,12 @@ export async function PATCH(request) {
       return fail("Please check the booking settings.", 422, errors);
     }
 
-    const business = await prisma.business.findUnique({
-      where: {
-        id: session.user.activeBusinessId
-      },
-      select: {
-        id: true,
-        status: true
-      }
-    });
-
-    if (!business) {
-      return fail("Business not found.", 404);
-    }
-
-    assertBusinessWriteAccess(session.user, business);
-
     const settings = await prisma.businessSettings.upsert({
       where: {
-        businessId: session.user.activeBusinessId
+        businessId: business.id
       },
       create: {
-        businessId: session.user.activeBusinessId,
+        businessId: business.id,
         ...data
       },
       update: data
@@ -79,6 +71,7 @@ export async function PATCH(request) {
 
     return ok({
       settings,
+      access,
       message: "Booking settings updated."
     });
   } catch (error) {

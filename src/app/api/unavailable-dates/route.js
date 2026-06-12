@@ -1,13 +1,16 @@
 import {
+  buildAvailabilityAccess,
   buildUnavailableDateSummary,
   unavailableDateOrder
 } from "@/features/availability/availability-response";
 import { createUnavailablePeriod } from "@/features/availability/unavailable-period";
 import { unavailableDateSchema } from "@/features/availability/validation/availability-schema";
 import {
+  assertAvailabilityEntitlement,
   assertNoUnavailableDateOverlap,
   assertAvailabilityWriteAccess,
   assertServiceBelongsToBusiness,
+  getRequestedBusinessId,
   requireAvailabilityContext,
   unavailableDateSelect
 } from "@/features/availability/server";
@@ -18,9 +21,11 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { business } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     const unavailableDates = await prisma.unavailableDate.findMany({
       where: {
         businessId: business.id
@@ -32,6 +37,7 @@ export async function GET() {
     return ok({
       unavailableDates,
       summary: buildUnavailableDateSummary({ unavailableDates }),
+      access: buildAvailabilityAccess(business, user),
       timezone: business.timezone
     });
   } catch (error) {
@@ -41,8 +47,11 @@ export async function GET() {
 
 export async function POST(request) {
   try {
-    const { business, user } = await requireAvailabilityContext();
+    const { business, user } = await requireAvailabilityContext(
+      getRequestedBusinessId(request)
+    );
     assertAvailabilityWriteAccess(user, business);
+    assertAvailabilityEntitlement(user, business);
     const payload = await request.json().catch(() => null);
     const { data, errors } = await validateRequest(unavailableDateSchema, payload || {});
 

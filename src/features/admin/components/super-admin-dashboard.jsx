@@ -171,13 +171,15 @@ export function SuperAdminDashboard({ metrics }) {
 
       <section className="space-y-4">
         <SectionHeader eyebrow="Users" title="User Metrics">
-          Active users are measured from live sessions. Staff users are shown as zero because a staff membership model is not implemented yet.
+          Active users are measured from live sessions. Team users are counted
+          from active business memberships.
         </SectionHeader>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <MetricCard label="Total Users" value={metrics.users.totalUsers} helper={`${metrics.users.newUsers} new in ${metrics.periodLabel.toLowerCase()}`} />
           <MetricCard label="Business Owners" value={metrics.users.businessOwners} helper="Unique non-archived business owners" />
           <MetricCard label="Customer Profiles" value={metrics.users.customerProfiles} helper={`${metrics.users.linkedCustomerUsers} linked to users`} />
           <MetricCard label="Platform Admins" value={metrics.users.superAdmins + metrics.users.platformAdmins} helper={`${metrics.users.superAdmins} super admins`} />
+          <MetricCard label="Team Users" value={metrics.users.staffUsers} helper="Unique active business members" />
         </div>
       </section>
 
@@ -303,4 +305,3 @@ export function SuperAdminDashboard({ metrics }) {
     </div>
   );
 }
-

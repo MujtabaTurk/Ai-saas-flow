@@ -20,9 +20,8 @@ function SelectField({ children, ...props }) {
   );
 }
 
-function todayValue() {
-  const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+function todayValue(timezone) {
+  return formatDateTimeInTimezone(new Date(), timezone).date;
 }
 
 export function UnavailableDateForm({
@@ -35,7 +34,7 @@ export function UnavailableDateForm({
   const initialValues = useMemo(() => {
     const start = unavailableDate
       ? formatDateTimeInTimezone(unavailableDate.startsAt, timezone)
-      : { date: todayValue(), time: "09:00" };
+      : { date: todayValue(timezone), time: "09:00" };
     const end = unavailableDate
       ? formatDateTimeInTimezone(unavailableDate.endsAt, timezone)
       : { time: "17:00" };
@@ -133,6 +132,7 @@ export function UnavailableDateForm({
                 id="exception-start"
                 name="startTime"
                 type="time"
+                step="300"
                 value={formik.values.startTime}
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -146,6 +146,7 @@ export function UnavailableDateForm({
                 id="exception-end"
                 name="endTime"
                 type="time"
+                step="300"
                 value={formik.values.endTime}
                 onBlur={formik.handleBlur}
                 onChange={formik.handleChange}
@@ -184,4 +185,3 @@ export function UnavailableDateForm({
     </form>
   );
 }
-

@@ -1,5 +1,9 @@
 import { isSubscriptionEntitled } from "@/features/billing/status";
-import { canCreateServiceForPlan, getServiceLimit } from "@/features/services/policy";
+import {
+  canActivateServiceForPlan,
+  canCreateServiceForPlan,
+  getServiceLimit
+} from "@/features/services/policy";
 
 export const serviceSelect = {
   id: true,
@@ -21,13 +25,16 @@ export const serviceSelect = {
 
 export const serviceListOrder = [{ sortOrder: "asc" }, { createdAt: "desc" }];
 
-export function buildServiceSummary({ business, services }) {
+export function buildServiceSummary({ business, services, user = null }) {
   const activeSubscription = business?.subscriptions?.[0] || null;
   const total = services.length;
   const active = services.filter((service) => service.isActive).length;
   const planCode = activeSubscription?.planCode || null;
   const serviceLimit = getServiceLimit(planCode);
   const subscriptionEntitled = isSubscriptionEntitled(activeSubscription);
+  const canManage =
+    user?.platformRole === "SUPER_ADMIN" ||
+    ["OWNER", "ADMIN"].includes(user?.businessRole);
 
   return {
     total,
@@ -39,10 +46,16 @@ export function buildServiceSummary({ business, services }) {
     serviceLimit,
     remainingServices: serviceLimit === null ? null : Math.max(serviceLimit - total, 0),
     canCreate:
+      canManage &&
       business?.status === "ACTIVE" &&
       subscriptionEntitled &&
       canCreateServiceForPlan(planCode, total),
-    isReadOnly: business?.status !== "ACTIVE",
+    canActivate:
+      canManage &&
+      business?.status === "ACTIVE" &&
+      subscriptionEntitled &&
+      canActivateServiceForPlan(planCode, active),
+    isReadOnly: business?.status !== "ACTIVE" || !canManage,
     subscriptionEntitled
   };
 }

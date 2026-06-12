@@ -15,10 +15,13 @@ export const namespaces = [
   "bookings",
   "services",
   "billing",
-  "admin"
+  "admin",
+  "public"
 ];
 
 export const languageStorageKey = "serviceflow_language";
+export const languageCookieName = "serviceflow_language";
+export const languageCookieMaxAge = 60 * 60 * 24 * 365;
 
 export function normalizeLanguageCode(language) {
   const baseLanguage = language?.split("-")[0];
@@ -37,3 +40,10 @@ export function getLanguageDirection(language) {
   );
 }
 
+export function isSupportedLanguage(language) {
+  const normalizedLanguage = language?.split("-")[0];
+
+  return supportedLanguages.some(
+    (item) => item.code === normalizedLanguage
+  );
+}

@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { RegisterForm } from "@/features/auth/components/register-form";
+import {
+  getServerTranslator,
+  resolveRequestLanguage
+} from "@/i18n/server";
 
 export const metadata = {
   title: "Register | ServiceFlow"
 };
 
-export default function RegisterPage() {
+export default async function RegisterPage() {
+  const language = await resolveRequestLanguage();
+  const t = await getServerTranslator(language, "auth");
+
   return (
     <AuthLayout
-      eyebrow="Start fresh"
-      title="Create your account"
-      description="Create an owner account first. Business onboarding comes next."
+      eyebrow={t("register.eyebrow")}
+      title={t("register.title")}
+      description={t("register.description")}
       footer={
         <>
-          Already have an account?{" "}
+          {t("register.alreadyUser")}{" "}
           <Link className="font-semibold text-primary hover:underline" href="/login">
-            Sign in
+            {t("register.signIn")}
           </Link>
         </>
       }
@@ -25,4 +32,3 @@ export default function RegisterPage() {
     </AuthLayout>
   );
 }
-

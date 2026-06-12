@@ -115,6 +115,7 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
             id="startTime"
             name="startTime"
             type="time"
+            step="300"
             value={formik.values.startTime}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -128,6 +129,7 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
             id="endTime"
             name="endTime"
             type="time"
+            step="300"
             value={formik.values.endTime}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -161,6 +163,7 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
             type="number"
             min="0"
             max="240"
+            step="5"
             value={formik.values.bufferBeforeMin}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -176,6 +179,7 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
             type="number"
             min="0"
             max="240"
+            step="5"
             value={formik.values.bufferAfterMin}
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
@@ -195,4 +199,3 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
     </form>
   );
 }
-

@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useFormik } from "formik";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,31 +12,37 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/features/auth/components/field-error";
 import {
+  addDaysToDateValue,
+  formatDateTimeInTimezone
+} from "@/features/availability/time";
+import {
   useCreatePublicBooking,
   usePublicSlots
 } from "@/features/bookings/hooks/use-bookings";
 import { publicBookingFormSchema } from "@/features/bookings/validation/booking-schema";
+import {
+  formatLocalizedDateTime,
+  formatLocalizedMoney
+} from "@/i18n/format";
 
-function todayValue(timezone) {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
-}
+function formatStatus(status, t) {
+  const key =
+    status === "NO_SHOW"
+      ? "noShow"
+      : status.toLowerCase();
 
-function formatPrice(service) {
-  if (service.priceCents === null || service.priceCents === undefined) return "Free";
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: service.currency
-  }).format(service.priceCents / 100);
+  return t(`bookings:statuses.${key}`);
 }
 
 export function PublicBookingForm({ business, services }) {
+  const { t, i18n } = useTranslation(["public", "bookings"]);
+  const language = i18n.resolvedLanguage || i18n.language;
+  const localToday = formatDateTimeInTimezone(
+    new Date(),
+    business.timezone
+  ).date;
   const [serviceId, setServiceId] = useState(services[0]?.id || "");
-  const [date, setDate] = useState(todayValue(business.timezone));
+  const [date, setDate] = useState(localToday);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [confirmation, setConfirmation] = useState(null);
   const idempotencyKeyRef = useRef(null);
@@ -84,21 +91,27 @@ export function PublicBookingForm({ business, services }) {
     return (
       <Card>
         <CardHeader>
-          <Badge variant="success">Booking created</Badge>
+          <Badge variant="success">{t("booking.created")}</Badge>
           <CardTitle>{confirmation.booking.serviceNameSnapshot}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm text-muted-foreground">
           <p>
-            Reference: <strong className="text-growth-sidebar">{confirmation.booking.bookingNumber}</strong>
+            {t("booking.reference")}:{" "}
+            <strong className="text-growth-sidebar">
+              {confirmation.booking.bookingNumber}
+            </strong>
           </p>
-          <p>Status: {confirmation.booking.status}</p>
+          <p>
+            {t("booking.status")}:{" "}
+            {formatStatus(confirmation.booking.status, t)}
+          </p>
           {confirmation.booking.paymentRequiredSnapshot ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-              Payment is required. The booking remains pending until payment is handled.
+              {t("booking.paymentRequired")}
             </div>
           ) : null}
           <Link className="font-semibold text-primary hover:underline" href={manageUrl}>
-            View or cancel this booking
+            {t("booking.manage")}
           </Link>
         </CardContent>
       </Card>
@@ -115,12 +128,12 @@ export function PublicBookingForm({ business, services }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>1. Choose a service</CardTitle>
+          <CardTitle>{t("booking.chooseService")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           {services.map((service) => (
             <button
-              className={`rounded-2xl border p-4 text-left transition ${
+              className={`rounded-2xl border p-4 text-start transition ${
                 serviceId === service.id
                   ? "border-primary bg-growth-mint/30"
                   : "border-growth-border bg-white hover:bg-growth-dashboard"
@@ -137,7 +150,18 @@ export function PublicBookingForm({ business, services }) {
             >
               <p className="font-bold text-growth-sidebar">{service.name}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {service.durationMin} min | {formatPrice(service)}
+                {t("booking.shortMinutes", {
+                  count: service.durationMin
+                })}{" "}
+                |{" "}
+                {service.priceCents === null ||
+                service.priceCents === undefined
+                  ? t("booking.free")
+                  : formatLocalizedMoney(
+                      service.priceCents,
+                      service.currency,
+                      language
+                    )}
               </p>
             </button>
           ))}
@@ -146,14 +170,18 @@ export function PublicBookingForm({ business, services }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>2. Choose date and time</CardTitle>
+          <CardTitle>{t("booking.chooseDateTime")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="booking-date">Date</Label>
+            <Label htmlFor="booking-date">{t("booking.date")}</Label>
             <Input
               id="booking-date"
-              min={todayValue(business.timezone)}
+              min={localToday}
+              max={addDaysToDateValue(
+                localToday,
+                business.bookingWindowDays || 30
+              )}
               type="date"
               value={date}
               onChange={(event) => {
@@ -165,10 +193,16 @@ export function PublicBookingForm({ business, services }) {
             />
           </div>
           {slotsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading available times...</p>
+            <p className="text-sm text-muted-foreground">
+              {t("booking.loadingTimes")}
+            </p>
+          ) : slotsQuery.error ? (
+            <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {slotsQuery.error.message}
+            </p>
           ) : slots.length === 0 ? (
             <p className="rounded-2xl bg-growth-dashboard p-4 text-sm text-muted-foreground">
-              No available times for this date.
+              {t("booking.noTimes")}
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -184,26 +218,34 @@ export function PublicBookingForm({ business, services }) {
                     formik.setFieldValue("startsAt", slot.startsAt);
                   }}
                 >
-                  {new Intl.DateTimeFormat("en", {
-                    timeZone: business.timezone,
+                  {formatLocalizedDateTime(
+                    slot.startsAt,
+                    business.timezone,
+                    language,
+                    {
                     hour: "numeric",
                     minute: "2-digit"
-                  }).format(new Date(slot.startsAt))}
+                    }
+                  )}
                 </Button>
               ))}
             </div>
           )}
-          <FieldError>{formik.submitCount > 0 && !selectedSlot ? "Choose an available time." : null}</FieldError>
+          <FieldError>
+            {formik.submitCount > 0 && !selectedSlot
+              ? t("booking.chooseTime")
+              : null}
+          </FieldError>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle>3. Your details</CardTitle>
+          <CardTitle>{t("booking.yourDetails")}</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="customerName">Name</Label>
+            <Label htmlFor="customerName">{t("booking.name")}</Label>
             <Input
               id="customerName"
               name="customerName"
@@ -214,7 +256,7 @@ export function PublicBookingForm({ business, services }) {
             <FieldError>{formik.touched.customerName && formik.errors.customerName}</FieldError>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="customerEmail">Email</Label>
+            <Label htmlFor="customerEmail">{t("booking.email")}</Label>
             <Input
               id="customerEmail"
               name="customerEmail"
@@ -226,7 +268,7 @@ export function PublicBookingForm({ business, services }) {
             <FieldError>{formik.touched.customerEmail && formik.errors.customerEmail}</FieldError>
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="customerPhone">Phone</Label>
+            <Label htmlFor="customerPhone">{t("booking.phone")}</Label>
             <Input
               id="customerPhone"
               name="customerPhone"
@@ -237,7 +279,7 @@ export function PublicBookingForm({ business, services }) {
             <FieldError>{formik.touched.customerPhone && formik.errors.customerPhone}</FieldError>
           </div>
           <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t("booking.notes")}</Label>
             <Textarea
               id="notes"
               name="notes"
@@ -251,7 +293,7 @@ export function PublicBookingForm({ business, services }) {
       </Card>
 
       <Button className="w-full" disabled={formik.isSubmitting || !selectedService || !selectedSlot} type="submit">
-        {formik.isSubmitting ? "Booking..." : "Create booking"}
+        {formik.isSubmitting ? t("booking.creating") : t("booking.create")}
       </Button>
     </form>
   );

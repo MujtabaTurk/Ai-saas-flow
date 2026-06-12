@@ -1,4 +1,3 @@
-import { priceToCents } from "@/features/services/money";
 import { normalizeServiceSlug } from "@/features/services/slug";
 
 export function normalizeServiceInput(data) {
@@ -9,10 +8,12 @@ export function normalizeServiceInput(data) {
     durationMin: Number(data.durationMin),
     bufferBeforeMin: Number(data.bufferBeforeMin || 0),
     bufferAfterMin: Number(data.bufferAfterMin || 0),
-    priceCents: data.priceCents ?? priceToCents(data.price),
+    priceCents:
+      data.priceCents === null || data.priceCents === undefined
+        ? null
+        : Number(data.priceCents),
     currency: data.currency,
     requiresPayment: Boolean(data.requiresPayment),
     sortOrder: Number(data.sortOrder || 0)
   };
 }
-

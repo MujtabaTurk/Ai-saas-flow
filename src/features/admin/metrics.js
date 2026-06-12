@@ -142,6 +142,7 @@ export async function getSuperAdminMetrics() {
     totalBookings,
     totalServices,
     allSubscriptions,
+    activeMemberships,
     failedWebhookEvents,
     recentBusinesses
   ] = await Promise.all([
@@ -200,6 +201,14 @@ export async function getSuperAdminMetrics() {
         lastPaymentFailedAt: true,
         createdAt: true,
         updatedAt: true
+      }
+    }),
+    prisma.businessMembership.findMany({
+      where: {
+        isActive: true
+      },
+      select: {
+        userId: true
       }
     }),
     prisma.stripeWebhookEvent.count({
@@ -270,7 +279,9 @@ export async function getSuperAdminMetrics() {
       businessOwners: businessOwnerCount,
       customerProfiles: customers.length,
       linkedCustomerUsers: countUnique(customers.map((customer) => customer.userId)),
-      staffUsers: 0
+      staffUsers: countUnique(
+        activeMemberships.map((membership) => membership.userId)
+      )
     },
     businesses: {
       totalBusinesses: businesses.length,
@@ -294,4 +305,3 @@ export async function getSuperAdminMetrics() {
     }
   };
 }
-
