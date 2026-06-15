@@ -40,9 +40,13 @@ export default async function BillingPage({ searchParams }) {
               ? resolvedSearchParams.checkout
               : null
           }
+          checkoutSessionId={
+            typeof resolvedSearchParams.session_id === "string"
+              ? resolvedSearchParams.session_id
+              : null
+          }
         />
       </div>
     </AppShell>
   );
 }
-

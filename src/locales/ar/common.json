@@ -29,7 +29,9 @@
     "startBuilding": "ابدأ البناء",
     "viewArchitecture": "عرض البنية",
     "goHome": "العودة للرئيسية",
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور"
   },
   "status": {
     "active": "نشط",

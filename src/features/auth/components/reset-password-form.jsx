@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { resetPasswordSchema } from "@/features/auth/validation/reset-password-schema";
 import { FieldError } from "./field-error";
 
@@ -87,10 +87,9 @@ export function ResetPasswordForm() {
         <Label htmlFor="password">
           {t("resetPassword.newPassword")}
         </Label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
           value={formik.values.password}
           onBlur={formik.handleBlur}
@@ -103,10 +102,9 @@ export function ResetPasswordForm() {
         <Label htmlFor="confirmPassword">
           {t("resetPassword.confirmPassword")}
         </Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           autoComplete="new-password"
           value={formik.values.confirmPassword}
           onBlur={formik.handleBlur}

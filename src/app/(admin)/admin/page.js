@@ -15,7 +15,7 @@ export default async function AdminPage() {
   const session = await getCurrentSession();
 
   if (!session?.user) {
-    redirect("/login");
+    redirect("/login?callbackUrl=/admin");
   }
 
   if (!isSuperAdmin(session.user)) {

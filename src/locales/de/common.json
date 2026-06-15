@@ -29,7 +29,9 @@
     "startBuilding": "Loslegen",
     "viewArchitecture": "Architektur ansehen",
     "goHome": "Zur Startseite",
-    "signOut": "Abmelden"
+    "signOut": "Abmelden",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort ausblenden"
   },
   "status": {
     "active": "Aktiv",

@@ -3,6 +3,10 @@ import {
   retrieveAndSyncStripeSubscription,
   syncStripeSubscription
 } from "@/features/billing/server";
+import {
+  getBillingRequestId,
+  logBillingEvent
+} from "@/features/billing/logging";
 import { getStripe } from "@/features/billing/stripe";
 import { notifySubscriptionEvent } from "@/features/notifications/events";
 import { fail, ok } from "@/lib/api/api-response";
@@ -12,6 +16,14 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 const PROCESSING_LEASE_MS = 5 * 60 * 1000;
+const SUBSCRIPTION_RELATED_EVENT_TYPES = new Set([
+  "checkout.session.completed",
+  "customer.subscription.created",
+  "customer.subscription.updated",
+  "customer.subscription.deleted",
+  "invoice.paid",
+  "invoice.payment_failed"
+]);
 
 function getStripeId(value) {
   if (!value) {
@@ -133,14 +145,35 @@ async function markWebhookFailed(eventId, error) {
   });
 }
 
-async function syncInvoiceSubscription(invoice, paymentField) {
-  const subscriptionId = getStripeId(invoice.subscription);
+async function syncInvoiceSubscription(invoice, paymentField, context = {}) {
+  const subscriptionId = getStripeId(
+    invoice.subscription ||
+      invoice.parent?.subscription_details?.subscription
+  );
 
   if (!subscriptionId) {
+    logBillingEvent(
+      "stripe.invoice.subscription_missing",
+      {
+        ...context,
+        stripeCustomerId: getStripeId(invoice.customer),
+        invoiceId: invoice.id
+      },
+      "warn"
+    );
+
     return null;
   }
 
-  const subscription = await retrieveAndSyncStripeSubscription(subscriptionId);
+  const subscription = await retrieveAndSyncStripeSubscription(
+    subscriptionId,
+    {
+      context: {
+        ...context,
+        subscriptionId
+      }
+    }
+  );
   await prisma.subscription.updateMany({
     where: {
       stripeSubscriptionId: subscriptionId
@@ -159,17 +192,31 @@ async function syncInvoiceSubscription(invoice, paymentField) {
   return subscription;
 }
 
-async function handleCheckoutSessionCompleted(session) {
+async function handleCheckoutSessionCompleted(session, context = {}) {
   const businessId = session.metadata?.businessId || session.client_reference_id;
   const customerId = getStripeId(session.customer);
   const subscriptionId = getStripeId(session.subscription);
-
-  if (businessId && customerId) {
-    await linkStripeCustomerToBusiness(businessId, customerId);
-  }
+  const checkoutContext = {
+    ...context,
+    businessId,
+    stripeCustomerId: customerId,
+    checkoutSessionId: session.id,
+    subscriptionId
+  };
 
   if (subscriptionId) {
-    return retrieveAndSyncStripeSubscription(subscriptionId);
+    return retrieveAndSyncStripeSubscription(subscriptionId, {
+      context: checkoutContext,
+      expectedBusinessId: businessId,
+      expectedCustomerId: customerId
+    });
+  }
+
+  if (businessId && customerId) {
+    await linkStripeCustomerToBusiness(businessId, customerId, {
+      replaceExisting: true,
+      context: checkoutContext
+    });
   }
 
   return null;
@@ -228,30 +275,85 @@ function getSubscriptionNotification(eventType, subscription) {
   return null;
 }
 
-async function handleStripeEvent(event) {
+async function handleStripeEvent(event, context = {}) {
   const object = event.data.object;
   let subscription = null;
 
+  if (SUBSCRIPTION_RELATED_EVENT_TYPES.has(event.type)) {
+    logBillingEvent("stripe.subscription.event_processing", {
+      ...context,
+      stripeCustomerId: getStripeId(object.customer),
+      checkoutSessionId:
+        event.type === "checkout.session.completed" ? object.id : null,
+      subscriptionId:
+        event.type.startsWith("customer.subscription.")
+          ? object.id
+          : getStripeId(
+              object.subscription ||
+                object.parent?.subscription_details?.subscription
+            )
+    });
+  }
+
   switch (event.type) {
     case "checkout.session.completed":
-      subscription = await handleCheckoutSessionCompleted(object);
+      subscription = await handleCheckoutSessionCompleted(object, context);
       break;
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.deleted":
-      subscription = await syncStripeSubscription(object);
+      try {
+        subscription = await retrieveAndSyncStripeSubscription(object.id, {
+          context
+        });
+      } catch (error) {
+        const subscriptionWasDeleted =
+          event.type === "customer.subscription.deleted";
+        const stripeResourceIsMissing =
+          error?.code === "resource_missing" || error?.statusCode === 404;
+
+        if (!subscriptionWasDeleted || !stripeResourceIsMissing) {
+          throw error;
+        }
+
+        subscription = await syncStripeSubscription(object, {
+          context
+        });
+      }
       break;
     case "invoice.paid":
-      subscription = await syncInvoiceSubscription(object, "lastPaymentAt");
+      subscription = await syncInvoiceSubscription(
+        object,
+        "lastPaymentAt",
+        context
+      );
       break;
     case "invoice.payment_failed":
       subscription = await syncInvoiceSubscription(
         object,
-        "lastPaymentFailedAt"
+        "lastPaymentFailedAt",
+        context
       );
       break;
     default:
+      logBillingEvent("stripe.webhook.event_ignored", {
+        ...context,
+        stripeObjectId: object.id
+      });
       break;
+  }
+
+  if (SUBSCRIPTION_RELATED_EVENT_TYPES.has(event.type)) {
+    logBillingEvent("stripe.subscription.event_processed", {
+      ...context,
+      businessId: subscription?.businessId,
+      stripeCustomerId: subscription?.stripeCustomerId,
+      subscriptionId:
+        subscription?.stripeSubscriptionId || getStripeId(object.subscription),
+      localSubscriptionId: subscription?.id,
+      planCode: subscription?.planCode,
+      subscriptionStatus: subscription?.status
+    });
   }
 
   return {
@@ -265,6 +367,7 @@ async function handleStripeEvent(event) {
 
 export async function POST(request) {
   const signature = request.headers.get("stripe-signature");
+  let requestId = request.headers.get("stripe-request-id");
 
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     return fail("Stripe webhook secret is not configured.", 500);
@@ -289,21 +392,60 @@ export async function POST(request) {
       throw new AppError("Invalid Stripe webhook signature.", 400);
     }
 
+    requestId = getBillingRequestId(
+      request,
+      event.request?.id || event.id
+    );
+    const context = {
+      requestId,
+      stripeEventId: event.id,
+      stripeEventType: event.type
+    };
+    const eventObject = event.data.object;
+
+    logBillingEvent("stripe.webhook.received", {
+      ...context,
+      stripeCustomerId: getStripeId(eventObject.customer),
+      checkoutSessionId:
+        event.type === "checkout.session.completed" ? eventObject.id : null,
+      subscriptionId:
+        event.type.startsWith("customer.subscription.")
+          ? eventObject.id
+          : getStripeId(eventObject.subscription)
+    });
+
     const { shouldProcess, retryLater } = await createOrUpdateWebhookRecord(event);
 
     if (!shouldProcess) {
+      logBillingEvent(
+        retryLater
+          ? "stripe.webhook.processing_lease_active"
+          : "stripe.webhook.duplicate",
+        context,
+        retryLater ? "warn" : "info"
+      );
+
       if (retryLater) {
-        return fail("Stripe webhook event is already being processed.", 409);
+        const response = fail(
+          "Stripe webhook event is already being processed.",
+          409
+        );
+        response.headers.set("x-request-id", requestId);
+
+        return response;
       }
 
-      return ok({
+      const response = ok({
         received: true,
         duplicate: true
       });
+      response.headers.set("x-request-id", requestId);
+
+      return response;
     }
 
     try {
-      const result = await handleStripeEvent(event);
+      const result = await handleStripeEvent(event, context);
 
       if (result.subscription && result.notification) {
         await notifySubscriptionEvent({
@@ -314,16 +456,63 @@ export async function POST(request) {
         });
       }
 
+      const subscriptionBusiness = result.subscription
+        ? await prisma.business.findUnique({
+            where: {
+              id: result.subscription.businessId
+            },
+            select: {
+              ownerId: true
+            }
+          })
+        : null;
       await markWebhookProcessed(event.id);
+
+      logBillingEvent("stripe.webhook.processed", {
+        ...context,
+        userId: subscriptionBusiness?.ownerId,
+        businessId: result.subscription?.businessId,
+        stripeCustomerId: result.subscription?.stripeCustomerId,
+        subscriptionId:
+          result.subscription?.stripeSubscriptionId ||
+          result.subscription?.id
+      });
     } catch (processingError) {
       await markWebhookFailed(event.id, processingError);
+
+      logBillingEvent(
+        "stripe.webhook.failed",
+        {
+          ...context,
+          errorMessage: processingError?.message
+        },
+        "error"
+      );
+
       throw processingError;
     }
 
-    return ok({
+    const response = ok({
       received: true
     });
+    response.headers.set("x-request-id", requestId);
+
+    return response;
   } catch (error) {
-    return handleApiError(error);
+    requestId ||= getBillingRequestId(request);
+
+    logBillingEvent(
+      "stripe.webhook.request_failed",
+      {
+        requestId,
+        errorMessage: error?.message
+      },
+      "error"
+    );
+
+    const response = handleApiError(error);
+    response.headers.set("x-request-id", requestId);
+
+    return response;
   }
 }

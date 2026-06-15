@@ -1,4 +1,5 @@
 import { BUSINESS_ROLES } from "@/constants/roles";
+import { logBillingEvent } from "@/features/billing/logging";
 import { getPlanCatalog } from "@/features/billing/plan-catalog";
 import {
   getMissingStripePriceKeys,
@@ -39,8 +40,233 @@ function getStripeSubscriptionPrice(subscription) {
   return subscription.items?.data?.[0]?.price || null;
 }
 
+function getStripeSubscriptionPeriod(subscription) {
+  const item = subscription.items?.data?.[0] || null;
+
+  return {
+    start:
+      subscription.current_period_start ||
+      item?.current_period_start ||
+      null,
+    end:
+      subscription.current_period_end ||
+      item?.current_period_end ||
+      null
+  };
+}
+
 function isMongoObjectId(value) {
   return /^[a-f\d]{24}$/i.test(value || "");
+}
+
+function isMissingStripeResource(error) {
+  return error?.code === "resource_missing" || error?.statusCode === 404;
+}
+
+async function retrieveStripeCustomer(customerId, context = {}) {
+  if (!customerId) {
+    return null;
+  }
+
+  try {
+    const customer = await getStripe().customers.retrieve(customerId);
+
+    if (customer.deleted) {
+      logBillingEvent(
+        "stripe.customer.deleted",
+        {
+          ...context,
+          stripeCustomerId: customerId
+        },
+        "warn"
+      );
+
+      return null;
+    }
+
+    return customer;
+  } catch (error) {
+    if (isMissingStripeResource(error)) {
+      logBillingEvent(
+        "stripe.customer.missing",
+        {
+          ...context,
+          stripeCustomerId: customerId
+        },
+        "warn"
+      );
+
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+function assertStripeCustomerOwnership(customer, businessId, context = {}) {
+  const metadataBusinessId = customer?.metadata?.businessId;
+
+  if (metadataBusinessId && metadataBusinessId !== businessId) {
+    logBillingEvent(
+      "stripe.customer.tenant_mismatch",
+      {
+        ...context,
+        businessId,
+        stripeCustomerId: customer.id,
+        stripeMetadataBusinessId: metadataBusinessId
+      },
+      "error"
+    );
+
+    throw new AppError("Stripe customer does not match this business.", 409);
+  }
+}
+
+async function ensureStripeCustomerMetadata(customer, business, context = {}) {
+  assertStripeCustomerOwnership(customer, business.id, context);
+
+  const metadata = customer.metadata || {};
+
+  if (
+    metadata.businessId === business.id &&
+    metadata.businessSlug === business.slug &&
+    metadata.ownerUserId === business.ownerId
+  ) {
+    return customer;
+  }
+
+  const updatedCustomer = await getStripe().customers.update(customer.id, {
+    metadata: {
+      businessId: business.id,
+      businessSlug: business.slug,
+      ownerUserId: business.ownerId
+    }
+  });
+
+  logBillingEvent("stripe.customer.metadata_updated", {
+    ...context,
+    userId: context.userId || business.ownerId,
+    businessId: business.id,
+    stripeCustomerId: customer.id
+  });
+
+  return updatedCustomer;
+}
+
+function getStripeCustomerCompareAndSwapWhere(businessId, customerId) {
+  if (customerId) {
+    return {
+      id: businessId,
+      stripeCustomerId: customerId
+    };
+  }
+
+  return {
+    id: businessId,
+    OR: [
+      {
+        stripeCustomerId: null
+      },
+      {
+        stripeCustomerId: {
+          isSet: false
+        }
+      }
+    ]
+  };
+}
+
+async function findStripeCustomersForBusiness(business, context = {}) {
+  const stripe = getStripe();
+  const customers = new Map();
+
+  try {
+    const searchResult = await stripe.customers.search({
+      query: `metadata['businessId']:'${business.id}'`,
+      limit: 100
+    });
+
+    for (const customer of searchResult.data) {
+      if (!customer.deleted && customer.metadata?.businessId === business.id) {
+        customers.set(customer.id, customer);
+      }
+    }
+  } catch (error) {
+    logBillingEvent(
+      "stripe.customer.search_failed",
+      {
+        ...context,
+        businessId: business.id,
+        errorMessage: error?.message
+      },
+      "warn"
+    );
+
+    if (!business.email) {
+      throw error;
+    }
+  }
+
+  if (business.email) {
+    const listResult = await stripe.customers.list({
+      email: business.email,
+      limit: 100
+    });
+
+    for (const customer of listResult.data) {
+      if (!customer.deleted && customer.metadata?.businessId === business.id) {
+        customers.set(customer.id, customer);
+      }
+    }
+  }
+
+  return [...customers.values()].sort(
+    (left, right) => left.created - right.created
+  );
+}
+
+async function chooseCanonicalStripeCustomer(customers, context = {}) {
+  if (customers.length < 2) {
+    return customers[0] || null;
+  }
+
+  const stripe = getStripe();
+  const subscriptionResults = await Promise.all(
+    customers.map(async (customer) => ({
+      customer,
+      subscriptions: await stripe.subscriptions.list({
+        customer: customer.id,
+        status: "all",
+        limit: 100
+      })
+    }))
+  );
+  const withLiveSubscription = subscriptionResults.find(
+    ({ subscriptions }) =>
+      subscriptions.data.some(
+        (subscription) =>
+          !["canceled", "incomplete_expired"].includes(subscription.status)
+      )
+  );
+  const withSubscription = subscriptionResults.find(
+    ({ subscriptions }) => subscriptions.data.length > 0
+  );
+  const canonicalCustomer =
+    withLiveSubscription?.customer ||
+    withSubscription?.customer ||
+    customers[0];
+
+  logBillingEvent(
+    "stripe.customer.duplicates_detected",
+    {
+      ...context,
+      stripeCustomerId: canonicalCustomer.id,
+      duplicateStripeCustomerIds: customers.map((customer) => customer.id)
+    },
+    "warn"
+  );
+
+  return canonicalCustomer;
 }
 
 export function assertBillingManagement(user, businessId) {
@@ -57,7 +283,11 @@ export function assertBillingManagement(user, businessId) {
   }
 }
 
-export async function getBillingBusinessForUser(user, requestedBusinessId = null) {
+export async function getBillingBusinessForUser(
+  user,
+  requestedBusinessId = null,
+  context = {}
+) {
   const businessId = requestedBusinessId || user?.activeBusinessId;
 
   if (!businessId) {
@@ -95,20 +325,330 @@ export async function getBillingBusinessForUser(user, requestedBusinessId = null
     throw new NotFoundError("Business not found.");
   }
 
+  logBillingEvent("billing.business.loaded", {
+    ...context,
+    userId: user.id,
+    businessId: business.id,
+    stripeCustomerId: business.stripeCustomerId,
+    subscriptionId: business.subscriptions[0]?.stripeSubscriptionId || null
+  });
+
   return business;
 }
 
-export async function linkStripeCustomerToBusiness(businessId, customerId) {
+export async function linkStripeCustomerToBusiness(
+  businessId,
+  customerId,
+  {
+    replaceExisting = false,
+    stripeCustomer = null,
+    context = {}
+  } = {}
+) {
   if (!businessId || !customerId) {
-    return;
+    return null;
   }
 
+  const incomingCustomer =
+    stripeCustomer || (await retrieveStripeCustomer(customerId, context));
+
+  if (!incomingCustomer) {
+    throw new AppError(
+      "The Stripe customer linked to this billing request no longer exists.",
+      409
+    );
+  }
+
+  assertStripeCustomerOwnership(incomingCustomer, businessId, context);
+
+  const [conflictingBusiness, conflictingSubscription] = await Promise.all([
+    prisma.business.findFirst({
+      where: {
+        stripeCustomerId: customerId,
+        id: {
+          not: businessId
+        }
+      },
+      select: {
+        id: true
+      }
+    }),
+    prisma.subscription.findFirst({
+      where: {
+        stripeCustomerId: customerId,
+        businessId: {
+          not: businessId
+        }
+      },
+      select: {
+        id: true
+      }
+    })
+  ]);
+
+  if (conflictingBusiness || conflictingSubscription) {
+    logBillingEvent(
+      "stripe.customer.database_conflict",
+      {
+        ...context,
+        businessId,
+        stripeCustomerId: customerId,
+        conflictingBusinessId: conflictingBusiness?.id,
+        conflictingSubscriptionId: conflictingSubscription?.id
+      },
+      "error"
+    );
+
+    throw new AppError("Stripe customer does not match this business.", 409);
+  }
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const business = await prisma.business.findUnique({
+      where: {
+        id: businessId
+      },
+      select: {
+        id: true,
+        ownerId: true,
+        stripeCustomerId: true
+      }
+    });
+
+    if (!business) {
+      throw new NotFoundError("Business not found for Stripe customer.");
+    }
+
+    if (business.stripeCustomerId === customerId) {
+      logBillingEvent("stripe.customer.link_reused", {
+        ...context,
+        userId: context.userId || business.ownerId,
+        businessId,
+        stripeCustomerId: customerId
+      });
+
+      return customerId;
+    }
+
+    if (business.stripeCustomerId && !replaceExisting) {
+      const currentCustomer = await retrieveStripeCustomer(
+        business.stripeCustomerId,
+        context
+      );
+      const currentCustomerBusinessId =
+        currentCustomer?.metadata?.businessId;
+      const currentCustomerBelongsToBusiness =
+        currentCustomer &&
+        (!currentCustomerBusinessId ||
+          currentCustomerBusinessId === businessId);
+
+      if (currentCustomerBelongsToBusiness) {
+        logBillingEvent(
+          "stripe.customer.link_preserved",
+          {
+            ...context,
+            userId: context.userId || business.ownerId,
+            businessId,
+            stripeCustomerId: business.stripeCustomerId,
+            ignoredStripeCustomerId: customerId
+          },
+          "warn"
+        );
+
+        return business.stripeCustomerId;
+      }
+    }
+
+    logBillingEvent("stripe.customer.link_update_started", {
+      ...context,
+      userId: context.userId || business.ownerId,
+      businessId,
+      previousStripeCustomerId: business.stripeCustomerId,
+      stripeCustomerId: customerId,
+      attempt: attempt + 1
+    });
+
+    const result = await prisma.business.updateMany({
+      where: getStripeCustomerCompareAndSwapWhere(
+        businessId,
+        business.stripeCustomerId
+      ),
+      data: {
+        stripeCustomerId: customerId
+      }
+    });
+
+    if (result.count === 1) {
+      logBillingEvent("stripe.customer.link_updated", {
+        ...context,
+        userId: context.userId || business.ownerId,
+        businessId,
+        previousStripeCustomerId: business.stripeCustomerId,
+        stripeCustomerId: customerId
+      });
+
+      return customerId;
+    }
+
+    logBillingEvent(
+      "stripe.customer.link_conflict",
+      {
+        ...context,
+        userId: context.userId || business.ownerId,
+        businessId,
+        previousStripeCustomerId: business.stripeCustomerId,
+        stripeCustomerId: customerId,
+        attempt: attempt + 1
+      },
+      "warn"
+    );
+  }
+
+  throw new AppError(
+    "The Stripe customer link changed while billing was being prepared. Please try again.",
+    409
+  );
+}
+
+export async function ensureStripeCustomerForBusiness(
+  business,
+  { createIfMissing = true, context = {} } = {}
+) {
+  const stripe = getStripe();
+  const subscription = business.subscriptions?.[0] || null;
+  const subscriptionHasStripeBilling = Boolean(
+    subscription?.stripeSubscriptionId
+  );
+  const candidateCustomerIds = [
+    ...(subscriptionHasStripeBilling
+      ? [subscription?.stripeCustomerId, business.stripeCustomerId]
+      : [business.stripeCustomerId, subscription?.stripeCustomerId])
+  ].filter((customerId, index, values) => (
+    customerId && values.indexOf(customerId) === index
+  ));
+
+  for (const customerId of candidateCustomerIds) {
+    const customer = await retrieveStripeCustomer(customerId, context);
+
+    if (!customer) {
+      continue;
+    }
+
+    assertStripeCustomerOwnership(customer, business.id, context);
+
+    logBillingEvent("stripe.customer.candidate_reused", {
+      ...context,
+      userId: context.userId || business.ownerId,
+      businessId: business.id,
+      stripeCustomerId: customerId,
+      source:
+        customerId === subscription?.stripeCustomerId
+          ? "subscription"
+          : "business"
+    });
+
+    const linkedCustomerId = await linkStripeCustomerToBusiness(
+      business.id,
+      customerId,
+      {
+        replaceExisting:
+          subscriptionHasStripeBilling &&
+          customerId === subscription.stripeCustomerId,
+        stripeCustomer: customer,
+        context
+      }
+    );
+    const linkedCustomer =
+      linkedCustomerId === customer.id
+        ? customer
+        : await retrieveStripeCustomer(linkedCustomerId, context);
+
+    if (linkedCustomer) {
+      await ensureStripeCustomerMetadata(linkedCustomer, business, context);
+    }
+
+    return linkedCustomerId;
+  }
+
+  const recoveredCustomers = await findStripeCustomersForBusiness(
+    business,
+    context
+  );
+  const recoveredCustomer = await chooseCanonicalStripeCustomer(
+    recoveredCustomers,
+    context
+  );
+
+  if (recoveredCustomer) {
+    logBillingEvent("stripe.customer.recovered", {
+      ...context,
+      userId: context.userId || business.ownerId,
+      businessId: business.id,
+      stripeCustomerId: recoveredCustomer.id
+    });
+
+    const linkedCustomerId = await linkStripeCustomerToBusiness(
+      business.id,
+      recoveredCustomer.id,
+      {
+        stripeCustomer: recoveredCustomer,
+        context
+      }
+    );
+
+    await ensureStripeCustomerMetadata(recoveredCustomer, business, context);
+
+    return linkedCustomerId;
+  }
+
+  if (!createIfMissing) {
+    return null;
+  }
+
+  logBillingEvent("stripe.customer.create_started", {
+    ...context,
+    userId: context.userId || business.ownerId,
+    businessId: business.id
+  });
+
+  const customer = await stripe.customers.create(
+    {
+      name: business.name,
+      email: business.email || undefined,
+      metadata: {
+        businessId: business.id,
+        businessSlug: business.slug,
+        ownerUserId: business.ownerId
+      }
+    },
+    {
+      idempotencyKey: `business:${business.id}:customer`
+    }
+  );
+
+  logBillingEvent("stripe.customer.created", {
+    ...context,
+    userId: context.userId || business.ownerId,
+    businessId: business.id,
+    stripeCustomerId: customer.id
+  });
+
+  return linkStripeCustomerToBusiness(business.id, customer.id, {
+    stripeCustomer: customer,
+    context
+  });
+}
+
+export async function assertBusinessStripeCustomerLink(
+  businessId,
+  customerId,
+  context = {}
+) {
   const business = await prisma.business.findUnique({
     where: {
       id: businessId
     },
     select: {
-      id: true,
+      ownerId: true,
       stripeCustomerId: true
     }
   });
@@ -117,62 +657,26 @@ export async function linkStripeCustomerToBusiness(businessId, customerId) {
     throw new NotFoundError("Business not found for Stripe customer.");
   }
 
-  if (business.stripeCustomerId && business.stripeCustomerId !== customerId) {
-    throw new AppError("Stripe customer does not match this business.", 409);
-  }
-
-  if (!business.stripeCustomerId) {
-    const result = await prisma.business.updateMany({
-      where: {
-        id: businessId,
-        stripeCustomerId: null
+  if (business.stripeCustomerId !== customerId) {
+    logBillingEvent(
+      "stripe.customer.link_changed",
+      {
+        ...context,
+        userId: context.userId || business.ownerId,
+        businessId,
+        expectedStripeCustomerId: customerId,
+        stripeCustomerId: business.stripeCustomerId
       },
-      data: {
-        stripeCustomerId: customerId
-      }
-    });
+      "error"
+    );
 
-    if (result.count === 0) {
-      const currentBusiness = await prisma.business.findUnique({
-        where: {
-          id: businessId
-        },
-        select: {
-          stripeCustomerId: true
-        }
-      });
-
-      if (currentBusiness?.stripeCustomerId !== customerId) {
-        throw new AppError("Stripe customer does not match this business.", 409);
-      }
-    }
-  }
-}
-
-export async function ensureStripeCustomerForBusiness(business) {
-  const stripe = getStripe();
-
-  if (business.stripeCustomerId) {
-    return business.stripeCustomerId;
+    throw new AppError(
+      "The Stripe customer link changed while billing was being prepared. Please try again.",
+      409
+    );
   }
 
-  const customer = await stripe.customers.create(
-    {
-      name: business.name,
-      email: business.email || undefined,
-      metadata: {
-        businessId: business.id,
-        businessSlug: business.slug
-      }
-    },
-    {
-      idempotencyKey: `business:${business.id}:customer`
-    }
-  );
-
-  await linkStripeCustomerToBusiness(business.id, customer.id);
-
-  return customer.id;
+  return business;
 }
 
 export function serializeSubscription(subscription) {
@@ -277,6 +781,50 @@ export async function getTenantBillingState(user, requestedBusinessId = null) {
   });
 }
 
+export function getCheckoutIdempotencyKey(
+  businessId,
+  customerId,
+  planCode,
+  now = new Date()
+) {
+  const utcDay = now.toISOString().slice(0, 10);
+
+  return `checkout:${businessId}:${customerId}:${planCode}:${utcDay}`;
+}
+
+export async function findReusableCheckoutSession({
+  businessId,
+  customerId,
+  planCode,
+  context = {}
+}) {
+  const sessions = await getStripe().checkout.sessions.list({
+    customer: customerId,
+    status: "open",
+    limit: 100
+  });
+  const session = sessions.data.find(
+    (candidate) =>
+      candidate.mode === "subscription" &&
+      candidate.status === "open" &&
+      candidate.url &&
+      candidate.metadata?.businessId === businessId &&
+      candidate.metadata?.planCode === planCode
+  );
+
+  if (session) {
+    logBillingEvent("stripe.checkout.reused", {
+      ...context,
+      businessId,
+      stripeCustomerId: customerId,
+      checkoutSessionId: session.id,
+      subscriptionId: getStripeId(session.subscription)
+    });
+  }
+
+  return session || null;
+}
+
 export function getCheckoutPriceId(planCode) {
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     throw new AppError(
@@ -294,15 +842,22 @@ export function getCheckoutPriceId(planCode) {
   return priceId;
 }
 
-export async function syncStripeSubscription(subscription) {
+export async function syncStripeSubscription(
+  subscription,
+  {
+    context = {},
+    expectedBusinessId = null,
+    expectedCustomerId = null
+  } = {}
+) {
   const customerId = getStripeId(subscription.customer);
   const price = getStripeSubscriptionPrice(subscription);
   const priceId = price?.id || null;
   const productId = getStripeId(price?.product);
   const metadataPlanCode = subscription.metadata?.planCode;
-  const planCode = priceId
-    ? resolvePlanCodeFromStripePriceId(priceId)
-    : metadataPlanCode;
+  const pricePlanCode = resolvePlanCodeFromStripePriceId(priceId);
+  const planCode = pricePlanCode || metadataPlanCode;
+  const period = getStripeSubscriptionPeriod(subscription);
   const metadataBusinessId = subscription.metadata?.businessId || null;
   const customerBusiness = customerId
     ? await prisma.business.findFirst({
@@ -316,6 +871,20 @@ export async function syncStripeSubscription(subscription) {
     : null;
   const businessId = metadataBusinessId || customerBusiness?.id || null;
 
+  if (expectedCustomerId && customerId !== expectedCustomerId) {
+    throw new AppError(
+      "Checkout session and Stripe subscription customers do not match.",
+      409
+    );
+  }
+
+  if (expectedBusinessId && businessId !== expectedBusinessId) {
+    throw new AppError(
+      "Checkout session and Stripe subscription businesses do not match.",
+      409
+    );
+  }
+
   if (
     metadataBusinessId &&
     customerBusiness &&
@@ -328,12 +897,54 @@ export async function syncStripeSubscription(subscription) {
     throw new AppError("Could not resolve business for Stripe subscription.", 422);
   }
 
+  if (
+    pricePlanCode &&
+    metadataPlanCode &&
+    pricePlanCode !== metadataPlanCode
+  ) {
+    throw new AppError(
+      "Stripe subscription price and plan metadata do not match.",
+      409
+    );
+  }
+
   if (!planCode || !["TRIAL", "BASIC", "PRO"].includes(planCode)) {
     throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
   }
 
+  const business = await prisma.business.findUnique({
+    where: {
+      id: businessId
+    },
+    select: {
+      id: true,
+      ownerId: true,
+      stripeCustomerId: true
+    }
+  });
+
+  if (!business) {
+    throw new NotFoundError("Business not found for Stripe subscription.");
+  }
+
+  const syncContext = {
+    ...context,
+    userId: context.userId || business.ownerId,
+    businessId,
+    stripeCustomerId: customerId,
+    subscriptionId: subscription.id
+  };
+
+  logBillingEvent("stripe.subscription.sync_started", {
+    ...syncContext,
+    previousStripeCustomerId: business.stripeCustomerId
+  });
+
   if (customerId) {
-    await linkStripeCustomerToBusiness(businessId, customerId);
+    await linkStripeCustomerToBusiness(businessId, customerId, {
+      replaceExisting: true,
+      context: syncContext
+    });
   }
 
   const data = {
@@ -345,8 +956,8 @@ export async function syncStripeSubscription(subscription) {
     stripePriceId: priceId,
     stripeProductId: productId,
     latestInvoiceId: getStripeId(subscription.latest_invoice),
-    currentPeriodStart: fromStripeTimestamp(subscription.current_period_start),
-    currentPeriodEnd: fromStripeTimestamp(subscription.current_period_end),
+    currentPeriodStart: fromStripeTimestamp(period.start),
+    currentPeriodEnd: fromStripeTimestamp(period.end),
     trialEndsAt: fromStripeTimestamp(subscription.trial_end),
     cancelAtPeriodEnd: Boolean(subscription.cancel_at_period_end),
     canceledAt: fromStripeTimestamp(subscription.canceled_at)
@@ -362,51 +973,195 @@ export async function syncStripeSubscription(subscription) {
     }
   });
 
+  let localSubscription;
+
   if (existingSubscription) {
     if (existingSubscription.businessId !== businessId) {
       throw new AppError("Stripe subscription is already linked to another business.", 409);
     }
 
-    return prisma.subscription.update({
+    localSubscription = await prisma.subscription.update({
       where: {
         id: existingSubscription.id
       },
       data
     });
-  }
-
-  const onboardingSubscription = await prisma.subscription.findFirst({
-    where: {
-      businessId,
-      stripeSubscriptionId: null
-    },
-    orderBy: {
-      createdAt: "desc"
-    },
-    select: {
-      id: true
-    }
-  });
-
-  if (onboardingSubscription) {
-    return prisma.subscription.update({
+  } else {
+    const onboardingSubscription = await prisma.subscription.findFirst({
       where: {
-        id: onboardingSubscription.id
+        businessId,
+        OR: [
+          {
+            stripeSubscriptionId: null
+          },
+          {
+            stripeSubscriptionId: {
+              isSet: false
+            }
+          }
+        ]
       },
-      data
+      orderBy: {
+        createdAt: "desc"
+      },
+      select: {
+        id: true
+      }
     });
+
+    localSubscription = onboardingSubscription
+      ? await prisma.subscription.update({
+          where: {
+            id: onboardingSubscription.id
+          },
+          data
+        })
+      : await prisma.subscription.create({
+          data
+        });
   }
 
-  return prisma.subscription.create({
-    data
+  if (
+    planCode !== PLAN_CODES.TRIAL &&
+    ["ACTIVE", "TRIALING"].includes(localSubscription.status)
+  ) {
+    const retiredAt = new Date();
+    const retirement = await prisma.subscription.updateMany({
+      where: {
+        businessId,
+        id: {
+          not: localSubscription.id
+        },
+        planCode: PLAN_CODES.TRIAL,
+        status: "TRIALING",
+        OR: [
+          {
+            stripeSubscriptionId: null
+          },
+          {
+            stripeSubscriptionId: {
+              isSet: false
+            }
+          }
+        ]
+      },
+      data: {
+        status: "CANCELED",
+        cancelAtPeriodEnd: false,
+        canceledAt: retiredAt,
+        currentPeriodEnd: retiredAt,
+        trialEndsAt: retiredAt
+      }
+    });
+
+    if (retirement.count > 0) {
+      logBillingEvent("stripe.subscription.onboarding_retired", {
+        ...syncContext,
+        retiredSubscriptionCount: retirement.count
+      });
+    }
+  }
+
+  logBillingEvent("stripe.subscription.synced", {
+    ...syncContext,
+    localSubscriptionId: localSubscription.id,
+    subscriptionStatus: localSubscription.status
   });
+
+  return localSubscription;
 }
 
-export async function retrieveAndSyncStripeSubscription(subscriptionId) {
+export async function retrieveAndSyncStripeSubscription(
+  subscriptionId,
+  options = {}
+) {
   const stripe = getStripe();
   const subscription = await stripe.subscriptions.retrieve(subscriptionId, {
     expand: ["latest_invoice", "items.data.price.product"]
   });
 
-  return syncStripeSubscription(subscription);
+  return syncStripeSubscription(subscription, options);
+}
+
+export async function reconcileStripeCheckoutSession({
+  business,
+  sessionId,
+  context = {}
+}) {
+  const stripe = getStripe();
+  const session = await stripe.checkout.sessions.retrieve(sessionId);
+  const sessionBusinessId =
+    session.metadata?.businessId || session.client_reference_id;
+  const customerId = getStripeId(session.customer);
+  const subscriptionId = getStripeId(session.subscription);
+  const reconciliationContext = {
+    ...context,
+    businessId: business.id,
+    stripeCustomerId: customerId,
+    checkoutSessionId: session.id,
+    subscriptionId
+  };
+
+  logBillingEvent("stripe.checkout.reconciliation_started", {
+    ...reconciliationContext,
+    checkoutStatus: session.status,
+    paymentStatus: session.payment_status
+  });
+
+  if (session.mode !== "subscription") {
+    throw new AppError(
+      "This Checkout Session is not a subscription checkout.",
+      409
+    );
+  }
+
+  if (session.status !== "complete") {
+    throw new AppError("Stripe Checkout has not completed yet.", 409);
+  }
+
+  if (!["paid", "no_payment_required"].includes(session.payment_status)) {
+    throw new AppError("Stripe has not confirmed payment for this checkout.", 409);
+  }
+
+  if (sessionBusinessId !== business.id) {
+    throw new AppError(
+      "This Checkout Session belongs to another business.",
+      403
+    );
+  }
+
+  if (!customerId || customerId !== business.stripeCustomerId) {
+    throw new AppError(
+      "Checkout Session customer does not match this business.",
+      409
+    );
+  }
+
+  if (!subscriptionId) {
+    throw new AppError(
+      "Stripe has not attached a subscription to this checkout.",
+      409
+    );
+  }
+
+  const subscription = await retrieveAndSyncStripeSubscription(
+    subscriptionId,
+    {
+      context: reconciliationContext,
+      expectedBusinessId: business.id,
+      expectedCustomerId: customerId
+    }
+  );
+
+  logBillingEvent("stripe.checkout.reconciled", {
+    ...reconciliationContext,
+    localSubscriptionId: subscription.id,
+    planCode: subscription.planCode,
+    subscriptionStatus: subscription.status
+  });
+
+  return {
+    session,
+    subscription
+  };
 }

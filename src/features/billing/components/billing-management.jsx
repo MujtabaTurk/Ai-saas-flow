@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,8 @@ import {
 import {
   useBillingState,
   useCreateBillingPortalSession,
-  useCreateCheckoutSession
+  useCreateCheckoutSession,
+  useReconcileCheckoutSession
 } from "@/features/billing/hooks/use-billing";
 
 function formatDate(value) {
@@ -44,11 +45,14 @@ function usageText(count, limit) {
   return `${count} used / ${limit} allowed`;
 }
 
-export function BillingManagement({ checkoutStatus }) {
+export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
   const [operationError, setOperationError] = useState(null);
+  const reconciliationStarted = useRef(false);
   const billingQuery = useBillingState();
   const checkoutMutation = useCreateCheckoutSession();
   const portalMutation = useCreateBillingPortalSession();
+  const reconciliationMutation = useReconcileCheckoutSession();
+  const reconcileCheckout = reconciliationMutation.mutateAsync;
   const data = billingQuery.data;
   const subscription = data?.subscription;
   const currentPlanCode = subscription?.planCode || "TRIAL";
@@ -64,7 +68,27 @@ export function BillingManagement({ checkoutStatus }) {
     }
 
     let attempts = 0;
-    refetchBilling();
+    let canceled = false;
+
+    async function synchronizeCheckout() {
+      if (checkoutSessionId && !reconciliationStarted.current) {
+        reconciliationStarted.current = true;
+
+        try {
+          await reconcileCheckout(checkoutSessionId);
+        } catch (error) {
+          if (!canceled) {
+            setOperationError(error.message);
+          }
+        }
+      }
+
+      if (!canceled) {
+        refetchBilling();
+      }
+    }
+
+    synchronizeCheckout();
     const intervalId = window.setInterval(() => {
       attempts += 1;
       refetchBilling();
@@ -74,8 +98,16 @@ export function BillingManagement({ checkoutStatus }) {
       }
     }, 2000);
 
-    return () => window.clearInterval(intervalId);
-  }, [checkoutStatus, refetchBilling]);
+    return () => {
+      canceled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [
+    checkoutSessionId,
+    checkoutStatus,
+    reconcileCheckout,
+    refetchBilling
+  ]);
 
   async function startCheckout(planCode) {
     setOperationError(null);
@@ -131,7 +163,11 @@ export function BillingManagement({ checkoutStatus }) {
     <div className="space-y-6">
       {checkoutStatus === "success" ? (
         <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm text-growth-sidebar">
-          Checkout finished. Your subscription will update after Stripe sends the confirmation webhook.
+          {reconciliationMutation.isPending
+            ? "Checkout finished. Synchronizing your subscription..."
+            : reconciliationMutation.isSuccess
+              ? "Checkout finished. Your subscription is synchronized."
+              : "Checkout finished. Your subscription has been submitted for synchronization."}
         </div>
       ) : null}
 

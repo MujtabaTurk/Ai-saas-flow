@@ -70,5 +70,8 @@ export const invitationAcceptanceSchema = Yup.object({
   token: Yup.string()
     .trim()
     .min(32, "Invitation token is invalid.")
-    .required("Invitation token is required.")
+    .required("Invitation token is required."),
+  confirmed: Yup.boolean()
+    .oneOf([true], "Confirm that you want to join this business.")
+    .required("Invitation acceptance must be confirmed.")
 });

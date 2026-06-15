@@ -1,48 +1,135 @@
 import { prisma } from "@/lib/prisma";
+import { isValidMongoObjectId } from "@/lib/mongodb";
 
-export async function resolveSessionContext(userId) {
-  const [user, business] = await Promise.all([
-    prisma.user.findUnique({
-      where: {
-        id: userId
-      },
-      select: {
-        platformRole: true
-      }
-    }),
-    prisma.business.findFirst({
-      where: {
-        ownerId: userId,
-        status: {
-          not: "ARCHIVED"
+const businessSelect = {
+  id: true,
+  name: true,
+  slug: true,
+  status: true
+};
+
+function buildBusinessContext({
+  platformRole,
+  business,
+  businessRole,
+  membershipId = null
+}) {
+  return {
+    platformRole,
+    activeBusinessId: business.id,
+    activeBusinessMembershipId: membershipId,
+    activeBusinessSlug: business.slug,
+    activeBusinessName: business.name,
+    activeBusinessStatus: business.status,
+    businessRole,
+    customerId: null,
+    customerBusinessId: null
+  };
+}
+
+async function resolvePreferredBusinessContext({
+  userId,
+  platformRole,
+  preferredBusinessId
+}) {
+  if (!isValidMongoObjectId(preferredBusinessId)) {
+    return null;
+  }
+
+  const business = await prisma.business.findUnique({
+    where: {
+      id: preferredBusinessId
+    },
+    select: {
+      ...businessSelect,
+      ownerId: true,
+      memberships: {
+        where: {
+          userId,
+          isActive: true
+        },
+        take: 1,
+        select: {
+          id: true,
+          role: true
         }
-      },
-      orderBy: {
-        createdAt: "asc"
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        status: true
       }
-    })
-  ]);
+    }
+  });
 
-  const platformRole = user?.platformRole || "USER";
+  if (!business || business.status === "ARCHIVED") {
+    return null;
+  }
+
+  if (business.ownerId === userId) {
+    return buildBusinessContext({
+      platformRole,
+      business,
+      businessRole: "OWNER"
+    });
+  }
+
+  const membership = business.memberships[0];
+
+  if (!membership) {
+    return null;
+  }
+
+  return buildBusinessContext({
+    platformRole,
+    business,
+    businessRole: membership.role,
+    membershipId: membership.id
+  });
+}
+
+export async function resolveSessionContext(
+  userId,
+  { preferredBusinessId = null } = {}
+) {
+  const user = await prisma.user.findUnique({
+    where: {
+      id: userId
+    },
+    select: {
+      platformRole: true
+    }
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  const platformRole = user.platformRole;
+  const preferredContext = await resolvePreferredBusinessContext({
+    userId,
+    platformRole,
+    preferredBusinessId
+  });
+
+  if (preferredContext) {
+    return preferredContext;
+  }
+
+  const business = await prisma.business.findFirst({
+    where: {
+      ownerId: userId,
+      status: {
+        not: "ARCHIVED"
+      }
+    },
+    orderBy: {
+      createdAt: "asc"
+    },
+    select: businessSelect
+  });
 
   if (business) {
-    return {
+    return buildBusinessContext({
       platformRole,
-      activeBusinessId: business.id,
-      activeBusinessMembershipId: null,
-      activeBusinessSlug: business.slug,
-      activeBusinessName: business.name,
-      activeBusinessStatus: business.status,
-      businessRole: "OWNER",
-      customerId: null,
-      customerBusinessId: null
-    };
+      business,
+      businessRole: "OWNER"
+    });
   }
 
   const membership = await prisma.businessMembership.findFirst({
@@ -73,17 +160,12 @@ export async function resolveSessionContext(userId) {
   });
 
   if (membership) {
-    return {
+    return buildBusinessContext({
       platformRole,
-      activeBusinessId: membership.business.id,
-      activeBusinessMembershipId: membership.id,
-      activeBusinessSlug: membership.business.slug,
-      activeBusinessName: membership.business.name,
-      activeBusinessStatus: membership.business.status,
+      business: membership.business,
       businessRole: membership.role,
-      customerId: null,
-      customerBusinessId: null
-    };
+      membershipId: membership.id
+    });
   }
 
   const customer = await prisma.customer.findFirst({

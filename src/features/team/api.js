@@ -132,7 +132,10 @@ export async function acceptTeamInvitation(token) {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ token })
+    body: JSON.stringify({
+      token,
+      confirmed: true
+    })
   });
   return parseResponse(response, "Could not accept the invitation.");
 }

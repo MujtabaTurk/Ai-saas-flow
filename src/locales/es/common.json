@@ -29,7 +29,9 @@
     "startBuilding": "Empezar",
     "viewArchitecture": "Ver arquitectura",
     "goHome": "Ir al inicio",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña"
   },
   "status": {
     "active": "Activo",

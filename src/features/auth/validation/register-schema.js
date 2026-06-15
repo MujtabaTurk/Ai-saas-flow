@@ -8,6 +8,9 @@ export const registerSchema = Yup.object({
     .required("Password is required."),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Passwords must match.")
-    .required("Confirm your password.")
+    .required("Confirm your password."),
+  invitationToken: Yup.string()
+    .trim()
+    .min(32, "Invitation token is invalid.")
+    .optional()
 });
-

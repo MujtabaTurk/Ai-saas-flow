@@ -7,25 +7,37 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
+import {
+  getSafeCallbackUrl
+} from "@/features/auth/callback-url";
 import { registerSchema } from "@/features/auth/validation/register-schema";
 import { FieldError } from "./field-error";
 
-export function RegisterForm() {
+export function RegisterForm({
+  googleEnabled = false,
+  invitationCallbackUrl = null,
+  invitationEmail = null,
+  invitationToken = null
+}) {
   const { t } = useTranslation("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requestedCallbackUrl = searchParams.get("callbackUrl");
   const callbackUrl =
-    requestedCallbackUrl?.startsWith("/") &&
-    !requestedCallbackUrl.startsWith("//")
-      ? requestedCallbackUrl
-      : "/onboarding";
+    invitationCallbackUrl ||
+    getSafeCallbackUrl(
+      searchParams.get("callbackUrl"),
+      "/onboarding"
+    );
+  const initialEmail =
+    invitationEmail || searchParams.get("email") || "";
   const formik = useFormik({
     initialValues: {
       name: "",
-      email: "",
+      email: initialEmail,
       password: "",
-      confirmPassword: ""
+      confirmPassword: "",
+      invitationToken: invitationToken || undefined
     },
     validationSchema: registerSchema,
     onSubmit: async (values, helpers) => {
@@ -53,10 +65,29 @@ export function RegisterForm() {
         callbackUrl
       });
 
+      if (result?.error) {
+        helpers.setStatus(
+          "Your account was created, but automatic sign-in failed. Please sign in to continue."
+        );
+        return;
+      }
+
       router.push(result?.url || callbackUrl);
       router.refresh();
     }
   });
+
+  function signInWithGoogle() {
+    const authorizationParams = {
+      prompt: "select_account"
+    };
+
+    if (initialEmail) {
+      authorizationParams.login_hint = initialEmail;
+    }
+
+    return signIn("google", { callbackUrl }, authorizationParams);
+  }
 
   return (
     <form className="space-y-4" onSubmit={formik.handleSubmit}>
@@ -86,6 +117,7 @@ export function RegisterForm() {
           name="email"
           type="email"
           autoComplete="email"
+          disabled={Boolean(invitationToken)}
           value={formik.values.email}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
@@ -95,10 +127,9 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <Label htmlFor="password">{t("register.password")}</Label>
-        <Input
+        <PasswordInput
           id="password"
           name="password"
-          type="password"
           autoComplete="new-password"
           value={formik.values.password}
           onBlur={formik.handleBlur}
@@ -111,10 +142,9 @@ export function RegisterForm() {
         <Label htmlFor="confirmPassword">
           {t("register.confirmPassword")}
         </Label>
-        <Input
+        <PasswordInput
           id="confirmPassword"
           name="confirmPassword"
-          type="password"
           autoComplete="new-password"
           value={formik.values.confirmPassword}
           onBlur={formik.handleBlur}
@@ -128,6 +158,17 @@ export function RegisterForm() {
           ? t("register.submitting")
           : t("register.submit")}
       </Button>
+
+      {googleEnabled ? (
+        <Button
+          className="w-full"
+          type="button"
+          variant="outline"
+          onClick={signInWithGoogle}
+        >
+          {t("login.google")}
+        </Button>
+      ) : null}
     </form>
   );
 }

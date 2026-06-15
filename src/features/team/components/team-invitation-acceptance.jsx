@@ -1,37 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useAcceptTeamInvitation,
-  useTeamInvitation
-} from "@/features/team/hooks/use-team";
+import { buildAuthUrl } from "@/features/auth/callback-url";
+import { RegisterForm } from "@/features/auth/components/register-form";
+import { normalizeEmail } from "@/features/auth/normalize-email";
+import { AcceptTeamInvitationButton } from "./accept-team-invitation-button";
 
-export function TeamInvitationAcceptance() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
-  const callbackUrl = `/invite/accept?token=${encodeURIComponent(token)}`;
-  const { status, update } = useSession();
-  const invitationQuery = useTeamInvitation(token);
-  const acceptMutation = useAcceptTeamInvitation();
-  const invitation = invitationQuery.data?.invitation;
-
-  async function acceptInvitation() {
-    try {
-      await acceptMutation.mutateAsync(token);
-      await update();
-      router.push("/dashboard/team");
-      router.refresh();
-    } catch {
-      // The mutation error is rendered below.
-    }
-  }
-
+export function TeamInvitationAcceptance({
+  currentUser,
+  googleEnabled = false,
+  invitation,
+  token
+}) {
   if (!token) {
     return (
       <Card>
@@ -42,27 +26,27 @@ export function TeamInvitationAcceptance() {
     );
   }
 
-  if (invitationQuery.isLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6 text-sm text-muted-foreground">
-          Loading invitation...
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (invitationQuery.error) {
+  if (!invitation) {
     return (
       <Card>
         <CardContent className="pt-6 text-sm text-red-700">
-          {invitationQuery.error.message}
+          This invitation link is invalid or no longer exists.
         </CardContent>
       </Card>
     );
   }
 
-  const canAccept = invitation?.status === "PENDING";
+  const callbackUrl = `/invite/accept?token=${encodeURIComponent(token)}`;
+  const invitedEmail = invitation.email;
+  const authenticatedEmail = currentUser?.email || "";
+  const emailsMatch =
+    Boolean(invitedEmail && authenticatedEmail) &&
+    normalizeEmail(invitedEmail) === normalizeEmail(authenticatedEmail);
+  const canAccept = invitation.status === "PENDING";
+  const loginUrl = buildAuthUrl("/login", {
+    callbackUrl,
+    email: invitedEmail
+  });
 
   return (
     <Card>
@@ -78,7 +62,7 @@ export function TeamInvitationAcceptance() {
         <p className="text-sm text-muted-foreground">
           This invitation is for{" "}
           <span className="font-semibold text-growth-sidebar">
-            {invitation.email}
+            {invitedEmail}
           </span>{" "}
           with the {invitation.role.toLowerCase()} role.
         </p>
@@ -90,39 +74,87 @@ export function TeamInvitationAcceptance() {
           }).format(new Date(invitation.expiresAt))}
         </p>
 
-        {status === "unauthenticated" ? (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Button asChild>
-              <Link
-                href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-              >
-                Sign in to accept
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link
-                href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}
-              >
-                Create account
-              </Link>
+        {!canAccept ? (
+          <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            This invitation is {invitation.status.toLowerCase()} and cannot be
+            accepted.
+          </p>
+        ) : null}
+
+        {canAccept && currentUser ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Signed in as{" "}
+              <span className="font-semibold text-growth-sidebar">
+                {authenticatedEmail}
+              </span>
+              .
+            </p>
+
+            {!emailsMatch ? (
+              <div className="space-y-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <p>
+                  This invitation belongs to{" "}
+                  <span className="font-semibold">{invitedEmail}</span>, but
+                  your current account is{" "}
+                  <span className="font-semibold">{authenticatedEmail}</span>.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => signOut({ callbackUrl: loginUrl })}
+                >
+                  Switch account
+                </Button>
+              </div>
+            ) : (
+              <AcceptTeamInvitationButton
+                role={invitation.role}
+                token={token}
+              />
+            )}
+          </div>
+        ) : null}
+
+        {canAccept && !currentUser && invitation.accountExists ? (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              An account already exists for this email. Sign in to review and
+              accept the invitation.
+            </p>
+            <Button asChild className="w-full">
+              <Link href={loginUrl}>Sign in to continue</Link>
             </Button>
           </div>
-        ) : (
-          <Button
-            className="w-full"
-            disabled={!canAccept || acceptMutation.isPending}
-            onClick={acceptInvitation}
-          >
-            {acceptMutation.isPending
-              ? "Joining team..."
-              : `Join as ${invitation.role.toLowerCase()}`}
-          </Button>
-        )}
+        ) : null}
 
-        {acceptMutation.error ? (
-          <p className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {acceptMutation.error.message}
-          </p>
+        {canAccept && !currentUser && !invitation.accountExists ? (
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-semibold text-growth-sidebar">
+                Create your account
+              </h3>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Register with the invited email. Signing up creates your normal
+                account session, then you can review and accept the invitation.
+              </p>
+            </div>
+            <RegisterForm
+              googleEnabled={googleEnabled}
+              invitationCallbackUrl={callbackUrl}
+              invitationEmail={invitedEmail}
+              invitationToken={token}
+            />
+            <p className="text-center text-sm text-muted-foreground">
+              Already have this account?{" "}
+              <Link
+                className="font-semibold text-primary hover:underline"
+                href={loginUrl}
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
         ) : null}
       </CardContent>
     </Card>

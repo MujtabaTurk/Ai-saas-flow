@@ -26,6 +26,15 @@ function redirectForAuthenticatedUser(request, token) {
   return NextResponse.redirect(new URL("/onboarding", request.url));
 }
 
+function isInvitationAuthentication(request) {
+  const callbackUrl = request.nextUrl.searchParams.get("callbackUrl");
+
+  return (
+    callbackUrl === "/invite/accept" ||
+    callbackUrl?.startsWith("/invite/accept?")
+  );
+}
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = await getToken({
@@ -33,12 +42,21 @@ export async function middleware(request) {
     secret: process.env.NEXTAUTH_SECRET
   });
 
-  if (AUTH_ROUTES.includes(pathname) && token && pathname !== "/reset-password") {
+  const hasUsableToken = Boolean(
+    token?.id && !token?.accountMissing
+  );
+
+  if (
+    AUTH_ROUTES.includes(pathname) &&
+    hasUsableToken &&
+    pathname !== "/reset-password" &&
+    !isInvitationAuthentication(request)
+  ) {
     return redirectForAuthenticatedUser(request, token);
   }
 
   if (pathname.startsWith("/admin")) {
-    if (!token) {
+    if (!hasUsableToken) {
       return redirectToLogin(request);
     }
 
@@ -48,8 +66,12 @@ export async function middleware(request) {
   }
 
   if (pathname.startsWith("/dashboard")) {
-    if (!token) {
+    if (!hasUsableToken) {
       return redirectToLogin(request);
+    }
+
+    if (token.platformRole === "SUPER_ADMIN") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
 
     if (!hasDashboardAccess(token)) {
@@ -58,7 +80,7 @@ export async function middleware(request) {
   }
 
   if (pathname.startsWith("/onboarding")) {
-    if (!token) {
+    if (!hasUsableToken) {
       return redirectToLogin(request);
     }
 

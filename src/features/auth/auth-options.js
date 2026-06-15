@@ -11,6 +11,22 @@ export const isGoogleProviderEnabled = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
 );
 
+function invalidateMissingUserToken(token) {
+  return {
+    ...token,
+    id: null,
+    accountMissing: true,
+    activeBusinessId: null,
+    activeBusinessMembershipId: null,
+    activeBusinessSlug: null,
+    activeBusinessName: null,
+    activeBusinessStatus: null,
+    businessRole: null,
+    customerId: null,
+    customerBusinessId: null
+  };
+}
+
 const providers = [
   CredentialsProvider({
     name: "Email and password",
@@ -53,7 +69,22 @@ if (isGoogleProviderEnabled) {
   providers.push(
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
+      profile(profile) {
+        const email = normalizeEmail(profile.email);
+
+        if (!email || profile.email_verified !== true) {
+          throw new Error("A verified Google email address is required.");
+        }
+
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email,
+          image: profile.picture
+        };
+      }
     })
   );
 }
@@ -69,13 +100,22 @@ export const authOptions = {
     strategy: "jwt"
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       const userId = user?.id || token.id;
 
       if (userId) {
         token.id = userId;
 
-        const context = await resolveSessionContext(userId);
+        const context = await resolveSessionContext(userId, {
+          preferredBusinessId:
+            trigger === "update" ? session?.activeBusinessId : null
+        });
+
+        if (!context) {
+          return invalidateMissingUserToken(token);
+        }
+
+        token.accountMissing = false;
         token.platformRole = context.platformRole || user?.platformRole || token.platformRole || "USER";
         token.activeBusinessId = context.activeBusinessId;
         token.activeBusinessMembershipId = context.activeBusinessMembershipId;
@@ -90,6 +130,10 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      if (!token?.id || token.accountMissing) {
+        return null;
+      }
+
       if (session.user) {
         session.user.id = token.id;
         session.user.platformRole = token.platformRole || "USER";

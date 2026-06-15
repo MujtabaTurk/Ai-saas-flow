@@ -235,17 +235,24 @@ model VerificationToken {
 }
 
 model PasswordResetToken {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String    @db.ObjectId
-  tokenHash String    @unique
-  expiresAt DateTime
-  usedAt    DateTime?
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
+  id                    String                      @id @default(auto()) @map("_id") @db.ObjectId
+  userId                String                      @db.ObjectId
+  tokenHash             String                      @unique
+  expiresAt             DateTime
+  usedAt                DateTime?
+  deliveryStatus        NotificationDeliveryStatus?
+  deliveryAttempts      Int?                        @default(0)
+  lastDeliveryAttemptAt DateTime?
+  sentAt                DateTime?
+  providerMessageId     String?
+  lastError             String?
+  user                  User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime                    @default(now())
 
   @@index([userId])
   @@index([expiresAt])
   @@index([userId, usedAt, expiresAt])
+  @@index([deliveryStatus, createdAt])
 }
 
 model Business {

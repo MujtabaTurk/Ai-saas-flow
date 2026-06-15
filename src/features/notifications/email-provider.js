@@ -2,6 +2,13 @@ import { AppError } from "@/lib/api/errors";
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
 
+function getSenderAddress(from) {
+  const value = String(from || "").trim();
+  const bracketedAddress = value.match(/<([^>]+)>/)?.[1];
+
+  return (bracketedAddress || value).toLowerCase();
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -12,12 +19,19 @@ function escapeHtml(value) {
 }
 
 export function getEmailConfiguration() {
+  const hasApiKey = Boolean(process.env.RESEND_API_KEY);
+  const from = process.env.NOTIFICATION_EMAIL_FROM || null;
+  const senderAddress = getSenderAddress(from);
+
   return {
-    configured: Boolean(
-      process.env.RESEND_API_KEY && process.env.NOTIFICATION_EMAIL_FROM
-    ),
-    from: process.env.NOTIFICATION_EMAIL_FROM || null,
-    provider: "resend"
+    configured: Boolean(hasApiKey && from),
+    from,
+    provider: "resend",
+    isTestSender: senderAddress.endsWith("@resend.dev"),
+    missingVariables: [
+      ...(!hasApiKey ? ["RESEND_API_KEY"] : []),
+      ...(!from ? ["NOTIFICATION_EMAIL_FROM"] : [])
+    ]
   };
 }
 

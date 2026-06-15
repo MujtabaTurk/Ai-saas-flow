@@ -29,7 +29,9 @@
     "startBuilding": "Start building",
     "viewArchitecture": "View architecture",
     "goHome": "Go home",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   },
   "status": {
     "active": "Active",

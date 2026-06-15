@@ -29,7 +29,9 @@
     "startBuilding": "شروع کریں",
     "viewArchitecture": "آرکیٹیکچر دیکھیں",
     "goHome": "ہوم پر جائیں",
-    "signOut": "سائن آؤٹ"
+    "signOut": "سائن آؤٹ",
+    "showPassword": "پاس ورڈ دکھائیں",
+    "hidePassword": "پاس ورڈ چھپائیں"
   },
   "status": {
     "active": "فعال",

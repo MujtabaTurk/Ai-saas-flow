@@ -12,3 +12,9 @@ export const checkoutSessionSchema = Yup.object({
     .required("The checkout request identifier is required.")
 });
 
+export const checkoutReconciliationSchema = Yup.object({
+  sessionId: Yup.string()
+    .trim()
+    .matches(/^cs_(test_|live_)?[A-Za-z0-9]+$/, "The Checkout Session ID is invalid.")
+    .required("Checkout Session ID is required.")
+});

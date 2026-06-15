@@ -19,29 +19,40 @@ export function ForgotPasswordForm() {
     onSubmit: async (values, helpers) => {
       helpers.setStatus(null);
 
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(values)
-      });
-      const payload = await response.json();
+      try {
+        const response = await fetch("/api/auth/forgot-password", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(values)
+        });
+        const payload = await response.json().catch(() => null);
 
-      if (!response.ok) {
+        if (!response.ok) {
+          const { devResetUrl, ...fieldErrors } =
+            payload?.error?.details || {};
+
+          helpers.setStatus({
+            type: "error",
+            message: payload?.error?.message || t("forgotPassword.error"),
+            devResetUrl
+          });
+          helpers.setErrors(fieldErrors);
+          return;
+        }
+
+        helpers.setStatus({
+          type: "success",
+          message: payload?.data?.message || t("forgotPassword.sent"),
+          devResetUrl: payload?.data?.devResetUrl
+        });
+      } catch {
         helpers.setStatus({
           type: "error",
-          message: payload?.error?.message || t("forgotPassword.error")
+          message: t("forgotPassword.error")
         });
-        helpers.setErrors(payload?.error?.details || {});
-        return;
       }
-
-      helpers.setStatus({
-        type: "success",
-        message: payload.data.message,
-        devResetUrl: payload.data.devResetUrl
-      });
     }
   });
 
@@ -49,6 +60,7 @@ export function ForgotPasswordForm() {
     <form className="space-y-4" onSubmit={formik.handleSubmit}>
       {formik.status ? (
         <div
+          aria-live="polite"
           className={
             formik.status.type === "error"
               ? "rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
