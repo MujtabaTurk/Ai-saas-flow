@@ -23,6 +23,22 @@ import { validateRequest } from "@/lib/api/validate-request";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+function logAiGenerationFailure({ error, user, business, generationId }) {
+  const status = error?.status || 500;
+  const logger = status >= 500 ? console.error : console.warn;
+
+  logger("[ai-generation]", {
+    event: "generation_failed",
+    status,
+    code: error?.code || error?.details?.code || null,
+    businessId: business?.id || null,
+    userId: user?.id || null,
+    generationId: generationId || null,
+    message: error?.message || "Unknown AI generation error.",
+    details: error?.details || null
+  });
+}
+
 export async function POST(request) {
   let reservation = null;
 
@@ -51,10 +67,7 @@ export async function POST(request) {
     const provider = getAiProviderConfiguration();
 
     if (!provider.configured) {
-      throw new AppError(
-        "AI generation is not configured. Add OPENAI_API_KEY to the server environment.",
-        503
-      );
+      throw new AppError(provider.configurationMessage, 503);
     }
 
     await expireStaleAiGenerations(business.id);
@@ -80,7 +93,8 @@ export async function POST(request) {
       result = await generateAiDraft({
         ...prompt,
         businessId: business.id,
-        generationId: reservation.id
+        generationId: reservation.id,
+        userId: user.id
       });
     } catch (error) {
       await failAiGeneration({
@@ -89,15 +103,24 @@ export async function POST(request) {
         error
       });
 
+      logAiGenerationFailure({
+        error,
+        user,
+        business,
+        generationId: reservation.id
+      });
+
       if (error instanceof AppError) {
         throw error;
       }
 
       throw new AppError(
-        error?.status === 429
-          ? "The AI provider is busy or rate-limited. Please try again shortly."
-          : "The AI provider could not generate a draft. Please try again.",
-        error?.status === 429 ? 429 : 502
+        error?.message ||
+          "The AI provider could not generate a draft. Please try again.",
+        error?.status || 502,
+        {
+          code: error?.code || "AI_PROVIDER_ERROR"
+        }
       );
     }
 

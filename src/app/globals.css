@@ -24,6 +24,26 @@
     --radius: 1rem;
   }
 
+  .dark {
+    --background: 160 16% 5%;
+    --foreground: 0 0% 98%;
+    --card: 160 12% 8%;
+    --card-foreground: 0 0% 98%;
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 160 12% 14%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 160 10% 13%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 160 15% 16%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 10% 18%;
+    --input: 160 10% 18%;
+    --ring: 158 64% 52%;
+  }
+
   * {
     @apply border-border;
   }
@@ -45,6 +65,42 @@
 }
 
 @layer utilities {
+  @keyframes landing-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes landing-grid {
+    0% {
+      background-position: 0 0;
+    }
+
+    100% {
+      background-position: 44px 44px;
+    }
+  }
+
+  .animate-landing-float {
+    animation: landing-float 8s ease-in-out infinite;
+  }
+
+  .animate-landing-grid {
+    animation: landing-grid 18s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-landing-float,
+    .animate-landing-grid {
+      animation: none;
+    }
+  }
+
   @media (min-width: 1024px) {
     html[dir="rtl"] .app-shell-sidebar {
       inset-inline-start: auto;

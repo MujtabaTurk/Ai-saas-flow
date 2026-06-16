@@ -116,6 +116,10 @@ export function AiAssistantManagement({
   const usage = workspace?.usage;
   const access = workspace?.access;
   const provider = workspace?.provider;
+  const providerEnvironmentVariables =
+    provider?.requiredEnvironmentVariables?.length > 0
+      ? provider.requiredEnvironmentVariables
+      : ["GEMINI_API_KEY", "GEMINI_MODEL"];
   const activeGeneration = useMemo(() => {
     const preferredId =
       selectedGenerationId ||
@@ -260,10 +264,19 @@ export function AiAssistantManagement({
       ) : null}
       {!provider?.configured ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          AI generation is not configured. Add <code>OPENAI_API_KEY</code> to
-          the server environment. The model defaults to{" "}
-          <code>{provider?.model}</code> and can be changed with{" "}
-          <code>OPENAI_MODEL</code>.
+          AI generation is not configured. Configure{" "}
+          {providerEnvironmentVariables.map((name, index) => (
+            <span key={name}>
+              {index > 0
+                ? index === providerEnvironmentVariables.length - 1
+                  ? " and "
+                  : ", "
+                : null}
+              <code>{name}</code>
+            </span>
+          ))}{" "}
+          for {provider?.displayName || "the AI provider"}. The model defaults
+          to <code>{provider?.model}</code>.
         </div>
       ) : null}
       {usage?.limit === 0 ? (

@@ -460,6 +460,12 @@ export async function failAiGeneration({
       : error?.status
         ? `HTTP_${error.status}`
         : "PROVIDER_ERROR";
+  const providerMessage =
+    error?.details?.providerMessage || error?.message || null;
+  const errorMessage =
+    typeof providerMessage === "string" && providerMessage.trim()
+      ? providerMessage.trim().slice(0, 1000)
+      : "The AI provider could not complete this draft.";
 
   await prisma.aiGeneration.updateMany({
     where: {
@@ -470,7 +476,7 @@ export async function failAiGeneration({
     data: {
       status: "FAILED",
       errorCode: providerCode,
-      errorMessage: "The AI provider could not complete this draft."
+      errorMessage
     }
   });
 }

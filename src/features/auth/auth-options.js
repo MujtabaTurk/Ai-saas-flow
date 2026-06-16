@@ -139,7 +139,7 @@ export const authOptions = {
         session.user.platformRole = token.platformRole || "USER";
         session.user.activeBusinessId = token.activeBusinessId || null;
         session.user.activeBusinessMembershipId =
-          token.activeBusinessMembershipId || null;
+        token.activeBusinessMembershipId || null;
         session.user.activeBusinessSlug = token.activeBusinessSlug || null;
         session.user.activeBusinessName = token.activeBusinessName || null;
         session.user.activeBusinessStatus = token.activeBusinessStatus || null;

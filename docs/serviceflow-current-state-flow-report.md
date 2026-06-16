@@ -5,7 +5,7 @@
 
 ## Audit Notes
 
-- This report describes what the current code implements. It does not assume that external services such as MongoDB, Stripe, Resend, Google OAuth, or OpenAI are configured in a deployed environment.
+- This report describes what the current code implements. It does not assume that external services such as MongoDB, Stripe, Resend, Google OAuth, or Gemini are configured in a deployed environment.
 - The latest recorded verification before this audit passed `npm run i18n:check`, `npm run lint`, and `npm run build`.
 - No automated unit, integration, or end-to-end test files were found.
 - The working tree currently contains many uncommitted changes and untracked milestone files. The implementation exists in the workspace, but there is not yet a clean Git baseline for it.
@@ -653,7 +653,7 @@ flowchart TD
 | Reviews | Booking-verified submission, one review per booking, moderation, public published-review display. |
 | Notifications | In-app and Resend email delivery, dedupe keys, status tracking, and manual retry APIs/UI. |
 | Analytics | Basic 30-day analytics and Pro flexible periods with subscription enforcement. |
-| AI | OpenAI Responses API integration, plan credits, reservations, approval/rejection, application to supported content, token/cost metadata. |
+| AI | Gemini GenerateContent integration, plan credits, reservations, approval/rejection, application to supported content, token/cost metadata. |
 | i18n | Five languages, public/auth translation, locale cookie, tenant fallback, localized dates/money, and RTL support. |
 
 ## Principal Architecture Risks
