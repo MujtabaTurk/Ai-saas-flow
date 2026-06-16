@@ -9,8 +9,6 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock3,
-  CreditCard,
-  Globe2,
   Layers3,
   LineChart,
   MessageSquare,
@@ -49,59 +47,96 @@ const trustedCompanies = [
 ];
 
 const metrics = [
-  { value: "42%", label: "fewer no-shows" },
-  { value: "11h", label: "saved weekly" },
-  { value: "3.8x", label: "faster follow-up" }
+  { value: "42%", label: "fewer no-shows", detail: "Reminder loops", progress: 78 },
+  { value: "11h", label: "saved weekly", detail: "Ops automation", progress: 64 },
+  { value: "3.8x", label: "faster follow-up", detail: "AI summaries", progress: 86 }
 ];
 
-const features = [
+const bentoFeatures = [
   {
-    title: "Service Management",
+    eyebrow: "Service engine",
+    title: "Catalog, capacity, and conversion live in one layer",
     description:
-      "Create bookable services with pricing, duration, capacity, staff assignment, and booking rules.",
+      "Shape bookable services with pricing, duration, staff rules, buffers, prep notes, and customer-facing copy.",
     icon: Layers3,
-    accent: "from-emerald-500 to-teal-500",
-    detail: "Unlimited service catalog"
+    className: "lg:col-span-4 lg:row-span-2",
+    accent: "from-emerald-400 via-sky-300 to-amber-300",
+    visual: "service"
   },
   {
-    title: "Team Management",
+    eyebrow: "AI copilot",
+    title: "Suggestions appear where operators already work",
     description:
-      "Invite team members, assign roles, manage capacity, and keep every provider aligned.",
-    icon: Users,
-    accent: "from-sky-500 to-cyan-500",
-    detail: "Role-aware workflows"
-  },
-  {
-    title: "Availability Scheduling",
-    description:
-      "Set working hours, blocked dates, and smart slots that reflect your real operating rhythm.",
-    icon: Clock3,
-    accent: "from-amber-500 to-orange-500",
-    detail: "Live slot generation"
-  },
-  {
-    title: "Online Booking",
-    description:
-      "Publish a polished booking page where customers can choose a service, time, and provider.",
-    icon: CalendarCheck,
-    accent: "from-rose-500 to-pink-500",
-    detail: "Self-serve conversion"
-  },
-  {
-    title: "AI Assistant",
-    description:
-      "Generate service copy, answer operational questions, and turn booking data into next actions.",
+      "Spot weak service copy, underused slots, review patterns, and follow-up tasks without leaving the dashboard.",
     icon: Bot,
-    accent: "from-violet-500 to-fuchsia-500",
-    detail: "Built-in AI credits"
+    className: "lg:col-span-2",
+    accent: "from-violet-400 via-fuchsia-300 to-rose-300",
+    visual: "ai"
   },
   {
-    title: "Analytics",
+    eyebrow: "Team rhythm",
+    title: "A live view of who can take what next",
     description:
-      "Track revenue, booking volume, customer behavior, team performance, and review trends.",
+      "Keep staff roles, service eligibility, workload, and utilization visible before the day gets messy.",
+    icon: Users,
+    className: "lg:col-span-2",
+    accent: "from-sky-400 via-cyan-300 to-emerald-300",
+    visual: "team"
+  },
+  {
+    eyebrow: "Availability",
+    title: "Scheduling logic designed for real business constraints",
+    description:
+      "Working hours, blocked dates, service buffers, provider calendars, and public slots stay in sync.",
+    icon: Clock3,
+    className: "lg:col-span-3",
+    accent: "from-amber-400 via-orange-300 to-rose-300",
+    visual: "availability"
+  },
+  {
+    eyebrow: "Growth signals",
+    title: "Analytics that point to the next operational move",
+    description:
+      "Track booking velocity, review momentum, no-shows, revenue, and capacity from the same workspace.",
     icon: BarChart3,
-    accent: "from-lime-500 to-emerald-500",
-    detail: "Decision-ready reports"
+    className: "lg:col-span-3",
+    accent: "from-lime-300 via-emerald-300 to-sky-300",
+    visual: "analytics"
+  }
+];
+
+const animatedStats = [
+  {
+    value: "284",
+    suffix: "+",
+    label: "bookings routed this month",
+    caption: "Across public pages, staff calendars, and manual admin entries.",
+    progress: 84,
+    accent: "from-emerald-400 to-sky-300"
+  },
+  {
+    value: "96",
+    suffix: "%",
+    label: "schedule confidence",
+    caption: "Generated from availability coverage, buffer health, and assignment fit.",
+    progress: 96,
+    accent: "from-sky-400 to-cyan-300"
+  },
+  {
+    value: "4.9",
+    suffix: "/5",
+    label: "review momentum",
+    caption: "Customer feedback stays connected to booking and service history.",
+    progress: 90,
+    accent: "from-amber-300 to-rose-300"
+  },
+  {
+    value: "$18.4k",
+    suffix: "",
+    label: "tracked revenue",
+    caption: "Subscription health and booking revenue sit beside daily operations.",
+    progress: 72,
+    accent: "from-lime-300 to-emerald-400"
   }
 ];
 
@@ -226,11 +261,33 @@ function SectionHeader({ eyebrow, title, description, align = "center" }) {
       >
         {eyebrow}
       </Badge>
-      <h2 className="text-3xl font-bold tracking-tight text-growth-sidebar dark:text-white sm:text-4xl lg:text-5xl">
+      <h2 className="text-3xl font-bold text-growth-sidebar dark:text-white sm:text-4xl lg:text-5xl">
         {title}
       </h2>
       <p className="text-base leading-7 text-slate-600 dark:text-zinc-300 sm:text-lg">
         {description}
+      </p>
+    </div>
+  );
+}
+
+function HeroStat({ metric }) {
+  return (
+    <div
+      className="group rounded-2xl border border-white/70 bg-white/75 p-4 shadow-sm backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-900/10 dark:border-white/10 dark:bg-white/5"
+      style={{ "--stat-progress": `${metric.progress}%` }}
+    >
+      <dt className="animate-stat-rise text-2xl font-bold text-growth-sidebar dark:text-white">
+        {metric.value}
+      </dt>
+      <dd className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
+        {metric.label}
+      </dd>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-white/10">
+        <span className="animate-stat-bar block h-full rounded-full bg-gradient-to-r from-emerald-500 via-sky-400 to-amber-300" />
+      </div>
+      <p className="mt-2 text-xs font-semibold text-growth-forest dark:text-emerald-200">
+        {metric.detail}
       </p>
     </div>
   );
@@ -247,7 +304,7 @@ function SiteNav() {
           <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-growth-sidebar text-white shadow-lg shadow-emerald-900/20 dark:bg-emerald-400 dark:text-zinc-950">
             <CalendarCheck className="h-5 w-5" aria-hidden="true" />
           </span>
-          <span className="text-lg font-bold tracking-tight text-growth-sidebar dark:text-white">
+          <span className="text-lg font-bold text-growth-sidebar dark:text-white">
             ServiceFlow
           </span>
         </Link>
@@ -296,8 +353,12 @@ function HeroSection() {
             <Sparkles className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
             AI-assisted booking operations
           </Badge>
-          <h1 className="max-w-4xl text-5xl font-bold tracking-tight text-growth-sidebar dark:text-white sm:text-6xl lg:text-7xl">
-            The booking operating system for modern service businesses
+          <h1 className="max-w-4xl text-5xl font-bold text-growth-sidebar dark:text-white sm:text-6xl lg:text-7xl">
+            The{" "}
+            <span className="animate-gradient-pan bg-gradient-to-r from-growth-forest via-sky-500 to-amber-500 bg-clip-text text-transparent dark:from-emerald-200 dark:via-sky-200 dark:to-amber-200">
+              booking operating system
+            </span>{" "}
+            for modern service businesses
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-zinc-300 sm:text-xl">
             Manage services, staff, availability, bookings, customers, reviews,
@@ -327,17 +388,7 @@ function HeroSection() {
 
           <dl className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
             {metrics.map((metric) => (
-              <div
-                key={metric.label}
-                className="rounded-2xl border border-white/70 bg-white/75 p-4 shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5"
-              >
-                <dt className="text-2xl font-bold tracking-tight text-growth-sidebar dark:text-white">
-                  {metric.value}
-                </dt>
-                <dd className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-zinc-400">
-                  {metric.label}
-                </dd>
-              </div>
+              <HeroStat key={metric.label} metric={metric} />
             ))}
           </dl>
         </div>
@@ -528,19 +579,64 @@ function TrustedBySection() {
   );
 }
 
+function AnimatedStatsSection() {
+  return (
+    <section className="px-4 py-14 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl border border-white/70 bg-growth-sidebar p-2 shadow-2xl shadow-emerald-900/15 dark:border-white/10 dark:bg-zinc-950">
+        <div className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.14),rgba(255,255,255,0.04))] p-5 sm:p-6">
+          <div className="grid gap-4 lg:grid-cols-4">
+            {animatedStats.map((stat) => (
+              <article
+                key={stat.label}
+                className="group rounded-2xl border border-white/10 bg-white/[0.07] p-5 text-white backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.1]"
+                style={{ "--stat-progress": `${stat.progress}%` }}
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-100/80">
+                  {stat.label}
+                </p>
+                <div className="mt-4 flex items-end gap-1">
+                  <span className="animate-stat-rise text-4xl font-bold sm:text-5xl">
+                    {stat.value}
+                  </span>
+                  {stat.suffix ? (
+                    <span className="pb-1 text-xl font-bold text-emerald-100">
+                      {stat.suffix}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-3 min-h-12 text-sm leading-6 text-emerald-50/75">
+                  {stat.caption}
+                </p>
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+                  <span
+                    className={cn(
+                      "animate-stat-bar block h-full rounded-full bg-gradient-to-r",
+                      stat.accent
+                    )}
+                  />
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FeaturesSection() {
   return (
     <section id="features" className="px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <SectionHeader
-          eyebrow="Platform"
-          title="Everything a service business needs to run bookings with confidence"
-          description="ServiceFlow connects the operational details that usually live across calendars, spreadsheets, forms, payment tools, and support inboxes."
+          eyebrow="Bento operating system"
+          title="Not another booking form. A connected command layer for service revenue."
+          description="Each workflow has its own surface, but the data stays connected: services influence availability, availability shapes bookings, bookings enrich customers, and AI turns the pattern into action."
         />
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {features.map((feature) => (
-            <FeatureCard key={feature.title} feature={feature} />
+        <div className="mt-12 grid auto-rows-[minmax(19rem,auto)] gap-5 lg:grid-cols-6">
+          {bentoFeatures.map((feature) => (
+            <BentoFeature key={feature.title} feature={feature} />
           ))}
         </div>
       </div>
@@ -548,34 +644,244 @@ function FeaturesSection() {
   );
 }
 
-function FeatureCard({ feature }) {
+function BentoFeature({ feature }) {
   const Icon = feature.icon;
 
   return (
-    <Card className="group overflow-hidden border-slate-200 bg-white/85 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-emerald-400/30">
-      <CardContent className="p-6">
-        <div
-          className={cn(
-            "mb-6 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg",
-            feature.accent
-          )}
-        >
-          <Icon className="h-6 w-6" aria-hidden="true" />
+    <article
+      className={cn(
+        "group relative overflow-hidden rounded-2xl border border-slate-200 bg-white/85 p-6 shadow-sm backdrop-blur transition-all duration-500 hover:-translate-y-1 hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-900/10 dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-emerald-300/30",
+        feature.className
+      )}
+    >
+      <div
+        className={cn(
+          "absolute inset-x-0 top-0 h-1 bg-gradient-to-r opacity-80 transition-opacity duration-300 group-hover:opacity-100",
+          feature.accent
+        )}
+      />
+      <div className="relative z-10 flex h-full flex-col">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-growth-forest dark:text-emerald-200">
+              {feature.eyebrow}
+            </p>
+            <h3 className="mt-3 max-w-xl text-2xl font-bold text-growth-sidebar dark:text-white">
+              {feature.title}
+            </h3>
+          </div>
+          <span
+            className={cn(
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br text-white shadow-lg",
+              feature.accent
+            )}
+          >
+            <Icon className="h-6 w-6" aria-hidden="true" />
+          </span>
         </div>
-        <div className="flex min-h-52 flex-col">
-          <h3 className="text-xl font-bold tracking-tight text-growth-sidebar dark:text-white">
-            {feature.title}
-          </h3>
-          <p className="mt-3 flex-1 text-sm leading-6 text-slate-600 dark:text-zinc-300">
-            {feature.description}
+        <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 dark:text-zinc-300">
+          {feature.description}
+        </p>
+        <div className="mt-6 flex-1">
+          {feature.visual === "service" ? <ServiceBentoPreview /> : null}
+          {feature.visual === "ai" ? <AiBentoPreview /> : null}
+          {feature.visual === "team" ? <TeamBentoPreview /> : null}
+          {feature.visual === "availability" ? <AvailabilityBentoPreview /> : null}
+          {feature.visual === "analytics" ? <AnalyticsBentoPreview /> : null}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function ServiceBentoPreview() {
+  return (
+    <div className="grid gap-4 md:grid-cols-[1.05fr_0.95fr]">
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-zinc-950/70">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-bold text-growth-sidebar dark:text-white">
+            Premium consultation
           </p>
-          <div className="mt-6 flex items-center gap-2 text-sm font-bold text-growth-forest dark:text-emerald-200">
+          <Badge className="bg-emerald-100 text-growth-forest dark:bg-emerald-400/15 dark:text-emerald-200">
+            Live
+          </Badge>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+          {[
+            ["Duration", "45m"],
+            ["Price", "$120"],
+            ["Buffer", "15m"]
+          ].map(([label, value]) => (
+            <div key={label} className="rounded-xl bg-white p-3 dark:bg-white/5">
+              <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                {label}
+              </p>
+              <p className="mt-1 text-lg font-bold text-growth-sidebar dark:text-white">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 rounded-xl bg-white p-3 dark:bg-white/5">
+          <div className="mb-2 flex items-center gap-2 text-xs font-bold text-growth-forest dark:text-emerald-200">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            {feature.detail}
+            AI copy score improved
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+            <span className="animate-stat-bar block h-full rounded-full bg-gradient-to-r from-emerald-500 to-sky-400" style={{ "--stat-progress": "82%" }} />
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-950/70">
+        <p className="text-sm font-bold text-growth-sidebar dark:text-white">
+          Booking path
+        </p>
+        <div className="mt-4 space-y-3">
+          {["Choose service", "Select provider", "Pick smart slot", "Confirm booking"].map(
+            (item, index) => (
+              <div key={item} className="flex items-center gap-3">
+                <span
+                  className={cn(
+                    "flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold",
+                    index === 2
+                      ? "bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200"
+                      : "bg-emerald-100 text-growth-forest dark:bg-emerald-400/15 dark:text-emerald-200"
+                  )}
+                >
+                  {index + 1}
+                </span>
+                <span className="text-sm font-semibold text-slate-600 dark:text-zinc-300">
+                  {item}
+                </span>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AiBentoPreview() {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-zinc-950 p-4 text-white shadow-inner dark:border-white/10">
+      <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-emerald-200">
+        <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-300" />
+        Action queue
+      </div>
+      <div className="mt-4 space-y-3">
+        {[
+          "Rewrite 3 low-converting services",
+          "Open 2 Friday afternoon slots",
+          "Ask 11 customers for reviews"
+        ].map((item) => (
+          <div key={item} className="rounded-xl border border-white/10 bg-white/[0.06] p-3">
+            <p className="text-sm font-semibold text-zinc-100">{item}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TeamBentoPreview() {
+  return (
+    <div className="space-y-3">
+      {[
+        ["Maya", "Color, consults", 92],
+        ["Noah", "Repair, installs", 68],
+        ["Ari", "Coaching, reviews", 81]
+      ].map(([name, role, load]) => (
+        <div key={name} className="rounded-2xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-zinc-950/70">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-growth-sidebar dark:text-white">{name}</p>
+              <p className="text-xs text-slate-500 dark:text-zinc-400">{role}</p>
+            </div>
+            <span className="text-sm font-bold text-growth-forest dark:text-emerald-200">
+              {load}%
+            </span>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+            <span
+              className="animate-stat-bar block h-full rounded-full bg-gradient-to-r from-sky-400 to-emerald-400"
+              style={{ "--stat-progress": `${load}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AvailabilityBentoPreview() {
+  const cells = [
+    [88, 64, 72, 95],
+    [42, 80, 58, 76],
+    [67, 74, 91, 55]
+  ];
+
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-zinc-950/70">
+      <div className="grid grid-cols-4 gap-2">
+        {["Mon", "Tue", "Wed", "Thu"].map((day) => (
+          <div key={day} className="text-center text-xs font-bold text-slate-500 dark:text-zinc-400">
+            {day}
+          </div>
+        ))}
+        {cells.flat().map((value, index) => (
+          <div
+            key={`${value}-${index}`}
+            className="h-14 overflow-hidden rounded-xl border border-white bg-white p-1 dark:border-white/10 dark:bg-white/5"
+          >
+            <span
+              className={cn(
+                "animate-stat-bar block h-full rounded-lg",
+                value > 84
+                  ? "bg-gradient-to-t from-emerald-500 to-lime-300"
+                  : value > 68
+                    ? "bg-gradient-to-t from-sky-500 to-cyan-300"
+                    : "bg-gradient-to-t from-amber-400 to-rose-300"
+              )}
+              style={{ "--stat-progress": `${value}%`, width: "100%", transform: `scaleY(${value / 100})`, transformOrigin: "bottom" }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AnalyticsBentoPreview() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-3">
+      {animatedStats.slice(0, 3).map((stat) => (
+        <div
+          key={stat.label}
+          className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-zinc-950/70"
+          style={{ "--stat-progress": `${stat.progress}%` }}
+        >
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500 dark:text-zinc-400">
+            {stat.label.split(" ").slice(0, 2).join(" ")}
+          </p>
+          <p className="mt-3 text-3xl font-bold text-growth-sidebar dark:text-white">
+            {stat.value}
+            <span className="text-lg text-growth-forest dark:text-emerald-200">
+              {stat.suffix}
+            </span>
+          </p>
+          <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+            <span
+              className={cn(
+                "animate-stat-bar block h-full rounded-full bg-gradient-to-r",
+                stat.accent
+              )}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -622,98 +928,187 @@ function WorkflowSection() {
 function DashboardShowcaseSection() {
   return (
     <section id="showcase" className="px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
-      <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div>
-          <SectionHeader
-            align="left"
-            eyebrow="Dashboard"
-            title="A command center for the full customer journey"
-            description="From first booking to follow-up review, every workflow sits beside the metrics that help operators make better decisions."
-          />
-          <ul className="mt-8 space-y-4">
-            {dashboardHighlights.map((item) => (
-              <li
-                key={item}
-                className="flex gap-3 text-sm font-semibold leading-6 text-slate-700 dark:text-zinc-200"
-              >
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">
-                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                </span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl shadow-emerald-900/10 dark:border-white/10 dark:bg-white/[0.04]">
-          <div className="grid gap-3 md:grid-cols-[1fr_0.82fr]">
-            <div className="rounded-2xl bg-growth-sidebar p-5 text-white dark:bg-zinc-900">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-emerald-100">Revenue forecast</p>
-                  <p className="mt-2 text-4xl font-bold">$24.8k</p>
-                </div>
-                <Badge className="bg-white/15 text-white">+18%</Badge>
-              </div>
-              <div className="mt-8 flex h-48 items-end gap-2">
-                {[42, 58, 53, 76, 69, 92, 81, 96, 88].map((height, index) => (
-                  <span
-                    key={`${height}-${index}`}
-                    className="flex-1 rounded-t-xl bg-gradient-to-t from-emerald-400 to-sky-300"
-                    style={{ height: `${height}%` }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="grid gap-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-400/15 dark:text-rose-200">
-                    <Star className="h-5 w-5" aria-hidden="true" />
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-12 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
+          <div>
+            <Badge
+              variant="outline"
+              className="border-emerald-200 bg-white/70 text-growth-forest shadow-sm backdrop-blur dark:border-white/10 dark:bg-white/5 dark:text-emerald-200"
+            >
+              Dashboard theater
+            </Badge>
+            <h2 className="mt-5 text-3xl font-bold text-growth-sidebar dark:text-white sm:text-4xl lg:text-5xl">
+              A cockpit that keeps bookings, people, money, and AI in motion
+            </h2>
+            <p className="mt-5 text-base leading-7 text-slate-600 dark:text-zinc-300 sm:text-lg">
+              The dashboard is designed around the way service operators scan:
+              what is happening now, what needs attention, and which decision
+              will improve the next booking cycle.
+            </p>
+            <ul className="mt-8 space-y-4">
+              {dashboardHighlights.map((item) => (
+                <li
+                  key={item}
+                  className="flex gap-3 text-sm font-semibold leading-6 text-slate-700 dark:text-zinc-200"
+                >
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
                   </span>
-                  <div>
-                    <p className="text-sm text-slate-500 dark:text-zinc-400">
-                      Review momentum
-                    </p>
-                    <p className="text-2xl font-bold text-growth-sidebar dark:text-white">
-                      4.9 / 5
-                    </p>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="relative">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-br from-emerald-300/60 via-sky-300/50 to-amber-200/60 opacity-70 blur-xl dark:from-emerald-400/20 dark:via-sky-400/20 dark:to-amber-300/20" />
+            <div className="relative overflow-hidden rounded-2xl border border-white/80 bg-white p-3 shadow-[0_30px_100px_rgba(6,78,59,0.2)] dark:border-white/10 dark:bg-zinc-950">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/10 dark:bg-zinc-900">
+                <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 dark:border-white/10 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-rose-400" />
+                    <span className="h-3 w-3 rounded-full bg-amber-400" />
+                    <span className="h-3 w-3 rounded-full bg-emerald-400" />
+                  </div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-zinc-300">
+                    <Sparkles className="h-4 w-4 text-emerald-500" aria-hidden="true" />
+                    Ask ServiceFlow about this week&apos;s booking gaps
                   </div>
                 </div>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-600 dark:bg-sky-400/15 dark:text-sky-200">
-                    <Globe2 className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-sm text-slate-500 dark:text-zinc-400">
-                      Booking page
+
+                <div className="mt-4 grid gap-4 xl:grid-cols-[0.78fr_1.22fr]">
+                  <aside className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-950/70">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500 dark:text-zinc-400">
+                      Attention queue
                     </p>
-                    <p className="text-2xl font-bold text-growth-sidebar dark:text-white">
-                      7.4k visits
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-white/10 dark:bg-zinc-900">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-200">
-                    <CreditCard className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-sm text-slate-500 dark:text-zinc-400">
-                      Active subscriptions
-                    </p>
-                    <p className="text-2xl font-bold text-growth-sidebar dark:text-white">
-                      186
-                    </p>
+                    <div className="mt-4 space-y-3">
+                      {[
+                        ["2 bookings need assignment", "Team"],
+                        ["Friday capacity is 91%", "Availability"],
+                        ["7 reviews ready to request", "Reviews"]
+                      ].map(([title, label]) => (
+                        <div
+                          key={title}
+                          className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5"
+                        >
+                          <p className="text-sm font-bold text-growth-sidebar dark:text-white">
+                            {title}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-growth-forest dark:text-emerald-200">
+                            {label}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </aside>
+
+                  <div className="grid gap-4">
+                    <div className="grid gap-3 sm:grid-cols-3">
+                      {animatedStats.slice(0, 3).map((stat) => (
+                        <div
+                          key={stat.label}
+                          className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-950/70"
+                          style={{ "--stat-progress": `${stat.progress}%` }}
+                        >
+                          <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                            {stat.label.split(" ").slice(0, 2).join(" ")}
+                          </p>
+                          <p className="mt-2 text-2xl font-bold text-growth-sidebar dark:text-white">
+                            {stat.value}
+                            <span className="text-sm text-growth-forest dark:text-emerald-200">
+                              {stat.suffix}
+                            </span>
+                          </p>
+                          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-white/10">
+                            <span
+                              className={cn(
+                                "animate-stat-bar block h-full rounded-full bg-gradient-to-r",
+                                stat.accent
+                              )}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-white/10 dark:bg-zinc-950/70">
+                        <div className="mb-4 flex items-center justify-between">
+                          <p className="text-sm font-bold text-growth-sidebar dark:text-white">
+                            Live booking board
+                          </p>
+                          <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-400/15 dark:text-sky-200">
+                            14 today
+                          </Badge>
+                        </div>
+                        <div className="space-y-3">
+                          {[
+                            ["09:00", "Discovery consult", "Maya", "Paid"],
+                            ["11:30", "Color refresh", "Ari", "Confirm"],
+                            ["14:15", "Repair visit", "Noah", "Assigned"]
+                          ].map(([time, service, member, status]) => (
+                            <div
+                              key={`${time}-${service}`}
+                              className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 rounded-xl bg-slate-50 p-3 dark:bg-white/5"
+                            >
+                              <p className="text-sm font-bold text-growth-forest dark:text-emerald-200">
+                                {time}
+                              </p>
+                              <div>
+                                <p className="text-sm font-bold text-growth-sidebar dark:text-white">
+                                  {service}
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-zinc-400">
+                                  {member}
+                                </p>
+                              </div>
+                              <span className="rounded-full bg-white px-2 py-1 text-xs font-bold text-slate-500 dark:bg-zinc-900 dark:text-zinc-300">
+                                {status}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl bg-growth-sidebar p-4 text-white dark:bg-white dark:text-zinc-950">
+                        <p className="text-sm text-emerald-100 dark:text-zinc-500">
+                          Revenue pulse
+                        </p>
+                        <p className="mt-2 text-4xl font-bold">$24.8k</p>
+                        <div className="mt-8 flex h-36 items-end gap-2">
+                          {[38, 64, 52, 78, 70, 94, 82].map((height, index) => (
+                            <span
+                              key={`${height}-${index}`}
+                              className="animate-bar-rise flex-1 rounded-t-xl bg-gradient-to-t from-emerald-300 to-sky-200"
+                              style={{ "--bar-height": `${height}%` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {[
+            ["Services", "Copy, duration, price, capacity, buffers"],
+            ["Customers", "History, notes, reviews, follow-up state"],
+            ["Billing", "Plan status, subscription health, revenue trail"]
+          ].map(([label, text]) => (
+            <div
+              key={label}
+              className="rounded-2xl border border-slate-200 bg-white/70 p-5 backdrop-blur dark:border-white/10 dark:bg-white/[0.04]"
+            >
+              <p className="font-bold text-growth-sidebar dark:text-white">{label}</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600 dark:text-zinc-300">
+                {text}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -729,7 +1124,7 @@ function AiAssistantSection() {
             <Bot className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
             AI Assistant
           </Badge>
-          <h2 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+          <h2 className="mt-5 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
             Make every operator feel like they have a strategist on shift
           </h2>
           <p className="mt-5 max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
@@ -874,7 +1269,7 @@ function PricingSection() {
                   {plan.description}
                 </p>
                 <div className="mt-7 flex items-end gap-2">
-                  <span className="text-5xl font-bold tracking-tight text-growth-sidebar dark:text-white">
+                  <span className="text-5xl font-bold text-growth-sidebar dark:text-white">
                     {formatPrice(plan.monthlyPriceCents)}
                   </span>
                   {plan.monthlyPriceCents > 0 ? (
@@ -959,7 +1354,7 @@ function FinalCtaSection() {
           <ShieldCheck className="mr-2 h-3.5 w-3.5" aria-hidden="true" />
           Built for real service operations
         </Badge>
-        <h2 className="mx-auto mt-5 max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+        <h2 className="mx-auto mt-5 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
           Bring bookings, customers, teams, reviews, and AI into one calm workspace
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-emerald-50 dark:text-zinc-600 sm:text-lg">
@@ -1031,6 +1426,7 @@ export default function HomePage() {
       <SiteNav />
       <HeroSection />
       <TrustedBySection />
+      <AnimatedStatsSection />
       <FeaturesSection />
       <WorkflowSection />
       <DashboardShowcaseSection />

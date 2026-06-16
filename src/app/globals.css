@@ -86,6 +86,50 @@
     }
   }
 
+  @keyframes stat-rise {
+    0% {
+      opacity: 0;
+      transform: translateY(0.35rem);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes stat-bar-fill {
+    0% {
+      width: 0;
+    }
+
+    100% {
+      width: var(--stat-progress);
+    }
+  }
+
+  @keyframes bar-rise {
+    0% {
+      height: 10%;
+      opacity: 0.55;
+    }
+
+    100% {
+      height: var(--bar-height);
+      opacity: 1;
+    }
+  }
+
+  @keyframes gradient-pan {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    100% {
+      background-position: 100% 50%;
+    }
+  }
+
   .animate-landing-float {
     animation: landing-float 8s ease-in-out infinite;
   }
@@ -94,9 +138,32 @@
     animation: landing-grid 18s linear infinite;
   }
 
+  .animate-stat-rise {
+    animation: stat-rise 0.7s ease-out both;
+  }
+
+  .animate-stat-bar {
+    width: var(--stat-progress);
+    animation: stat-bar-fill 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-bar-rise {
+    height: var(--bar-height);
+    animation: bar-rise 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-gradient-pan {
+    background-size: 220% auto;
+    animation: gradient-pan 7s ease-in-out infinite alternate;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-landing-float,
-    .animate-landing-grid {
+    .animate-landing-grid,
+    .animate-stat-rise,
+    .animate-stat-bar,
+    .animate-bar-rise,
+    .animate-gradient-pan {
       animation: none;
     }
   }
