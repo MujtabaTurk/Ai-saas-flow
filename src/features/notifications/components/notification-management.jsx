@@ -113,8 +113,8 @@ export function NotificationManagement({ businessId, businessTimezone }) {
     <div className="space-y-5">
       {email && !email.configured ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Email delivery is not configured. Add `RESEND_API_KEY` and
-          `NOTIFICATION_EMAIL_FROM`; email records remain retryable in the
+          Email delivery is not configured. Add SMTP host, port, user,
+          password, and sender variables; email records remain retryable in the
           meantime.
         </div>
       ) : null}

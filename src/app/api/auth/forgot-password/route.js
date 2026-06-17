@@ -5,11 +5,9 @@ import {
   buildPasswordResetUrl,
   getPasswordResetUrlDiagnostics
 } from "@/features/auth/password-reset-url";
-import {
-  getEmailConfiguration,
-  sendTransactionalEmail
-} from "@/features/notifications/email-provider";
+import { getEmailConfiguration } from "@/features/notifications/email/config";
 import { logEmailDeliveryFailure } from "@/features/notifications/email-logging";
+import { sendPasswordResetEmail } from "@/features/notifications/events";
 import { ok, fail } from "@/lib/api/api-response";
 import { validateRequest } from "@/lib/api/validate-request";
 import { prisma } from "@/lib/prisma";
@@ -138,14 +136,10 @@ export async function POST(request) {
 
     try {
       stage = "send_reset_email";
-      const result = await sendTransactionalEmail({
-        to: email,
-        subject: "Reset your ServiceFlow password",
-        message:
-          "Use the secure link below to reset your password. This link expires in one hour.",
-        actionUrl: resetUrl,
-        actionLabel: "Reset password",
-        idempotencyKey: `password-reset:${tokenHash}`
+      const result = await sendPasswordResetEmail({
+        email,
+        resetUrl,
+        tokenHash
       });
 
       if (result.skipped) {

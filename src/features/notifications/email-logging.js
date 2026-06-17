@@ -59,7 +59,7 @@ export function logEmailDeliveryFailure({
     JSON.stringify({
       level: "error",
       event,
-      provider: "resend",
+      provider: "nodemailer",
       recipient: maskEmail(recipient),
       error: serializeError(error),
       metadata,

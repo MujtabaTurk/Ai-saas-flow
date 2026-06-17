@@ -1,4 +1,4 @@
-import { getEmailConfiguration } from "@/features/notifications/email-provider";
+import { getEmailConfiguration } from "@/features/notifications/email/config";
 import {
   getRequestedBusinessId,
   notificationSelect,

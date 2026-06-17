@@ -1,5 +1,13 @@
 const EMAIL_ADDRESS_PATTERN = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
+const SMTP_HOST_PATTERN = /^(?!-)(?:[a-z\d-]{1,63}\.)+[a-z\d-]{2,63}$/i;
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const SMTP_ENVIRONMENT_VARIABLES = [
+  "SMTP_HOST",
+  "SMTP_PORT",
+  "SMTP_USER",
+  "SMTP_PASSWORD",
+  "SMTP_FROM"
+];
 
 function getSenderAddress(from) {
   const value = String(from || "").trim();
@@ -8,14 +16,24 @@ function getSenderAddress(from) {
   return (bracketedAddress || value).toLowerCase();
 }
 
+function isValidSmtpHost(value) {
+  if (!value || value.includes("://") || value.includes("/") || value.includes(":")) {
+    return false;
+  }
+
+  return SMTP_HOST_PATTERN.test(value);
+}
+
 function validateServiceFlowEnvironment() {
   const isProduction = process.env.NODE_ENV === "production";
   const failures = [];
   const warnings = [];
   const nextAuthUrl = process.env.NEXTAUTH_URL;
-  const resendApiKey = process.env.RESEND_API_KEY?.trim();
-  const notificationEmailFrom = process.env.NOTIFICATION_EMAIL_FROM?.trim();
-  const senderAddress = getSenderAddress(notificationEmailFrom);
+  const smtpPortValue = process.env.SMTP_PORT?.trim();
+  const smtpHost = process.env.SMTP_HOST?.trim();
+  const smtpPort = Number(smtpPortValue);
+  const smtpFrom = process.env.SMTP_FROM?.trim();
+  const senderAddress = getSenderAddress(smtpFrom);
 
   if (!nextAuthUrl) {
     (isProduction ? failures : warnings).push(
@@ -37,27 +55,36 @@ function validateServiceFlowEnvironment() {
     }
   }
 
-  if (!resendApiKey) {
+  const missingSmtpVariables = SMTP_ENVIRONMENT_VARIABLES.filter(
+    (name) => !process.env[name]?.trim()
+  );
+
+  if (missingSmtpVariables.length > 0) {
     (isProduction ? failures : warnings).push(
-      "RESEND_API_KEY is required for password reset email delivery."
+      `SMTP email delivery is missing: ${missingSmtpVariables.join(", ")}.`
     );
-  } else if (!resendApiKey.startsWith("re_")) {
-    failures.push("RESEND_API_KEY has an unexpected format.");
   }
 
-  if (!notificationEmailFrom) {
-    (isProduction ? failures : warnings).push(
-      "NOTIFICATION_EMAIL_FROM is required for password reset email delivery."
-    );
-  } else if (!EMAIL_ADDRESS_PATTERN.test(senderAddress)) {
+  if (
+    smtpHost &&
+    !isValidSmtpHost(smtpHost)
+  ) {
     failures.push(
-      "NOTIFICATION_EMAIL_FROM must be an email address or a display name with an email address."
+      "SMTP_HOST must be a hostname such as smtp.gmail.com, not an application URL."
     );
-  } else if (senderAddress.endsWith("@resend.dev")) {
-    const message =
-      "NOTIFICATION_EMAIL_FROM uses the resend.dev test sender. It can send only to the Resend account owner address; verify a domain in Resend for application users.";
+  }
 
-    (isProduction ? failures : warnings).push(message);
+  if (
+    smtpPortValue &&
+    (!Number.isInteger(smtpPort) || smtpPort < 1 || smtpPort > 65535)
+  ) {
+    failures.push("SMTP_PORT must be a number between 1 and 65535.");
+  }
+
+  if (smtpFrom && !EMAIL_ADDRESS_PATTERN.test(senderAddress)) {
+    failures.push(
+      "SMTP_FROM must be an email address or a display name with an email address."
+    );
   }
 
   for (const warning of warnings) {

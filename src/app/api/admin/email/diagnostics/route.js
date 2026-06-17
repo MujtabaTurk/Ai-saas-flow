@@ -1,10 +1,8 @@
 import { getPasswordResetUrlDiagnostics } from "@/features/auth/password-reset-url";
 import { requireSuperAdminContext } from "@/features/admin/server";
-import {
-  getEmailConfiguration,
-  sendTransactionalEmail
-} from "@/features/notifications/email-provider";
+import { getEmailConfiguration } from "@/features/notifications/email/config";
 import { logEmailDeliveryFailure } from "@/features/notifications/email-logging";
+import { sendEmailDiagnostic } from "@/features/notifications/events";
 import { AppError } from "@/lib/api/errors";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { ok } from "@/lib/api/api-response";
@@ -63,14 +61,10 @@ export async function POST() {
       );
     }
 
-    const result = await sendTransactionalEmail({
-      to: recipient,
-      subject: "ServiceFlow email delivery diagnostic",
-      message:
-        "Resend accepted this ServiceFlow diagnostic message. Receiving it confirms the configured sender can deliver to this address.",
-      actionUrl: report.resetUrl.ready ? report.resetUrl.baseUrl : null,
-      actionLabel: "Open ServiceFlow",
-      idempotencyKey: `email-diagnostic:${user.id}:${Date.now()}`
+    const result = await sendEmailDiagnostic({
+      recipient,
+      baseUrl: report.resetUrl.ready ? report.resetUrl.baseUrl : null,
+      userId: user.id
     });
 
     if (result.skipped) {
@@ -78,7 +72,7 @@ export async function POST() {
     }
 
     return ok({
-      message: "Resend accepted the diagnostic email.",
+      message: "Nodemailer accepted the diagnostic email.",
       recipient,
       provider: report.email.provider,
       providerMessageId: result.providerMessageId,

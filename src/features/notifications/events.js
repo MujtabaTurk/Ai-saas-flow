@@ -1,8 +1,31 @@
+import { sendTransactionalEmail } from "@/features/notifications/email/service";
 import { queueNotification } from "@/features/notifications/server";
 import { prisma } from "@/lib/prisma";
 
 function getAppUrl(path = "") {
   return `${(process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/+$/, "")}${path}`;
+}
+
+function emailMetadata(template, emailData = {}, emailActionLabel = null) {
+  return {
+    emailTemplate: template,
+    emailData,
+    ...(emailActionLabel ? { emailActionLabel } : {})
+  };
+}
+
+function throwIfSkippedEmail(result) {
+  if (!result.skipped) {
+    return;
+  }
+
+  const error = new Error(result.reason);
+  error.deliverySkipped = true;
+  error.details = {
+    configuration: result.configuration || null
+  };
+
+  throw error;
 }
 
 export async function notifyTeamInvitation({
@@ -42,10 +65,67 @@ export async function notifyTeamInvitation({
       actionUrl,
       metadata: {
         invitationId: invitation.id,
-        role: invitation.role
+        role: invitation.role,
+        ...emailMetadata(
+          "team-invitation",
+          {
+            businessName: business.name,
+            role: invitation.role,
+            expiresIn: "7 days"
+          },
+          "Accept invitation"
+        )
       }
     })
   ]);
+}
+
+export async function notifyWelcomeUser({ user }) {
+  if (!user?.email) {
+    return null;
+  }
+
+  const result = await sendTransactionalEmail({
+    to: user.email,
+    subject: "Welcome to ServiceFlow",
+    message: "Your ServiceFlow account is ready.",
+    actionUrl: getAppUrl("/onboarding"),
+    actionLabel: "Set up your workspace",
+    idempotencyKey: `welcome:${user.id}`,
+    template: "welcome",
+    templateData: {
+      userName: user.name,
+      actionUrl: getAppUrl("/onboarding")
+    }
+  });
+
+  throwIfSkippedEmail(result);
+
+  return result;
+}
+
+export async function sendPasswordResetEmail({
+  email,
+  resetUrl,
+  tokenHash
+}) {
+  const result = await sendTransactionalEmail({
+    to: email,
+    subject: "Reset your ServiceFlow password",
+    message:
+      "Use the secure link below to reset your password. This link expires in one hour.",
+    actionUrl: resetUrl,
+    actionLabel: "Reset password",
+    idempotencyKey: `password-reset:${tokenHash}`,
+    template: "password-reset",
+    templateData: {
+      resetUrl
+    }
+  });
+
+  throwIfSkippedEmail(result);
+
+  return result;
 }
 
 export async function notifyTeamMemberJoined({
@@ -84,6 +164,18 @@ function bookingTypeForStatus(status) {
     COMPLETED: "BOOKING_COMPLETED",
     NO_SHOW: "BOOKING_NO_SHOW"
   }[status];
+}
+
+function bookingEmailTemplateForStatus(status) {
+  if (status === "CONFIRMED") {
+    return "booking-confirmation";
+  }
+
+  if (status === "CANCELED") {
+    return "booking-cancellation";
+  }
+
+  return "generic-notification";
 }
 
 async function getBusinessNotificationRecipient(businessId) {
@@ -151,7 +243,15 @@ export async function notifyReviewSubmitted({
       metadata: {
         reviewId: review.id,
         rating: review.rating,
-        bookingNumber: booking.bookingNumber
+        bookingNumber: booking.bookingNumber,
+        ...emailMetadata(
+          "review-submitted",
+          {
+            rating: review.rating,
+            bookingNumber: booking.bookingNumber
+          },
+          "Moderate review"
+        )
       }
     })
   ]);
@@ -205,7 +305,22 @@ export async function notifyBookingCreated({
       message: `${booking.customerName}, your ${booking.serviceNameSnapshot} appointment is scheduled for ${appointment}. Reference: ${booking.bookingNumber}.`,
       actionUrl: manageBookingUrl,
       metadata: {
-        bookingNumber: booking.bookingNumber
+        bookingNumber: booking.bookingNumber,
+        ...emailMetadata(
+          "booking-confirmation",
+          {
+            customerName: booking.customerName,
+            serviceName: booking.serviceNameSnapshot,
+            appointment,
+            bookingNumber: booking.bookingNumber,
+            businessName: business.name,
+            statusLabel:
+              booking.status === "CONFIRMED"
+                ? "Booking confirmed"
+                : "Booking request received"
+          },
+          "Manage booking"
+        )
       }
     })
   ]);
@@ -255,7 +370,19 @@ export async function notifyBookingStatusChanged({ booking }) {
       message: `Your ${booking.serviceNameSnapshot} booking for ${appointment} is now ${statusLabel}. Reference: ${booking.bookingNumber}.`,
       metadata: {
         bookingNumber: booking.bookingNumber,
-        status: booking.status
+        status: booking.status,
+        ...emailMetadata(
+          bookingEmailTemplateForStatus(booking.status),
+          {
+            customerName: booking.customerName,
+            serviceName: booking.serviceNameSnapshot,
+            appointment,
+            bookingNumber: booking.bookingNumber,
+            businessName: business.name,
+            statusLabel: `Booking ${statusLabel}`
+          },
+          booking.status === "CANCELED" ? "View booking" : "Manage booking"
+        )
       }
     })
   ]);
@@ -298,7 +425,18 @@ export async function notifyCustomerCanceledBooking({ booking }) {
       message: `${booking.customerName} canceled ${booking.serviceNameSnapshot} scheduled for ${appointment}. Reference: ${booking.bookingNumber}.`,
       actionUrl: getAppUrl("/dashboard/bookings"),
       metadata: {
-        bookingNumber: booking.bookingNumber
+        bookingNumber: booking.bookingNumber,
+        ...emailMetadata(
+          "booking-cancellation",
+          {
+            customerName: booking.customerName,
+            serviceName: booking.serviceNameSnapshot,
+            appointment,
+            bookingNumber: booking.bookingNumber,
+            businessName: business.name
+          },
+          "View booking"
+        )
       }
     }),
     queueNotification({
@@ -312,10 +450,71 @@ export async function notifyCustomerCanceledBooking({ booking }) {
       title: "Your booking was canceled",
       message: `Your ${booking.serviceNameSnapshot} booking scheduled for ${appointment} has been canceled. Reference: ${booking.bookingNumber}.`,
       metadata: {
-        bookingNumber: booking.bookingNumber
+        bookingNumber: booking.bookingNumber,
+        ...emailMetadata(
+          "booking-cancellation",
+          {
+            customerName: booking.customerName,
+            serviceName: booking.serviceNameSnapshot,
+            appointment,
+            bookingNumber: booking.bookingNumber,
+            businessName: business.name
+          },
+          "View booking"
+        )
       }
     })
   ]);
+}
+
+export async function notifyBookingReminder({
+  business,
+  booking,
+  customerAccessToken = null
+}) {
+  const appointment = formatAppointment(booking.startsAt, booking.timezone);
+  const actionUrl = customerAccessToken
+    ? getAppUrl(
+        `/${encodeURIComponent(business.slug)}/booking/${encodeURIComponent(booking.bookingNumber)}?token=${encodeURIComponent(customerAccessToken)}`
+      )
+    : null;
+
+  return queueNotification({
+    businessId: booking.businessId,
+    bookingId: booking.id,
+    dedupeKey: `booking:${booking.id}:reminder:customer:email`,
+    type: "BOOKING_CONFIRMED",
+    audience: "CUSTOMER",
+    channel: "EMAIL",
+    recipientEmail: booking.customerEmail,
+    title: "Upcoming booking reminder",
+    message: `Reminder: your ${booking.serviceNameSnapshot} booking is scheduled for ${appointment}. Reference: ${booking.bookingNumber}.`,
+    actionUrl,
+    metadata: {
+      bookingNumber: booking.bookingNumber,
+      ...emailMetadata(
+        "booking-reminder",
+        {
+          customerName: booking.customerName,
+          serviceName: booking.serviceNameSnapshot,
+          appointment,
+          bookingNumber: booking.bookingNumber,
+          businessName: business.name
+        },
+        "View booking"
+      )
+    }
+  });
+}
+
+function subscriptionTemplateForType(type) {
+  return {
+    PAYMENT_SUCCEEDED: "payment-success",
+    PAYMENT_FAILED: "payment-failure",
+    SUBSCRIPTION_ACTIVE: "subscription-upgrade",
+    SUBSCRIPTION_CANCELED: "subscription-downgrade",
+    SUBSCRIPTION_PAST_DUE: "subscription-downgrade"
+  }[type] || "generic-notification";
 }
 
 export async function notifySubscriptionEvent({
@@ -361,8 +560,40 @@ export async function notifySubscriptionEvent({
       message,
       actionUrl: getAppUrl("/dashboard/billing"),
       metadata: {
-        stripeEventId: eventId
+        stripeEventId: eventId,
+        ...emailMetadata(
+          subscriptionTemplateForType(type),
+          {
+            message,
+            planName: message.match(/the ([a-z]+) plan/i)?.[1] || null
+          },
+          type === "PAYMENT_FAILED" ? "Update payment method" : "Open billing"
+        )
       }
     })
   ]);
+}
+
+export async function sendEmailDiagnostic({
+  recipient,
+  baseUrl = null,
+  userId
+}) {
+  const result = await sendTransactionalEmail({
+    to: recipient,
+    subject: "ServiceFlow email delivery diagnostic",
+    message:
+      "Nodemailer accepted this ServiceFlow diagnostic message. Receiving it confirms the configured SMTP sender can deliver to this address.",
+    actionUrl: baseUrl,
+    actionLabel: "Open ServiceFlow",
+    idempotencyKey: `email-diagnostic:${userId}:${Date.now()}`,
+    template: "diagnostic",
+    templateData: {
+      actionUrl: baseUrl
+    }
+  });
+
+  throwIfSkippedEmail(result);
+
+  return result;
 }

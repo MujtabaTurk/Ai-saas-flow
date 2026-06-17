@@ -9,6 +9,7 @@ import {
   expireTeamInvitationIfNeeded,
   findTeamInvitationByToken
 } from "@/features/team/invitation-access";
+import { notifyWelcomeUser } from "@/features/notifications/events";
 
 export const runtime = "nodejs";
 
@@ -96,6 +97,12 @@ export async function POST(request) {
         platformRole: true
       }
     });
+
+    try {
+      await notifyWelcomeUser({ user });
+    } catch (notificationError) {
+      console.error("Could not send welcome email.", notificationError);
+    }
 
     return created({
       user,

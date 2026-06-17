@@ -5,7 +5,7 @@
 
 ## Audit Notes
 
-- This report describes what the current code implements. It does not assume that external services such as MongoDB, Stripe, Resend, Google OAuth, or Gemini are configured in a deployed environment.
+- This report describes what the current code implements. It does not assume that external services such as MongoDB, Stripe, SMTP email, Google OAuth, or Gemini are configured in a deployed environment.
 - The latest recorded verification before this audit passed `npm run i18n:check`, `npm run lint`, and `npm run build`.
 - No automated unit, integration, or end-to-end test files were found.
 - The working tree currently contains many uncommitted changes and untracked milestone files. The implementation exists in the workspace, but there is not yet a clean Git baseline for it.
@@ -160,7 +160,7 @@ sequenceDiagram
 | Session enrichment | Each JWT refresh resolves platform role, active business, business role, membership, and optional customer context. |
 | Middleware guards | Auth routes, onboarding, dashboard, and admin routes are protected and redirected. |
 | API guards | Server helpers require a session and apply super-admin, business-management, tenant-access, and write-access assertions. |
-| Password recovery | Reset tokens are hashed, expire after one hour, become invalid after use, and can be delivered through Resend. |
+| Password recovery | Reset tokens are hashed, expire after one hour, become invalid after use, and can be delivered through SMTP email. |
 | Password change | Authenticated credentials users can change passwords after verifying the current password. |
 | Role model | Platform roles, owner/admin/staff business roles, and customer context are represented. |
 
@@ -651,7 +651,7 @@ flowchart TD
 | Customers | Tenant CRM list, search, filters, create/edit/delete rules, booking history, marketing consent. |
 | Team | Invitations, acceptance, owner-only management, role changes, service assignments, staff availability, seat limits, audit records. |
 | Reviews | Booking-verified submission, one review per booking, moderation, public published-review display. |
-| Notifications | In-app and Resend email delivery, dedupe keys, status tracking, and manual retry APIs/UI. |
+| Notifications | In-app and Nodemailer SMTP email delivery, dedupe keys, status tracking, and manual retry APIs/UI. |
 | Analytics | Basic 30-day analytics and Pro flexible periods with subscription enforcement. |
 | AI | Gemini GenerateContent integration, plan credits, reservations, approval/rejection, application to supported content, token/cost metadata. |
 | i18n | Five languages, public/auth translation, locale cookie, tenant fallback, localized dates/money, and RTL support. |

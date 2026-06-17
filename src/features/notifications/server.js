@@ -1,5 +1,5 @@
 import { assertBusinessManagement } from "@/features/auth/permissions";
-import { sendTransactionalEmail } from "@/features/notifications/email-provider";
+import { sendTransactionalEmail } from "@/features/notifications/email/service";
 import { AppError, NotFoundError } from "@/lib/api/errors";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { isValidMongoObjectId } from "@/lib/mongodb";
@@ -97,7 +97,14 @@ async function deliverEmailNotification(notification) {
       subject: notification.title,
       message: notification.message,
       actionUrl: notification.actionUrl,
-      idempotencyKey: `notification:${notification.id}`
+      actionLabel: notification.metadata?.emailActionLabel || "Open ServiceFlow",
+      idempotencyKey: `notification:${notification.id}`,
+      template: notification.metadata?.emailTemplate || "generic-notification",
+      templateData: {
+        ...(notification.metadata?.emailData || {}),
+        actionUrl: notification.actionUrl,
+        actionLabel: notification.metadata?.emailActionLabel
+      }
     });
 
     return prisma.notification.update({
