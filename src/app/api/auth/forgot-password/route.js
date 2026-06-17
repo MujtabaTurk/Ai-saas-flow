@@ -127,6 +127,7 @@ export async function POST(request) {
         userId: user.id,
         tokenHash,
         expiresAt,
+        usedAt: null,
         deliveryStatus: "PENDING",
         deliveryAttempts: 0
       }
@@ -195,7 +196,7 @@ export async function POST(request) {
             },
             lastDeliveryAttemptAt: attemptTime,
             lastError: emailError?.message || "Email delivery failed.",
-            usedAt: process.env.NODE_ENV === "production" ? attemptTime : null
+            usedAt: null
           }
         });
       } catch (persistenceError) {

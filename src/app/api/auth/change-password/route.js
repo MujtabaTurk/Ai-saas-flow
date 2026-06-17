@@ -1,5 +1,9 @@
 import { changePasswordSchema } from "@/features/auth/validation/change-password-schema";
-import { hashPassword, verifyPassword } from "@/features/auth/password";
+import {
+  hashPassword,
+  unusedPasswordResetTokenWhere,
+  verifyPassword
+} from "@/features/auth/password";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { validateRequest } from "@/lib/api/validate-request";
@@ -65,7 +69,7 @@ export async function POST(request) {
     await prisma.passwordResetToken.updateMany({
       where: {
         userId: user.id,
-        usedAt: null
+        ...unusedPasswordResetTokenWhere()
       },
       data: {
         usedAt: now
@@ -79,4 +83,3 @@ export async function POST(request) {
     return handleApiError(error);
   }
 }
-
