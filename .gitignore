@@ -10,8 +10,8 @@ build
 
 # env
 .env
-.env.example
-.env*.local
+.env.*
+!.env.example
 
 # logs
 npm-debug.log*
@@ -25,4 +25,3 @@ pnpm-debug.log*
 
 # prisma
 prisma/*.db
-
