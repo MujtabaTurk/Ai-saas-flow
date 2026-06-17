@@ -1,6 +1,7 @@
 import { addDaysToDateValue, formatDateTimeInTimezone, zonedDateTimeToUtc } from "@/features/availability/time";
 import { isSubscriptionEntitled } from "@/features/billing/status";
 import { generateAvailableSlots, getDayOfWeek } from "@/features/availability/slots";
+import { serviceOrBusinessWideScopeWhere } from "@/features/availability/service-scope";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { prisma } from "@/lib/prisma";
 
@@ -37,7 +38,7 @@ export async function getAvailableSlotsForBusiness({
         businessId: business.id,
         dayOfWeek,
         isActive: true,
-        OR: [{ serviceId: null }, { serviceId: service.id }]
+        ...serviceOrBusinessWideScopeWhere(service.id)
       },
       orderBy: {
         startTime: "asc"
@@ -52,7 +53,7 @@ export async function getAvailableSlotsForBusiness({
         endsAt: {
           gt: dayStart
         },
-        OR: [{ serviceId: null }, { serviceId: service.id }]
+        ...serviceOrBusinessWideScopeWhere(service.id)
       },
       select: {
         serviceId: true,

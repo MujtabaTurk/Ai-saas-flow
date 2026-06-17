@@ -4,6 +4,7 @@ import {
   isSuperAdmin
 } from "@/features/auth/permissions";
 import { isSubscriptionEntitled } from "@/features/billing/status";
+import { exactServiceScopeWhere } from "@/features/availability/service-scope";
 import { AppError, NotFoundError } from "@/lib/api/errors";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { isValidMongoObjectId } from "@/lib/mongodb";
@@ -205,8 +206,8 @@ export async function assertNoAvailabilityOverlap({
     where: {
       businessId,
       dayOfWeek: input.dayOfWeek,
-      serviceId: input.serviceId,
       isActive: true,
+      ...exactServiceScopeWhere(input.serviceId),
       ...(availabilityId
         ? {
             id: {
@@ -243,7 +244,7 @@ export async function assertNoUnavailableDateOverlap({
   const overlap = await prisma.unavailableDate.findFirst({
     where: {
       businessId,
-      serviceId,
+      ...exactServiceScopeWhere(serviceId),
       startsAt: {
         lt: endsAt
       },

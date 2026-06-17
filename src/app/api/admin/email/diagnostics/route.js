@@ -16,12 +16,7 @@ function getDiagnosticReport() {
   const resetUrl = getPasswordResetUrlDiagnostics();
   const warnings = [];
 
-  if (email.isTestSender) {
-    warnings.push(
-      "The resend.dev test sender can deliver only to the Resend account owner's email address. Verify a domain before sending to application users."
-    );
-  }
-
+  warnings.push(...email.warnings);
   warnings.push(...resetUrl.issues);
 
   return {
@@ -57,8 +52,13 @@ export async function POST() {
     }
 
     if (!report.email.configured) {
+      const issues = [
+        ...report.email.missingVariables,
+        ...report.email.invalidVariables
+      ];
+
       throw new AppError(
-        `Email delivery is not configured. Missing: ${report.email.missingVariables.join(", ")}.`,
+        `Email delivery is not configured. Issues: ${issues.join(", ")}.`,
         503
       );
     }
