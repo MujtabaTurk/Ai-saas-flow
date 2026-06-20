@@ -101,6 +101,18 @@ function fieldError(formik, name) {
     : null;
 }
 
+function formatErrorDetails(error) {
+  if (!error?.details) {
+    return error?.message || null;
+  }
+
+  if (typeof error.details === "string") {
+    return error.details;
+  }
+
+  return JSON.stringify(error.details, null, 2);
+}
+
 export function AiAssistantManagement({
   businessId,
   businessTimezone,
@@ -253,8 +265,11 @@ export function AiAssistantManagement({
     } catch (error) {
       setApplyDialogOpen(false);
       setActionError({
-        description: "We could not apply this approved draft to the service. Please try again.",
-        details: error.message,
+        description:
+          error.status === 409
+            ? error.message
+            : "We could not apply this approved draft to the service. Please try again.",
+        details: formatErrorDetails(error),
         title: "Apply draft failed"
       });
     }
