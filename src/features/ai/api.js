@@ -1,10 +1,17 @@
 async function parseResponse(response, fallbackMessage) {
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const isJson = contentType.includes("application/json");
+  const payload = isJson ? await response.json().catch(() => null) : null;
 
   if (!response.ok) {
     const error = new Error(payload?.error?.message || fallbackMessage);
     error.details = payload?.error?.details || null;
+    error.status = response.status;
     throw error;
+  }
+
+  if (!payload?.data) {
+    throw new Error(fallbackMessage);
   }
 
   return payload.data;
@@ -19,8 +26,22 @@ function withBusinessId(path, businessId) {
   return `${path}${separator}businessId=${encodeURIComponent(businessId)}`;
 }
 
+function generationPath(generationId, suffix = "") {
+  const normalizedId = String(generationId || "").trim();
+
+  if (!normalizedId) {
+    throw new Error("Choose a valid AI draft before continuing.");
+  }
+
+  return `/api/ai/generations/${encodeURIComponent(normalizedId)}${suffix}`;
+}
+
 export async function fetchAiWorkspace(businessId) {
-  const response = await fetch(withBusinessId("/api/ai", businessId));
+  const response = await fetch(withBusinessId("/api/ai", businessId), {
+    headers: {
+      Accept: "application/json"
+    }
+  });
 
   return parseResponse(response, "Could not load the AI assistant.");
 }
@@ -31,6 +52,7 @@ export async function generateAiContent({ businessId, values }) {
     {
       method: "POST",
       headers: {
+        Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify(values)
@@ -46,10 +68,11 @@ export async function reviewAiGeneration({
   approvalStatus
 }) {
   const response = await fetch(
-    withBusinessId(`/api/ai/generations/${generationId}`, businessId),
+    withBusinessId(generationPath(generationId), businessId),
     {
       method: "PATCH",
       headers: {
+        Accept: "application/json",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ approvalStatus })
@@ -62,11 +85,14 @@ export async function reviewAiGeneration({
 export async function applyAiGeneration({ businessId, generationId }) {
   const response = await fetch(
     withBusinessId(
-      `/api/ai/generations/${generationId}/apply`,
+      generationPath(generationId, "/apply"),
       businessId
     ),
     {
-      method: "POST"
+      method: "POST",
+      headers: {
+        Accept: "application/json"
+      }
     }
   );
 

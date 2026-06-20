@@ -6,9 +6,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
+import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
+import {
+  MetricCardsSkeleton,
+  Skeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import {
   AdminPagination,
   AdminSelect,
@@ -22,12 +32,14 @@ import {
 } from "@/features/admin/hooks/use-admin";
 
 export function BusinessManagement() {
+  const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [status, setStatus] = useState("ALL");
   const [page, setPage] = useState(1);
   const [pendingStatuses, setPendingStatuses] = useState({});
-  const [message, setMessage] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [statusReasonDialog, setStatusReasonDialog] = useState(null);
   const filters = useMemo(
     () => ({
       search: deferredSearch,
@@ -39,6 +51,9 @@ export function BusinessManagement() {
   );
   const businessesQuery = useAdminBusinesses(filters);
   const updateMutation = useUpdateAdminBusinessStatus();
+  const showBusinessesSkeleton = useDelayedVisibility(
+    businessesQuery.isLoading
+  );
   const businesses = businessesQuery.data?.businesses || [];
   const summary = businessesQuery.data?.summary;
   const pagination = businessesQuery.data?.pagination;
@@ -50,46 +65,97 @@ export function BusinessManagement() {
       return;
     }
 
-    let reason = null;
-
     if (["SUSPENDED", "ARCHIVED"].includes(nextStatus)) {
-      reason = window.prompt(
-        `Why should ${business.name} be marked ${nextStatus.toLowerCase()}?`
-      );
-
-      if (reason === null) {
-        return;
-      }
-
-      if (reason.trim().length < 3) {
-        setMessage("Provide a short reason before restricting a business.");
-        return;
-      }
+      setStatusReasonDialog({
+        business,
+        nextStatus,
+        reason: "",
+        validationError: null
+      });
+      return;
     }
 
+    await submitBusinessStatus(business, nextStatus, null);
+  }
+
+  async function submitBusinessStatus(business, nextStatus, reason) {
     try {
       const result = await updateMutation.mutateAsync({
         businessId: business.id,
         status: nextStatus,
-        reason: reason?.trim() || null
+        reason
       });
-      setMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
       setPendingStatuses((current) => {
         const next = { ...current };
         delete next[business.id];
         return next;
       });
+      return true;
     } catch (error) {
-      setMessage(error.message);
+      setActionError({
+        description: "We could not update this tenant status. Please review the details and try again.",
+        details: error.message,
+        title: "Tenant status update failed"
+      });
+      return false;
+    }
+  }
+
+  async function submitStatusReason(event) {
+    event.preventDefault();
+
+    if (!statusReasonDialog) {
+      return;
+    }
+
+    const reason = statusReasonDialog.reason.trim();
+
+    if (reason.length < 3) {
+      setStatusReasonDialog((current) =>
+        current
+          ? {
+              ...current,
+              validationError: "Provide a short reason before restricting a business."
+            }
+          : current
+      );
+      return;
+    }
+
+    const success = await submitBusinessStatus(
+      statusReasonDialog.business,
+      statusReasonDialog.nextStatus,
+      reason
+    );
+
+    if (success) {
+      setStatusReasonDialog(null);
     }
   }
 
   if (businessesQuery.isLoading) {
+    if (!showBusinessesSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading businesses" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading businesses"
-        description="Preparing tenant operations..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading businesses">
+        <MetricCardsSkeleton count={4} />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+            <div className="grid gap-3 pt-3 md:grid-cols-[1fr_auto]">
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 w-40 rounded-2xl" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TableSkeleton columns={6} rows={6} minWidth="1100px" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -104,11 +170,79 @@ export function BusinessManagement() {
 
   return (
     <div className="space-y-5">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/30 px-4 py-3 text-sm text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <Modal
+        description={
+          statusReasonDialog
+            ? `Record why ${statusReasonDialog.business.name} should be marked ${statusReasonDialog.nextStatus.toLowerCase()}.`
+            : ""
+        }
+        isDismissDisabled={updateMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setStatusReasonDialog(null);
+          }
+        }}
+        open={Boolean(statusReasonDialog)}
+        title="Status change reason"
+      >
+        <form className="space-y-4" onSubmit={submitStatusReason}>
+          <div className="space-y-2">
+            <Label htmlFor="business-status-reason">Reason</Label>
+            <Textarea
+              id="business-status-reason"
+              rows={5}
+              value={statusReasonDialog?.reason || ""}
+              onChange={(event) =>
+                setStatusReasonDialog((current) =>
+                  current
+                    ? {
+                        ...current,
+                        reason: event.target.value,
+                        validationError: null
+                      }
+                    : current
+                )
+              }
+            />
+            {statusReasonDialog?.validationError ? (
+              <p className="text-xs text-red-600">
+                {statusReasonDialog.validationError}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              disabled={updateMutation.isPending}
+              type="button"
+              variant="outline"
+              onClick={() => setStatusReasonDialog(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={updateMutation.isPending}
+              isLoading={updateMutation.isPending}
+              loadingLabel="Applying..."
+              type="submit"
+              variant="destructive"
+            >
+              Apply status
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <div className="grid gap-3 md:grid-cols-4">
         <AdminSummaryCard label="Total tenants" value={summary?.total ?? 0} />

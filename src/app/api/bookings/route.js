@@ -3,7 +3,7 @@ import { assertBusinessWriteAccess } from "@/features/auth/permissions";
 import { BOOKING_STATUSES } from "@/features/bookings/constants";
 import { bookingRequestSchema } from "@/features/bookings/validation/booking-schema";
 import {
-  bookingSelect,
+  bookingListSelect,
   createBooking,
   getRequestedBusinessId,
   requireBookingContext
@@ -85,7 +85,7 @@ export async function GET(request) {
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
-        select: bookingSelect
+        select: bookingListSelect
       }),
       buildBookingSummary({
         business,

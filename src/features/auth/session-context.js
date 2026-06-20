@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { isValidMongoObjectId } from "@/lib/mongodb";
+import { CUSTOMER_ROLE } from "@/constants/roles";
+import { claimCustomerProfilesForVerifiedUser } from "@/features/customers/claiming";
 
 const businessSelect = {
   id: true,
@@ -8,22 +10,63 @@ const businessSelect = {
   status: true
 };
 
+const emptyCustomerContext = {
+  customerRole: null,
+  customerId: null,
+  customerBusinessId: null,
+  customerProfileCount: 0
+};
+
 function buildBusinessContext({
   platformRole,
   business,
   businessRole,
-  membershipId = null
+  membershipId = null,
+  customerContext = emptyCustomerContext,
+  emailVerified = null
 }) {
   return {
     platformRole,
+    emailVerified,
     activeBusinessId: business.id,
     activeBusinessMembershipId: membershipId,
     activeBusinessSlug: business.slug,
     activeBusinessName: business.name,
     activeBusinessStatus: business.status,
     businessRole,
-    customerId: null,
-    customerBusinessId: null
+    ...customerContext
+  };
+}
+
+async function resolveCustomerContext(userId, customerPortalEnabled = false) {
+  const [customer, customerProfileCount] = await Promise.all([
+    prisma.customer.findFirst({
+      where: {
+        userId
+      },
+      orderBy: {
+        createdAt: "asc"
+      },
+      select: {
+        id: true,
+        businessId: true
+      }
+    }),
+    prisma.customer.count({
+      where: {
+        userId
+      }
+    })
+  ]);
+
+  return {
+    customerRole:
+      customerPortalEnabled || customerProfileCount > 0
+        ? CUSTOMER_ROLE
+        : null,
+    customerId: customer?.id || null,
+    customerBusinessId: customer?.businessId || null,
+    customerProfileCount
   };
 }
 
@@ -92,7 +135,11 @@ export async function resolveSessionContext(
       id: userId
     },
     select: {
-      platformRole: true
+      id: true,
+      email: true,
+      platformRole: true,
+      customerPortalEnabled: true,
+      emailVerified: true
     }
   });
 
@@ -101,6 +148,15 @@ export async function resolveSessionContext(
   }
 
   const platformRole = user.platformRole;
+
+  if (user.emailVerified) {
+    await claimCustomerProfilesForVerifiedUser(user);
+  }
+
+  const customerContext = await resolveCustomerContext(
+    userId,
+    user.customerPortalEnabled
+  );
   const preferredContext = await resolvePreferredBusinessContext({
     userId,
     platformRole,
@@ -108,7 +164,11 @@ export async function resolveSessionContext(
   });
 
   if (preferredContext) {
-    return preferredContext;
+    return {
+      ...preferredContext,
+      emailVerified: user.emailVerified,
+      ...customerContext
+    };
   }
 
   const business = await prisma.business.findFirst({
@@ -128,7 +188,9 @@ export async function resolveSessionContext(
     return buildBusinessContext({
       platformRole,
       business,
-      businessRole: "OWNER"
+      businessRole: "OWNER",
+      customerContext,
+      emailVerified: user.emailVerified
     });
   }
 
@@ -164,32 +226,21 @@ export async function resolveSessionContext(
       platformRole,
       business: membership.business,
       businessRole: membership.role,
-      membershipId: membership.id
+      membershipId: membership.id,
+      customerContext,
+      emailVerified: user.emailVerified
     });
   }
 
-  const customer = await prisma.customer.findFirst({
-    where: {
-      userId
-    },
-    orderBy: {
-      createdAt: "asc"
-    },
-    select: {
-      id: true,
-      businessId: true
-    }
-  });
-
   return {
     platformRole,
+    emailVerified: user.emailVerified,
     activeBusinessId: null,
     activeBusinessMembershipId: null,
     activeBusinessSlug: null,
     activeBusinessName: null,
     activeBusinessStatus: null,
     businessRole: null,
-    customerId: customer?.id || null,
-    customerBusinessId: customer?.businessId || null
+    ...customerContext
   };
 }

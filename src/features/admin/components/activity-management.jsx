@@ -5,7 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { LoadingState } from "@/components/ui/loading-state";
+import {
+  CardListSkeleton,
+  Skeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import {
   AdminPagination,
   formatAdminDate,
@@ -23,15 +27,25 @@ export function ActivityManagement() {
     [page]
   );
   const activityQuery = useAdminActivity(filters);
+  const showActivitySkeleton = useDelayedVisibility(activityQuery.isLoading);
   const activity = activityQuery.data?.activity || [];
   const pagination = activityQuery.data?.pagination;
 
   if (activityQuery.isLoading) {
+    if (!showActivitySkeleton) {
+      return <div className="min-h-80" role="status" aria-label="Loading activity" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading activity"
-        description="Reading sensitive operator actions..."
-      />
+      <Card role="status" aria-label="Loading activity">
+        <CardHeader>
+          <Skeleton className="h-5 w-48" />
+          <Skeleton className="h-4 w-96 max-w-full" />
+        </CardHeader>
+        <CardContent>
+          <CardListSkeleton count={6} />
+        </CardContent>
+      </Card>
     );
   }
 

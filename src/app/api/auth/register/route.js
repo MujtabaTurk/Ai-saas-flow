@@ -2,6 +2,10 @@ import { created, fail } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { validateRequest } from "@/lib/api/validate-request";
 import { prisma } from "@/lib/prisma";
+import {
+  buildEmailVerificationUrl,
+  createStoredEmailVerificationToken
+} from "@/features/auth/email-verification";
 import { normalizeEmail } from "@/features/auth/normalize-email";
 import { hashPassword } from "@/features/auth/password";
 import { registerSchema } from "@/features/auth/validation/register-schema";
@@ -9,7 +13,10 @@ import {
   expireTeamInvitationIfNeeded,
   findTeamInvitationByToken
 } from "@/features/team/invitation-access";
-import { notifyWelcomeUser } from "@/features/notifications/events";
+import {
+  notifyWelcomeUser,
+  sendEmailVerificationEmail
+} from "@/features/notifications/events";
 
 export const runtime = "nodejs";
 
@@ -87,7 +94,8 @@ export async function POST(request) {
         name: data.name.trim(),
         email,
         passwordHash,
-        platformRole: "USER"
+        platformRole: "USER",
+        customerPortalEnabled: data.accountType === "CUSTOMER"
       },
       select: {
         id: true,
@@ -97,16 +105,45 @@ export async function POST(request) {
         platformRole: true
       }
     });
+    let devVerificationUrl = null;
 
     try {
-      await notifyWelcomeUser({ user });
-    } catch (notificationError) {
-      console.error("Could not send welcome email.", notificationError);
+      const { token, tokenHash } = await createStoredEmailVerificationToken(
+        email
+      );
+      const verificationUrl = buildEmailVerificationUrl(token, {
+        callbackUrl:
+          data.accountType === "CUSTOMER" ? "/customer" : "/onboarding"
+      });
+
+      if (verificationUrl) {
+        devVerificationUrl =
+          process.env.NODE_ENV !== "production" ? verificationUrl : null;
+        await sendEmailVerificationEmail({
+          email,
+          verificationUrl,
+          tokenHash
+        });
+      }
+    } catch (verificationError) {
+      console.error(
+        "Could not send verification email.",
+        verificationError
+      );
+    }
+
+    if (data.accountType !== "CUSTOMER") {
+      try {
+        await notifyWelcomeUser({ user });
+      } catch (notificationError) {
+        console.error("Could not send welcome email.", notificationError);
+      }
     }
 
     return created({
       user,
-      message: "Account created successfully."
+      message: "Account created successfully.",
+      ...(devVerificationUrl ? { devVerificationUrl } : {})
     });
   } catch (error) {
     if (error?.code === "P2002") {

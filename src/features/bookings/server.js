@@ -15,13 +15,17 @@ import { isSameLocalCalendarDay } from "@/features/bookings/date";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { createOccupancyBuckets } from "@/features/bookings/occupancy";
 import { getAvailableSlotsForBusiness } from "@/features/bookings/slot-service";
+import {
+  attachCustomerProfileToVerifiedAccount,
+  buildVerifiedCustomerLinkDataForEmail
+} from "@/features/customers/claiming";
 import { normalizeEmail } from "@/features/auth/normalize-email";
 import { AppError, NotFoundError } from "@/lib/api/errors";
 import { requireCurrentUser } from "@/lib/auth/session";
 import { isValidMongoObjectId } from "@/lib/mongodb";
 import { prisma } from "@/lib/prisma";
 
-export const bookingSelect = {
+export const bookingListSelect = {
   id: true,
   businessId: true,
   serviceId: true,
@@ -49,6 +53,23 @@ export const bookingSelect = {
   completedAt: true,
   createdAt: true,
   updatedAt: true,
+  assignedMember: {
+    select: {
+      id: true,
+      role: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      }
+    }
+  }
+};
+
+export const bookingSelect = {
+  ...bookingListSelect,
   service: {
     select: {
       id: true,
@@ -62,19 +83,6 @@ export const bookingSelect = {
       name: true,
       email: true,
       phone: true
-    }
-  },
-  assignedMember: {
-    select: {
-      id: true,
-      role: true,
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true
-        }
-      }
     }
   }
 };
@@ -285,6 +293,44 @@ export async function createBooking({
   const occupiedEnd = new Date(endsAt.getTime() + selectedSlot.bufferAfterMin * 60 * 1000);
   const occupancyBuckets = createOccupancyBuckets(occupiedStart, occupiedEnd);
   const email = normalizeEmail(input.customerEmail);
+  const verifiedCustomerLinkData =
+    await buildVerifiedCustomerLinkDataForEmail(email);
+  const customer = await prisma.customer.upsert({
+    where: {
+      businessId_email: {
+        businessId: business.id,
+        email
+      }
+    },
+    create: {
+      businessId: business.id,
+      name: input.customerName.trim(),
+      email,
+      phone: input.customerPhone?.trim() || null,
+      timezone: business.timezone,
+      locale: business.locale,
+      ...verifiedCustomerLinkData
+    },
+    update: {
+      name: input.customerName.trim(),
+      phone: input.customerPhone?.trim() || undefined
+    },
+    select: {
+      id: true,
+      userId: true
+    }
+  });
+
+  if (
+    verifiedCustomerLinkData.userId &&
+    customer.userId !== verifiedCustomerLinkData.userId
+  ) {
+    await attachCustomerProfileToVerifiedAccount({
+      customerId: customer.id,
+      email
+    });
+  }
+
   const status =
     settings.autoConfirmBookings && !service.requiresPayment
       ? "CONFIRMED"
@@ -296,31 +342,7 @@ export async function createBooking({
       data: {
         businessId: business.id,
         serviceId: service.id,
-        customerId: (
-          await prisma.customer.upsert({
-            where: {
-              businessId_email: {
-                businessId: business.id,
-                email
-              }
-            },
-            create: {
-              businessId: business.id,
-              name: input.customerName.trim(),
-              email,
-              phone: input.customerPhone?.trim() || null,
-              timezone: business.timezone,
-              locale: business.locale
-            },
-            update: {
-              name: input.customerName.trim(),
-              phone: input.customerPhone?.trim() || undefined
-            },
-            select: {
-              id: true
-            }
-          })
-        ).id,
+        customerId: customer.id,
         createdByUserId,
         bookingNumber: createBookingNumber(),
         idempotencyKey: input.idempotencyKey,

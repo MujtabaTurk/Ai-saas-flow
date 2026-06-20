@@ -1,13 +1,9 @@
 import Link from "next/link";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 
 export function AuthLayout({ children, eyebrow, title, description, footer }) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-growth-dashboard px-6 py-12">
       <section className="w-full max-w-md">
-        <div className="mb-4 flex justify-end">
-          <LanguageSwitcher className="w-40 text-growth-sidebar" />
-        </div>
         <div className="mb-8 text-center">
           <Link className="text-lg font-bold text-growth-sidebar" href="/">
             ServiceFlow

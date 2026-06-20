@@ -5,8 +5,18 @@ import { useFormik } from "formik";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
+import {
+  CardListSkeleton,
+  MetricCardsSkeleton,
+  Skeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import { DAYS_OF_WEEK } from "@/features/availability/constants";
 import {
   useInviteTeamMember,
@@ -31,14 +41,15 @@ function TeamMemberEditor({
   canManage,
   member,
   services,
-  onError,
-  onMessage
+  onActionError
 }) {
+  const { showToast } = useToast();
   const [role, setRole] = useState(member.role);
   const [serviceIds, setServiceIds] = useState(
     member.serviceAssignments.map((assignment) => assignment.serviceId)
   );
   const [availability, setAvailability] = useState(member.availability);
+  const [removeDialogOpen, setRemoveDialogOpen] = useState(false);
   const roleMutation = useUpdateTeamMemberRole(businessId);
   const servicesMutation = useUpdateTeamMemberServices(businessId);
   const availabilityMutation = useUpdateTeamMemberAvailability(businessId);
@@ -47,11 +58,27 @@ function TeamMemberEditor({
   async function run(action) {
     try {
       const result = await action();
-      onError(null);
-      onMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
     } catch (error) {
-      onMessage(null);
-      onError(error.message);
+      onActionError({
+        description: "We could not save this team member update. Please review the details and try again.",
+        details: error.message,
+        title: "Team update failed"
+      });
+    }
+  }
+
+  async function removeTeamMember() {
+    try {
+      const result = await removeMutation.mutateAsync(member.id);
+      setRemoveDialogOpen(false);
+      showToast({ title: result.message, variant: "success" });
+    } catch (error) {
+      onActionError({
+        description: "We could not remove this team member. Check whether they still own active work and try again.",
+        details: error.message,
+        title: "Remove team member failed"
+      });
     }
   }
 
@@ -64,6 +91,7 @@ function TeamMemberEditor({
   }
 
   return (
+    <>
     <Card>
       <CardHeader>
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-start">
@@ -98,6 +126,8 @@ function TeamMemberEditor({
             {canManage ? (
               <Button
                 disabled={roleMutation.isPending || role === member.role}
+                isLoading={roleMutation.isPending}
+                loadingLabel="Saving..."
                 variant="outline"
                 onClick={() =>
                   run(() =>
@@ -164,6 +194,8 @@ function TeamMemberEditor({
           {canManage ? (
             <Button
               disabled={servicesMutation.isPending}
+              isLoading={servicesMutation.isPending}
+              loadingLabel="Saving..."
               size="sm"
               variant="outline"
               onClick={() =>
@@ -271,6 +303,8 @@ function TeamMemberEditor({
               </Button>
               <Button
                 disabled={availabilityMutation.isPending}
+                isLoading={availabilityMutation.isPending}
+                loadingLabel="Saving..."
                 size="sm"
                 onClick={() =>
                   run(() =>
@@ -291,17 +325,11 @@ function TeamMemberEditor({
           <div className="border-t border-growth-border pt-4">
             <Button
               disabled={removeMutation.isPending}
+              isLoading={removeMutation.isPending}
+              loadingLabel="Removing..."
               size="sm"
               variant="destructive"
-              onClick={() => {
-                if (
-                  window.confirm(
-                    `Remove ${member.user.name || member.user.email} from the team?`
-                  )
-                ) {
-                  run(() => removeMutation.mutateAsync(member.id));
-                }
-              }}
+              onClick={() => setRemoveDialogOpen(true)}
             >
               Remove team member
             </Button>
@@ -309,15 +337,29 @@ function TeamMemberEditor({
         ) : null}
       </CardContent>
     </Card>
+    <ConfirmationDialog
+      confirmLabel="Remove member"
+      description={`This removes ${member.user.name || member.user.email} from the team and revokes their operational access.`}
+      isLoading={removeMutation.isPending}
+      loadingLabel="Removing..."
+      open={removeDialogOpen}
+      title="Remove team member?"
+      onConfirm={removeTeamMember}
+      onOpenChange={setRemoveDialogOpen}
+    />
+    </>
   );
 }
 
 export function TeamManagement({ businessId }) {
+  const { showToast } = useToast();
   const teamQuery = useTeam(businessId);
   const inviteMutation = useInviteTeamMember(businessId);
   const revokeMutation = useRevokeTeamInvitation(businessId);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [invitationToRevoke, setInvitationToRevoke] = useState(null);
+  const showTeamSkeleton = useDelayedVisibility(teamQuery.isLoading);
   const team = teamQuery.data;
   const members = useMemo(() => team?.members || [], [team?.members]);
   const invitations = useMemo(
@@ -334,38 +376,59 @@ export function TeamManagement({ businessId }) {
       try {
         const result = await inviteMutation.mutateAsync(values);
         helpers.resetForm();
-        setError(null);
-        setMessage(result.message);
+        setInviteDialogOpen(false);
+        showToast({ title: result.message, variant: "success" });
       } catch (actionError) {
-        setMessage(null);
-        setError(actionError.message);
         helpers.setErrors(actionError.details || {});
+        setActionError({
+          description: "We could not send this invitation. Check the recipient details and try again.",
+          details: actionError.message,
+          title: "Invitation failed"
+        });
       }
     }
   });
 
-  async function revokeInvitation(invitation) {
-    if (!window.confirm(`Revoke the invitation for ${invitation.email}?`)) {
+  async function revokeInvitation() {
+    if (!invitationToRevoke) {
       return;
     }
 
     try {
-      const result = await revokeMutation.mutateAsync(invitation.id);
-      setError(null);
-      setMessage(result.message);
+      const result = await revokeMutation.mutateAsync(invitationToRevoke.id);
+      setInvitationToRevoke(null);
+      showToast({ title: result.message, variant: "success" });
     } catch (actionError) {
-      setMessage(null);
-      setError(actionError.message);
+      setActionError({
+        description: "We could not revoke this invitation. Please try again.",
+        details: actionError.message,
+        title: "Invitation update failed"
+      });
     }
   }
 
   if (teamQuery.isLoading) {
+    if (!showTeamSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading team workspace" />;
+    }
+
     return (
-      <Card>
-        <CardContent className="pt-6 text-sm text-muted-foreground">
-          Loading team...
-        </CardContent>
-      </Card>
+      <div className="space-y-6" role="status" aria-label="Loading team workspace">
+        <MetricCardsSkeleton count={3} className="xl:grid-cols-3" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-36" />
+          </CardHeader>
+          <CardContent className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-56" />
+              <Skeleton className="h-3 w-80 max-w-full" />
+            </div>
+            <Skeleton className="h-10 w-40 rounded-2xl" />
+          </CardContent>
+        </Card>
+        <CardListSkeleton count={3} />
+      </div>
     );
   }
 
@@ -387,16 +450,17 @@ export function TeamManagement({ businessId }) {
 
   return (
     <div className="space-y-6">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
-      {error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
       {!team.access.canManage ? (
         <div className="rounded-2xl border border-growth-border bg-white px-4 py-3 text-sm text-muted-foreground">
           Team configuration is owner-only. Your roster and assignments are
@@ -446,58 +510,114 @@ export function TeamManagement({ businessId }) {
       {team.access.canManage ? (
         <Card>
           <CardHeader>
-            <CardTitle>Invite team member</CardTitle>
+            <CardTitle>Team invitations</CardTitle>
           </CardHeader>
-          <CardContent>
-            <form
-              className="grid gap-4 md:grid-cols-[1fr_180px_auto]"
-              onSubmit={formik.handleSubmit}
-            >
-              <div className="space-y-2">
-                <Label htmlFor="team-email">Email</Label>
-                <Input
-                  disabled={!team.access.canInvite}
-                  id="team-email"
-                  name="email"
-                  type="email"
-                  value={formik.values.email}
-                  onBlur={formik.handleBlur}
-                  onChange={formik.handleChange}
-                />
-                {formik.touched.email && formik.errors.email ? (
-                  <p className="text-xs text-red-600">{formik.errors.email}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="team-role">Role</Label>
-                <select
-                  className="h-11 w-full rounded-2xl border border-input bg-white px-4 text-sm"
-                  disabled={!team.access.canInvite}
-                  id="team-role"
-                  name="role"
-                  value={formik.values.role}
-                  onChange={formik.handleChange}
-                >
-                  <option value="STAFF">Staff</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-              <Button
-                className="md:mt-7"
-                disabled={!team.access.canInvite || formik.isSubmitting}
-                type="submit"
-              >
-                {formik.isSubmitting ? "Sending..." : "Send invitation"}
-              </Button>
-            </form>
-            {!team.usage.hasCapacity ? (
-              <p className="mt-3 text-sm text-amber-700">
-                The {team.usage.planCode} plan has no available team seats.
+          <CardContent className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <p className="text-sm font-semibold text-growth-sidebar">
+                Invite a teammate by email
               </p>
-            ) : null}
+              <p className="mt-1 text-sm text-muted-foreground">
+                New members receive role-based access after accepting the invitation.
+              </p>
+              {!team.usage.hasCapacity ? (
+                <p className="mt-3 text-sm text-amber-700">
+                  The {team.usage.planCode} plan has no available team seats.
+                </p>
+              ) : null}
+            </div>
+            <Button
+              disabled={!team.access.canInvite}
+              onClick={() => setInviteDialogOpen(true)}
+            >
+              Invite team member
+            </Button>
           </CardContent>
         </Card>
       ) : null}
+
+      <Modal
+        description="Send a role-based invitation to a teammate. The invitation can be revoked before it is accepted."
+        isDismissDisabled={formik.isSubmitting}
+        onOpenChange={(open) => {
+          setInviteDialogOpen(open);
+
+          if (!open) {
+            formik.resetForm();
+          }
+        }}
+        open={inviteDialogOpen}
+        title="Invite team member"
+      >
+        <form className="space-y-4" onSubmit={formik.handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="team-email">Email</Label>
+            <Input
+              disabled={!team.access.canInvite}
+              id="team-email"
+              name="email"
+              type="email"
+              value={formik.values.email}
+              onBlur={formik.handleBlur}
+              onChange={formik.handleChange}
+            />
+            {formik.touched.email && formik.errors.email ? (
+              <p className="text-xs text-red-600">{formik.errors.email}</p>
+            ) : null}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="team-role">Role</Label>
+            <select
+              className="h-11 w-full rounded-2xl border border-input bg-white px-4 text-sm"
+              disabled={!team.access.canInvite}
+              id="team-role"
+              name="role"
+              value={formik.values.role}
+              onChange={formik.handleChange}
+            >
+              <option value="STAFF">Staff</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+          <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
+            <Button
+              disabled={formik.isSubmitting}
+              type="button"
+              variant="outline"
+              onClick={() => setInviteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+              <Button
+                disabled={!team.access.canInvite}
+                isLoading={formik.isSubmitting}
+                loadingLabel="Sending..."
+                type="submit"
+              >
+                Send invitation
+              </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <ConfirmationDialog
+        confirmLabel="Revoke invitation"
+        description={
+          invitationToRevoke
+            ? `This invitation for ${invitationToRevoke.email} will no longer be usable.`
+            : ""
+        }
+        isLoading={revokeMutation.isPending}
+        loadingLabel="Revoking..."
+        open={Boolean(invitationToRevoke)}
+        title="Revoke invitation?"
+        onConfirm={revokeInvitation}
+        onOpenChange={(open) => {
+          if (!open) {
+            setInvitationToRevoke(null);
+          }
+        }}
+      />
 
       <Card>
         <CardHeader>
@@ -538,7 +658,7 @@ export function TeamManagement({ businessId }) {
                     disabled={revokeMutation.isPending}
                     size="sm"
                     variant="outline"
-                    onClick={() => revokeInvitation(invitation)}
+                    onClick={() => setInvitationToRevoke(invitation)}
                   >
                     Revoke
                   </Button>
@@ -570,8 +690,7 @@ export function TeamManagement({ businessId }) {
               key={`${member.id}-${member.updatedAt}`}
               member={member}
               services={team.services}
-              onError={setError}
-              onMessage={setMessage}
+              onActionError={setActionError}
             />
           ))
         )}

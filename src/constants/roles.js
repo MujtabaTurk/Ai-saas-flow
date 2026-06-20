@@ -11,4 +11,3 @@ export const BUSINESS_ROLES = {
 };
 
 export const CUSTOMER_ROLE = "CUSTOMER";
-

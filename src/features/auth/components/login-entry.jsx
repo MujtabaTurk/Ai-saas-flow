@@ -7,7 +7,6 @@ import {
   LockKeyhole
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import {
   buildAuthUrl,
   getSafeCallbackUrl
@@ -16,15 +15,19 @@ import { useSearchParams } from "next/navigation";
 import { LoginForm } from "./login-form";
 
 export function LoginEntry({
-  googleEnabled = false
+  googleEnabled = false,
+  defaultCallbackUrl = null,
+  forgotPasswordPath = "/forgot-password",
+  registerPath = "/register"
 }) {
   const { t } = useTranslation("auth");
   const searchParams = useSearchParams();
   const callbackUrl = getSafeCallbackUrl(
-    searchParams.get("callbackUrl")
+    searchParams.get("callbackUrl"),
+    defaultCallbackUrl
   );
   const email = searchParams.get("email") || "";
-  const registerUrl = buildAuthUrl("/register", {
+  const registerUrl = buildAuthUrl(registerPath, {
     callbackUrl,
     email
   });
@@ -47,7 +50,6 @@ export function LoginEntry({
             </span>
             <span>ServiceFlow</span>
           </Link>
-          <LanguageSwitcher className="w-40 bg-white/80 text-growth-sidebar backdrop-blur" />
         </header>
 
         <div className="grid flex-1 items-center gap-10 py-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-14">
@@ -109,6 +111,8 @@ export function LoginEntry({
 
                 <LoginForm
                   googleEnabled={googleEnabled}
+                  defaultCallbackUrl={defaultCallbackUrl}
+                  forgotPasswordPath={forgotPasswordPath}
                 />
 
                 <div className="mt-6 border-t border-growth-border pt-5 text-center text-sm text-muted-foreground">

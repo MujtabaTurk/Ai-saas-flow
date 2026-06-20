@@ -4,6 +4,15 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ErrorDialog } from "@/components/ui/error-dialog";
+import { Modal } from "@/components/ui/modal";
+import {
+  CardListSkeleton,
+  MetricCardsSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import { DAYS_OF_WEEK } from "@/features/availability/constants";
 import {
   useAvailability,
@@ -26,11 +35,12 @@ export function AvailabilityManagement({
   timezone,
   isReadOnly = false
 }) {
+  const { showToast } = useToast();
   const [tab, setTab] = useState("weekly");
   const [mode, setMode] = useState("list");
   const [selectedItem, setSelectedItem] = useState(null);
-  const [message, setMessage] = useState(null);
-  const [operationError, setOperationError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const availabilityQuery = useAvailability(businessId);
   const unavailableDatesQuery = useUnavailableDates(businessId);
@@ -42,6 +52,12 @@ export function AvailabilityManagement({
   const createUnavailableMutation = useCreateUnavailableDate(businessId);
   const updateUnavailableMutation = useUpdateUnavailableDate(businessId);
   const deleteUnavailableMutation = useDeleteUnavailableDate(businessId);
+  const showAvailabilitySkeleton = useDelayedVisibility(
+    availabilityQuery.isLoading
+  );
+  const showUnavailableSkeleton = useDelayedVisibility(
+    unavailableDatesQuery.isLoading
+  );
 
   const availability = useMemo(
     () => availabilityQuery.data?.availability || [],
@@ -78,8 +94,7 @@ export function AvailabilityManagement({
   }
 
   function showSuccess(nextMessage) {
-    setOperationError(null);
-    setMessage(nextMessage);
+    showToast({ title: nextMessage, variant: "success" });
   }
 
   async function handleAvailabilitySubmit(values, helpers) {
@@ -110,65 +125,140 @@ export function AvailabilityManagement({
     closeForm();
   }
 
-  async function runAction(action) {
+  async function runAction(action, errorTitle = "Scheduling update failed") {
     try {
       const result = await action();
       showSuccess(result.message);
     } catch (error) {
-      setMessage(null);
-      setOperationError(error.message);
+      setActionError({
+        description: "We could not update the scheduling configuration. Please review the details and try again.",
+        details: error.message,
+        title: errorTitle
+      });
     }
   }
 
-  if (mode !== "list" && tab === "weekly") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{mode === "edit" ? "Edit working hours" : "Add working hours"}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <AvailabilityForm
-            availability={mode === "edit" ? selectedItem : null}
-            services={services}
-            onCancel={closeForm}
-            onSubmit={handleAvailabilitySubmit}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
+  async function confirmDeleteTarget() {
+    if (!deleteTarget) {
+      return;
+    }
 
-  if (mode !== "list" && tab === "unavailable") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>{mode === "edit" ? "Edit unavailable date" : "Add unavailable date"}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <UnavailableDateForm
-            services={services}
-            timezone={timezone}
-            unavailableDate={mode === "edit" ? selectedItem : null}
-            onCancel={closeForm}
-            onSubmit={handleUnavailableSubmit}
-          />
-        </CardContent>
-      </Card>
-    );
+    const { item, type } = deleteTarget;
+
+    try {
+      const result =
+        type === "availability"
+          ? await deleteAvailabilityMutation.mutateAsync(item.id)
+          : await deleteUnavailableMutation.mutateAsync(item.id);
+
+      setDeleteTarget(null);
+      showSuccess(result.message);
+    } catch (error) {
+      setDeleteTarget(null);
+      setActionError({
+        description:
+          type === "availability"
+            ? "We could not delete this working-hours range. Please try again."
+            : "We could not delete this unavailable date. Please try again.",
+        details: error.message,
+        title:
+          type === "availability"
+            ? "Delete working hours failed"
+            : "Delete unavailable date failed"
+      });
+    }
   }
 
   return (
     <div className="space-y-5">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm font-medium text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
-      {operationError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {operationError}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <ConfirmationDialog
+        confirmLabel={
+          deleteTarget?.type === "availability"
+            ? "Delete range"
+            : "Delete unavailable date"
+        }
+        description={
+          deleteTarget?.type === "availability"
+            ? "This removes the selected working-hours range from your public scheduling rules."
+            : "This removes the selected calendar exception and reopens any affected availability."
+        }
+        isLoading={
+          deleteAvailabilityMutation.isPending ||
+          deleteUnavailableMutation.isPending
+        }
+        loadingLabel="Deleting..."
+        open={Boolean(deleteTarget)}
+        title={
+          deleteTarget?.type === "availability"
+            ? "Delete working-hours range?"
+            : "Delete unavailable date?"
+        }
+        onConfirm={confirmDeleteTarget}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null);
+          }
+        }}
+      />
+
+      <Modal
+        description="Configure recurring working hours and optional service-specific slot rules."
+        isDismissDisabled={
+          createAvailabilityMutation.isPending ||
+          updateAvailabilityMutation.isPending
+        }
+        onOpenChange={(open) => {
+          if (!open) {
+            closeForm();
+          }
+        }}
+        open={mode !== "list" && tab === "weekly"}
+        size="lg"
+        title={mode === "edit" ? "Edit working hours" : "Add working hours"}
+      >
+        <AvailabilityForm
+          availability={mode === "edit" ? selectedItem : null}
+          services={services}
+          onCancel={closeForm}
+          onSubmit={handleAvailabilitySubmit}
+        />
+      </Modal>
+
+      <Modal
+        description="Block full-day or partial-day scheduling for holidays, maintenance windows, or temporary closures."
+        isDismissDisabled={
+          createUnavailableMutation.isPending ||
+          updateUnavailableMutation.isPending
+        }
+        onOpenChange={(open) => {
+          if (!open) {
+            closeForm();
+          }
+        }}
+        open={mode !== "list" && tab === "unavailable"}
+        size="lg"
+        title={mode === "edit" ? "Edit unavailable date" : "Add unavailable date"}
+      >
+        <UnavailableDateForm
+          services={services}
+          timezone={timezone}
+          unavailableDate={mode === "edit" ? selectedItem : null}
+          onCancel={closeForm}
+          onSubmit={handleUnavailableSubmit}
+        />
+      </Modal>
       {availabilityQuery.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {availabilityQuery.error.message}
@@ -237,6 +327,13 @@ export function AvailabilityManagement({
 
       {tab === "weekly" ? (
         <div className="space-y-5">
+          {availabilityQuery.isLoading ? (
+            showAvailabilitySkeleton ? (
+              <MetricCardsSkeleton count={4} />
+            ) : (
+              <div className="min-h-28" role="status" aria-label="Loading working-hours metrics" />
+            )
+          ) : (
           <div className="grid gap-3 md:grid-cols-4">
             <Card>
               <CardContent className="p-4">
@@ -273,6 +370,7 @@ export function AvailabilityManagement({
               </CardContent>
             </Card>
           </div>
+          )}
 
           <Card>
             <CardHeader>
@@ -284,7 +382,11 @@ export function AvailabilityManagement({
             </CardHeader>
             <CardContent className="space-y-3">
               {availabilityQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading working hours...</p>
+                showAvailabilitySkeleton ? (
+                  <CardListSkeleton count={7} />
+                ) : (
+                  <div className="min-h-96" role="status" aria-label="Loading working hours" />
+                )
               ) : (
                 groupedAvailability.map((day) => (
                   <div
@@ -356,11 +458,12 @@ export function AvailabilityManagement({
                                 }
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => {
-                                  if (window.confirm("Delete this working-hours range?")) {
-                                    runAction(() => deleteAvailabilityMutation.mutateAsync(range.id));
-                                  }
-                                }}
+                                onClick={() =>
+                                  setDeleteTarget({
+                                    item: range,
+                                    type: "availability"
+                                  })
+                                }
                               >
                                 Delete
                               </Button>
@@ -377,6 +480,13 @@ export function AvailabilityManagement({
         </div>
       ) : (
         <div className="space-y-5">
+          {unavailableDatesQuery.isLoading ? (
+            showUnavailableSkeleton ? (
+              <MetricCardsSkeleton count={4} />
+            ) : (
+              <div className="min-h-28" role="status" aria-label="Loading unavailable-date metrics" />
+            )
+          ) : (
           <div className="grid gap-3 md:grid-cols-4">
             <Card>
               <CardContent className="p-4">
@@ -411,6 +521,7 @@ export function AvailabilityManagement({
               </CardContent>
             </Card>
           </div>
+          )}
 
           <Card>
             <CardHeader>
@@ -421,7 +532,11 @@ export function AvailabilityManagement({
             </CardHeader>
             <CardContent>
               {unavailableDatesQuery.isLoading ? (
-                <p className="text-sm text-muted-foreground">Loading unavailable dates...</p>
+                showUnavailableSkeleton ? (
+                  <CardListSkeleton count={4} />
+                ) : (
+                  <div className="min-h-72" role="status" aria-label="Loading unavailable dates" />
+                )
               ) : unavailableDates.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-growth-border bg-growth-dashboard p-8 text-center">
                   <h3 className="font-bold text-growth-sidebar">No unavailable dates</h3>
@@ -469,11 +584,12 @@ export function AvailabilityManagement({
                             }
                             size="sm"
                             variant="destructive"
-                            onClick={() => {
-                              if (window.confirm("Delete this unavailable date?")) {
-                                runAction(() => deleteUnavailableMutation.mutateAsync(item.id));
-                              }
-                            }}
+                            onClick={() =>
+                              setDeleteTarget({
+                                item,
+                                type: "unavailable"
+                              })
+                            }
                           >
                             Delete
                           </Button>

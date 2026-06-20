@@ -321,7 +321,7 @@ function SiteNav() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 pr-12 sm:gap-3 sm:pr-14">
           <Button
             asChild
             variant="ghost"

@@ -5,11 +5,19 @@ import { useFormik } from "formik";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Label } from "@/components/ui/label";
-import { LoadingState } from "@/components/ui/loading-state";
+import {
+  MetricCardsSkeleton,
+  Skeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import {
   AI_GENERATION_TYPE_OPTIONS,
   AI_GENERATION_TYPES,
@@ -98,12 +106,15 @@ export function AiAssistantManagement({
   businessTimezone,
   isReadOnly = false
 }) {
+  const { showToast } = useToast();
   const [selectedGenerationId, setSelectedGenerationId] = useState(null);
-  const [message, setMessage] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [applyDialogOpen, setApplyDialogOpen] = useState(false);
   const workspaceQuery = useAiWorkspace(businessId);
   const generateMutation = useGenerateAiContent(businessId);
   const reviewMutation = useReviewAiGeneration(businessId);
   const applyMutation = useApplyAiGeneration(businessId);
+  const showAiSkeleton = useDelayedVisibility(workspaceQuery.isLoading);
   const workspace = workspaceQuery.data;
   const services = useMemo(
     () => workspace?.services || [],
@@ -144,8 +155,6 @@ export function AiAssistantManagement({
     },
     validationSchema: aiGenerationSchema,
     onSubmit: async (values, helpers) => {
-      setMessage(null);
-
       try {
         const result = await generateMutation.mutateAsync({
           ...values,
@@ -159,36 +168,46 @@ export function AiAssistantManagement({
               : null
         });
         setSelectedGenerationId(result.generation.id);
-        setMessage(result.message);
+        showToast({ title: result.message, variant: "success" });
       } catch (error) {
         helpers.setErrors(error.details || {});
+        setActionError({
+          description: "We could not generate this AI draft. Check the request, credits, and provider configuration before trying again.",
+          details: error.message,
+          title: "AI generation failed"
+        });
       }
     }
   });
   const effectiveReadOnly = isReadOnly || access?.isReadOnly;
   const canGenerate =
     access?.canGenerate === true && !generateMutation.isPending;
-  const mutationError =
-    generateMutation.error || reviewMutation.error || applyMutation.error;
 
-  async function handleReview(approvalStatus) {
+  async function handleReview(approvalStatus, event) {
+    event?.preventDefault();
+
     if (!activeGeneration) {
       return;
     }
 
-    setMessage(null);
     try {
       const result = await reviewMutation.mutateAsync({
         generationId: activeGeneration.id,
         approvalStatus
       });
-      setMessage(result.message);
-    } catch {
-      setMessage(null);
+      showToast({ title: result.message, variant: "success" });
+    } catch (error) {
+      setActionError({
+        description: "We could not update the review decision for this draft. Please try again.",
+        details: error.message,
+        title: "Draft review failed"
+      });
     }
   }
 
-  async function handleCopy() {
+  async function handleCopy(event) {
+    event?.preventDefault();
+
     if (
       !activeGeneration?.output ||
       activeGeneration.approvalStatus !== "APPROVED"
@@ -198,40 +217,100 @@ export function AiAssistantManagement({
 
     try {
       await navigator.clipboard.writeText(activeGeneration.output);
-      setMessage("Approved draft copied to the clipboard.");
+      showToast({
+        title: "Approved draft copied to the clipboard.",
+        variant: "success"
+      });
     } catch {
-      setMessage("The browser could not copy this draft.");
+      showToast({
+        title: "The browser could not copy this draft.",
+        variant: "error"
+      });
     }
   }
 
-  async function handleApply() {
+  function openApplyDialog(event) {
+    event?.preventDefault();
+
+    if (!activeGeneration || applyMutation.isPending) {
+      return;
+    }
+
+    setApplyDialogOpen(true);
+  }
+
+  async function handleApply(event) {
+    event?.preventDefault();
+
     if (!activeGeneration) {
       return;
     }
 
-    const confirmed = window.confirm(
-      `Replace the current description for "${activeGeneration.service?.name}" with this approved draft?`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
-    setMessage(null);
     try {
       const result = await applyMutation.mutateAsync(activeGeneration.id);
-      setMessage(result.message);
-    } catch {
-      setMessage(null);
+      setApplyDialogOpen(false);
+      showToast({ title: result.message, variant: "success" });
+    } catch (error) {
+      setApplyDialogOpen(false);
+      setActionError({
+        description: "We could not apply this approved draft to the service. Please try again.",
+        details: error.message,
+        title: "Apply draft failed"
+      });
     }
   }
 
   if (workspaceQuery.isLoading) {
+    if (!showAiSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading AI assistant" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading AI assistant"
-        description="Checking plan credits, provider configuration, and draft history..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading AI assistant">
+        <MetricCardsSkeleton count={4} />
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div className="space-y-2" key={index}>
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className={index === 4 ? "h-32 rounded-2xl" : "h-11 rounded-2xl"} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-28" />
+              <Skeleton className="h-4 w-full" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-24 rounded-full" />
+                <Skeleton className="h-6 w-28 rounded-full" />
+              </div>
+              <Skeleton className="h-48 rounded-2xl" />
+              <div className="flex gap-2">
+                <Skeleton className="h-9 w-28 rounded-xl" />
+                <Skeleton className="h-9 w-20 rounded-xl" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-4 w-full" />
+          </CardHeader>
+          <CardContent>
+            <TableSkeleton columns={6} rows={5} minWidth="900px" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -246,16 +325,32 @@ export function AiAssistantManagement({
 
   return (
     <div className="space-y-5">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
-      {mutationError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {mutationError.message}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+      <ConfirmationDialog
+        confirmLabel="Apply draft"
+        description={
+          activeGeneration?.service
+            ? `This replaces the current description for "${activeGeneration.service.name}" with the approved AI draft.`
+            : "This replaces the current service description with the approved AI draft."
+        }
+        isLoading={applyMutation.isPending}
+        loadingLabel="Applying..."
+        open={applyDialogOpen}
+        title="Apply approved draft?"
+        variant="default"
+        onConfirm={handleApply}
+        onOpenChange={setApplyDialogOpen}
+      />
       {effectiveReadOnly ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           This business is suspended. AI history remains visible, but new
@@ -372,10 +467,7 @@ export function AiAssistantManagement({
                   name="type"
                   value={formik.values.type}
                   onBlur={formik.handleBlur}
-                  onChange={(event) => {
-                    formik.handleChange(event);
-                    setMessage(null);
-                  }}
+                  onChange={formik.handleChange}
                 >
                   {AI_GENERATION_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -484,11 +576,11 @@ export function AiAssistantManagement({
               <Button
                 className="w-full"
                 disabled={!canGenerate}
+                isLoading={generateMutation.isPending}
+                loadingLabel="Generating draft..."
                 type="submit"
               >
-                {generateMutation.isPending
-                  ? "Generating draft..."
-                  : "Generate draft (1 credit)"}
+                Generate draft (1 credit)
               </Button>
             </form>
           </CardContent>
@@ -567,8 +659,13 @@ export function AiAssistantManagement({
                         disabled={
                           effectiveReadOnly || reviewMutation.isPending
                         }
+                        isLoading={reviewMutation.isPending}
+                        loadingLabel="Saving..."
                         size="sm"
-                        onClick={() => handleReview("APPROVED")}
+                        type="button"
+                        onClick={(event) =>
+                          handleReview("APPROVED", event)
+                        }
                       >
                         Approve draft
                       </Button>
@@ -579,9 +676,14 @@ export function AiAssistantManagement({
                         disabled={
                           effectiveReadOnly || reviewMutation.isPending
                         }
+                        isLoading={reviewMutation.isPending}
+                        loadingLabel="Saving..."
                         size="sm"
+                        type="button"
                         variant="outline"
-                        onClick={() => handleReview("REJECTED")}
+                        onClick={(event) =>
+                          handleReview("REJECTED", event)
+                        }
                       >
                         Reject
                       </Button>
@@ -591,6 +693,7 @@ export function AiAssistantManagement({
                         activeGeneration.approvalStatus !== "APPROVED"
                       }
                       size="sm"
+                      type="button"
                       variant="outline"
                       onClick={handleCopy}
                     >
@@ -604,12 +707,13 @@ export function AiAssistantManagement({
                         disabled={
                           effectiveReadOnly || applyMutation.isPending
                         }
+                        isLoading={applyMutation.isPending}
+                        loadingLabel="Applying..."
                         size="sm"
-                        onClick={handleApply}
+                        type="button"
+                        onClick={openApplyDialog}
                       >
-                        {applyMutation.isPending
-                          ? "Applying..."
-                          : "Apply to service"}
+                        Apply to service
                       </Button>
                     ) : null}
                   </div>
@@ -695,6 +799,7 @@ export function AiAssistantManagement({
                       <td className="px-4 py-4 text-right">
                         <Button
                           size="sm"
+                          type="button"
                           variant="outline"
                           onClick={() =>
                             setSelectedGenerationId(generation.id)

@@ -6,7 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
+import {
+  MetricCardsSkeleton,
+  Skeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import {
   AdminPagination,
   AdminSelect,
@@ -33,16 +38,35 @@ export function SubscriptionManagement() {
     [deferredSearch, page, planCode, status]
   );
   const subscriptionsQuery = useAdminSubscriptions(filters);
+  const showSubscriptionsSkeleton = useDelayedVisibility(
+    subscriptionsQuery.isLoading
+  );
   const subscriptions = subscriptionsQuery.data?.subscriptions || [];
   const summary = subscriptionsQuery.data?.summary;
   const pagination = subscriptionsQuery.data?.pagination;
 
   if (subscriptionsQuery.isLoading) {
+    if (!showSubscriptionsSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading subscriptions" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading subscriptions"
-        description="Reading the latest local Stripe state..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading subscriptions">
+        <MetricCardsSkeleton count={5} className="md:grid-cols-5 xl:grid-cols-5" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-48" />
+            <div className="grid gap-3 pt-3 md:grid-cols-[1fr_auto_auto]">
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 w-32 rounded-2xl" />
+              <Skeleton className="h-11 w-40 rounded-2xl" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TableSkeleton columns={6} rows={6} minWidth="1150px" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 

@@ -189,11 +189,20 @@ export function AvailabilityForm({ availability = null, services = [], onSubmit,
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          disabled={formik.isSubmitting}
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
-        <Button disabled={formik.isSubmitting} type="submit">
-          {formik.isSubmitting ? "Saving..." : availability ? "Save changes" : "Add working hours"}
+        <Button
+          isLoading={formik.isSubmitting}
+          loadingLabel="Saving..."
+          type="submit"
+        >
+          {availability ? "Save changes" : "Add working hours"}
         </Button>
       </div>
     </form>

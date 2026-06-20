@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { LoadingState } from "@/components/ui/loading-state";
+import {
+  CardListSkeleton,
+  MetricCardsSkeleton,
+  Skeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import {
   useMarkAllNotificationsRead,
   useNotifications,
@@ -79,6 +84,9 @@ export function NotificationManagement({ businessId, businessTimezone }) {
   const readMutation = useUpdateNotificationReadState(businessId);
   const readAllMutation = useMarkAllNotificationsRead(businessId);
   const retryMutation = useRetryEmailNotification(businessId);
+  const showNotificationsSkeleton = useDelayedVisibility(
+    notificationsQuery.isLoading
+  );
   const notifications = notificationsQuery.data?.notifications || [];
   const summary = notificationsQuery.data?.summary;
   const pagination = notificationsQuery.data?.pagination;
@@ -92,11 +100,33 @@ export function NotificationManagement({ businessId, businessTimezone }) {
   }
 
   if (notificationsQuery.isLoading) {
+    if (!showNotificationsSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading notifications" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading notifications"
-        description="Collecting booking and billing activity..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading notifications">
+        <MetricCardsSkeleton count={4} />
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+              <div>
+                <Skeleton className="h-5 w-44" />
+                <Skeleton className="mt-3 h-4 w-80 max-w-full" />
+              </div>
+              <Skeleton className="h-10 w-32 rounded-2xl" />
+            </div>
+            <div className="grid gap-3 pt-3 md:grid-cols-2 xl:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton className="h-11 rounded-2xl" key={index} />
+              ))}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CardListSkeleton count={5} />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -180,9 +210,10 @@ export function NotificationManagement({ businessId, businessTimezone }) {
             <Button
               disabled={
                 !summary?.unread ||
-                readAllMutation.isPending ||
                 notificationsQuery.isFetching
               }
+              isLoading={readAllMutation.isPending}
+              loadingLabel="Marking..."
               onClick={() => readAllMutation.mutate()}
               variant="outline"
             >
@@ -334,6 +365,8 @@ export function NotificationManagement({ businessId, businessTimezone }) {
                         notification.audience === "BUSINESS" ? (
                           <Button
                             disabled={readMutation.isPending}
+                            isLoading={readMutation.isPending}
+                            loadingLabel="Saving..."
                             onClick={() =>
                               readMutation.mutate({
                                 notificationId: notification.id,
@@ -349,6 +382,8 @@ export function NotificationManagement({ businessId, businessTimezone }) {
                         {canRetry ? (
                           <Button
                             disabled={retryMutation.isPending}
+                            isLoading={retryMutation.isPending}
+                            loadingLabel="Retrying..."
                             onClick={() =>
                               retryMutation.mutate(notification.id)
                             }

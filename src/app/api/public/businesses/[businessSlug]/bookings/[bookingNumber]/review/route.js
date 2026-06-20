@@ -1,23 +1,17 @@
 import { verifyCustomerAccessToken } from "@/features/bookings/access-token";
 import { getBusinessForBooking } from "@/features/bookings/server";
-import { notifyReviewSubmitted } from "@/features/notifications/events";
+import {
+  customerReviewSelect,
+  customerReviewStateResponse,
+  submitCustomerBookingReview
+} from "@/features/reviews/customer-submission";
 import { reviewSubmissionSchema } from "@/features/reviews/validation/review-schema";
-import { created, fail, ok } from "@/lib/api/api-response";
+import { fail } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { validateRequest } from "@/lib/api/validate-request";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
-const customerReviewSelect = {
-  id: true,
-  rating: true,
-  title: true,
-  comment: true,
-  status: true,
-  createdAt: true,
-  updatedAt: true
-};
 
 async function getAuthorizedBooking({
   businessSlug,
@@ -82,13 +76,7 @@ export async function GET(request, { params }) {
 
     const { booking } = context;
 
-    return ok({
-      review: booking.review,
-      canReview:
-        booking.status === "COMPLETED" &&
-        booking.endsAt <= new Date() &&
-        !booking.review
-    });
+    return customerReviewStateResponse(booking);
   } catch (error) {
     return handleApiError(error);
   }
@@ -119,59 +107,12 @@ export async function POST(request, { params }) {
 
     const { business, booking } = context;
 
-    if (business.status === "ARCHIVED") {
-      return fail("Reviews are unavailable for this business.", 403);
-    }
-
-    if (booking.status !== "COMPLETED" || booking.endsAt > new Date()) {
-      return fail(
-        "A review can only be submitted after the booking is completed.",
-        409
-      );
-    }
-
-    if (booking.review) {
-      return fail("A review has already been submitted for this booking.", 409);
-    }
-
-    const review = await prisma.review.create({
-      data: {
-        businessId: booking.businessId,
-        bookingId: booking.id,
-        customerId: booking.customerId,
-        serviceId: booking.serviceId,
-        rating: data.rating,
-        title: data.title?.trim() || null,
-        comment: data.comment.trim(),
-        customerNameSnapshot: booking.customerName,
-        serviceNameSnapshot: booking.serviceNameSnapshot
-      },
-      select: customerReviewSelect
-    });
-
-    try {
-      await notifyReviewSubmitted({
-        business,
-        booking,
-        review
-      });
-    } catch (notificationError) {
-      console.error(
-        "Could not queue review-submitted notifications.",
-        notificationError
-      );
-    }
-
-    return created({
-      review,
-      message:
-        "Thank you. Your review was submitted and is awaiting moderation."
+    return submitCustomerBookingReview({
+      business,
+      booking,
+      data
     });
   } catch (error) {
-    if (error?.code === "P2002") {
-      return fail("A review has already been submitted for this booking.", 409);
-    }
-
     return handleApiError(error);
   }
 }

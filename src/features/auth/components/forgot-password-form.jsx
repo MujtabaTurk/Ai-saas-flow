@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { forgotPasswordSchema } from "@/features/auth/validation/forgot-password-schema";
 import { FieldError } from "./field-error";
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({
+  resetPath = "/reset-password"
+}) {
   const { t } = useTranslation("auth");
   const formik = useFormik({
     initialValues: {
@@ -25,7 +27,10 @@ export function ForgotPasswordForm() {
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(values)
+          body: JSON.stringify({
+            ...values,
+            resetPath
+          })
         });
         const payload = await response.json().catch(() => null);
 

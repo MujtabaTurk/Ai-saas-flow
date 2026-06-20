@@ -172,8 +172,15 @@ model User {
   email                   String?              @unique
   emailVerified           DateTime?
   image                   String?
+  phone                   String?
+  locale                  String?
+  timezone                String?
   passwordHash            String?
   platformRole            PlatformRole         @default(USER)
+  customerPortalEnabled   Boolean              @default(false)
+  customerEmailNotifications Boolean           @default(true)
+  customerBookingReminders   Boolean           @default(true)
+  customerMarketingOptIn     Boolean           @default(false)
   accounts                Account[]
   sessions                Session[]
   resetTokens             PasswordResetToken[]
@@ -192,6 +199,7 @@ model User {
   updatedAt               DateTime             @updatedAt
 
   @@index([platformRole, createdAt])
+  @@index([customerPortalEnabled, createdAt])
   @@index([createdAt])
 }
 
@@ -370,6 +378,7 @@ model Customer {
 
   @@unique([businessId, email])
   @@index([businessId])
+  @@index([email])
   @@index([businessId, createdAt])
   @@index([businessId, updatedAt])
   @@index([businessId, marketingOptIn])

@@ -13,7 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { LoadingState } from "@/components/ui/loading-state";
+import {
+  ChartSkeleton,
+  MetricCardsSkeleton,
+  Skeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import { ANALYTICS_PERIOD_OPTIONS } from "@/features/analytics/constants";
 import { useAnalytics } from "@/features/analytics/hooks/use-analytics";
 
@@ -292,17 +298,44 @@ export function AnalyticsDashboard({
 }) {
   const [days, setDays] = useState(30);
   const analyticsQuery = useAnalytics(businessId, days);
+  const showAnalyticsSkeleton = useDelayedVisibility(analyticsQuery.isLoading);
   const report = analyticsQuery.data?.analytics;
   const access = analyticsQuery.data?.access;
   const overview = report?.overview;
   const advanced = report?.advanced;
 
   if (analyticsQuery.isLoading) {
+    if (!showAnalyticsSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading business analytics" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading business analytics"
-        description="Comparing bookings, customers, services, and reviews..."
-      />
+      <div className="space-y-6" role="status" aria-label="Loading business analytics">
+        <div className="flex flex-col justify-between gap-4 rounded-2xl border border-growth-border bg-white p-4 md:flex-row md:items-center">
+          <div>
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-36 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <Skeleton className="mt-3 h-4 w-96 max-w-full" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton className="h-9 w-20 rounded-xl" key={index} />
+            ))}
+          </div>
+        </div>
+        <MetricCardsSkeleton count={4} />
+        <section className="grid gap-5 xl:grid-cols-[1.45fr_0.55fr]">
+          <ChartSkeleton />
+          <ChartSkeleton bars={5} />
+        </section>
+        <MetricCardsSkeleton count={4} />
+        <div className="grid gap-5 xl:grid-cols-2">
+          <TableSkeleton columns={5} rows={5} minWidth="760px" />
+          <TableSkeleton columns={5} rows={5} minWidth="700px" />
+        </div>
+      </div>
     );
   }
 

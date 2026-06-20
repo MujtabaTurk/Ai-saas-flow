@@ -2,13 +2,28 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
+const CUSTOMER_AUTH_ROUTES = [
+  "/customer/login",
+  "/customer/register",
+  "/customer/forgot-password",
+  "/customer/reset-password",
+  "/customer/verify-email"
+];
 
 function hasDashboardAccess(token) {
   return token?.platformRole === "SUPER_ADMIN" || Boolean(token?.activeBusinessId && token?.businessRole);
 }
 
-function redirectToLogin(request) {
-  const loginUrl = new URL("/login", request.url);
+function hasCustomerAccess(token) {
+  return Boolean(
+    token?.customerRole ||
+    token?.customerId ||
+    token?.customerProfileCount > 0
+  );
+}
+
+function redirectToLogin(request, pathname = "/login") {
+  const loginUrl = new URL(pathname, request.url);
   loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname + request.nextUrl.search);
 
   return NextResponse.redirect(loginUrl);
@@ -21,6 +36,10 @@ function redirectForAuthenticatedUser(request, token) {
 
   if (hasDashboardAccess(token)) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  if (hasCustomerAccess(token)) {
+    return NextResponse.redirect(new URL("/customer", request.url));
   }
 
   return NextResponse.redirect(new URL("/onboarding", request.url));
@@ -46,13 +65,21 @@ export async function middleware(request) {
     token?.id && !token?.accountMissing
   );
 
-  if (
-    AUTH_ROUTES.includes(pathname) &&
-    hasUsableToken &&
-    pathname !== "/reset-password" &&
-    !isInvitationAuthentication(request)
-  ) {
-    return redirectForAuthenticatedUser(request, token);
+  if (hasUsableToken) {
+    if (
+      AUTH_ROUTES.includes(pathname) &&
+      pathname !== "/reset-password" &&
+      !isInvitationAuthentication(request)
+    ) {
+      return redirectForAuthenticatedUser(request, token);
+    }
+
+    if (
+      CUSTOMER_AUTH_ROUTES.includes(pathname) &&
+      !["/customer/reset-password", "/customer/verify-email"].includes(pathname)
+    ) {
+      return NextResponse.redirect(new URL("/customer", request.url));
+    }
   }
 
   if (pathname.startsWith("/admin")) {
@@ -79,6 +106,15 @@ export async function middleware(request) {
     }
   }
 
+  if (
+    pathname.startsWith("/customer") &&
+    !CUSTOMER_AUTH_ROUTES.includes(pathname)
+  ) {
+    if (!hasUsableToken) {
+      return redirectToLogin(request, "/customer/login");
+    }
+  }
+
   if (pathname.startsWith("/onboarding")) {
     if (!hasUsableToken) {
       return redirectToLogin(request);
@@ -97,5 +133,5 @@ export async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/login", "/register", "/forgot-password", "/reset-password", "/dashboard/:path*", "/admin/:path*", "/onboarding/:path*"]
+  matcher: ["/login", "/register", "/forgot-password", "/reset-password", "/customer/:path*", "/dashboard/:path*", "/admin/:path*", "/onboarding/:path*"]
 };

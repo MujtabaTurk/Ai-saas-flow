@@ -121,8 +121,13 @@ export function BookingSettingsForm({ settings, onSubmit, disabled = false }) {
         </label>
       </div>
 
-      <Button disabled={disabled || formik.isSubmitting} type="submit">
-        {formik.isSubmitting ? "Saving..." : "Save booking settings"}
+      <Button
+        disabled={disabled}
+        isLoading={formik.isSubmitting}
+        loadingLabel="Saving..."
+        type="submit"
+      >
+        Save booking settings
       </Button>
     </form>
   );

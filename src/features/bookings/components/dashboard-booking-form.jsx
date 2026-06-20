@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton, useDelayedVisibility } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { addDaysToDateValue, formatDateTimeInTimezone } from "@/features/availability/time";
 import { FieldError } from "@/features/auth/components/field-error";
@@ -45,6 +46,7 @@ export function DashboardBookingForm({
   const [serviceId, setServiceId] = useState(initialServiceId);
   const slotsQuery = useDashboardSlots(businessId, serviceId, date);
   const createMutation = useCreateDashboardBooking(businessId);
+  const showSlotsSkeleton = useDelayedVisibility(slotsQuery.isLoading);
   const slots = slotsQuery.data?.slots || [];
   const formik = useFormik({
     initialValues: {
@@ -135,9 +137,19 @@ export function DashboardBookingForm({
       <div className="space-y-2">
         <Label>Available time</Label>
         {slotsQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">
-            Loading available times...
-          </p>
+          showSlotsSkeleton ? (
+            <div
+              className="flex flex-wrap gap-2"
+              role="status"
+              aria-label="Loading available times"
+            >
+              {Array.from({ length: 8 }).map((_, index) => (
+                <Skeleton className="h-9 w-20 rounded-xl" key={index} />
+              ))}
+            </div>
+          ) : (
+            <div className="min-h-9" role="status" aria-label="Loading available times" />
+          )
         ) : slotsQuery.error ? (
           <p className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             {slotsQuery.error.message}
@@ -235,19 +247,21 @@ export function DashboardBookingForm({
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          disabled={formik.isSubmitting}
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
         <Button
-          disabled={
-            formik.isSubmitting ||
-            !serviceId ||
-            !selectedSlot ||
-            activeServices.length === 0
-          }
+          disabled={!serviceId || !selectedSlot || activeServices.length === 0}
+          isLoading={formik.isSubmitting}
+          loadingLabel="Creating..."
           type="submit"
         >
-          {formik.isSubmitting ? "Creating..." : "Create booking"}
+          Create booking
         </Button>
       </div>
     </form>

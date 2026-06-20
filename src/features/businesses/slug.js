@@ -4,6 +4,8 @@ export const RESERVED_BUSINESS_SLUGS = new Set([
   "api",
   "billing",
   "bookings",
+  "businesses",
+  "customer",
   "dashboard",
   "favicon",
   "forgot-password",

@@ -15,6 +15,8 @@ import { registerSchema } from "@/features/auth/validation/register-schema";
 import { FieldError } from "./field-error";
 
 export function RegisterForm({
+  accountType = "BUSINESS",
+  defaultCallbackUrl = "/onboarding",
   googleEnabled = false,
   invitationCallbackUrl = null,
   invitationEmail = null,
@@ -27,7 +29,7 @@ export function RegisterForm({
     invitationCallbackUrl ||
     getSafeCallbackUrl(
       searchParams.get("callbackUrl"),
-      "/onboarding"
+      defaultCallbackUrl
     );
   const initialEmail =
     invitationEmail || searchParams.get("email") || "";
@@ -37,7 +39,8 @@ export function RegisterForm({
       email: initialEmail,
       password: "",
       confirmPassword: "",
-      invitationToken: invitationToken || undefined
+      invitationToken: invitationToken || undefined,
+      accountType
     },
     validationSchema: registerSchema,
     onSubmit: async (values, helpers) => {

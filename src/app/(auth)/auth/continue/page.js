@@ -3,7 +3,7 @@ import {
   buildAuthUrl,
   getSafeCallbackUrl
 } from "@/features/auth/callback-url";
-import { isSuperAdmin } from "@/features/auth/permissions";
+import { isCustomer, isSuperAdmin } from "@/features/auth/permissions";
 import { getCurrentSession } from "@/lib/auth/session";
 
 function isAuthenticationCallback(callbackUrl) {
@@ -45,6 +45,10 @@ export default async function AuthenticationContinuePage({
 
   if (session.user.activeBusinessId && session.user.businessRole) {
     redirect("/dashboard");
+  }
+
+  if (isCustomer(session.user)) {
+    redirect("/customer");
   }
 
   redirect("/onboarding");

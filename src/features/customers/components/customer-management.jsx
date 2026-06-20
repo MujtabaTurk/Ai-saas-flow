@@ -8,6 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import {
+  MetricCardsSkeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import {
   useCreateCustomer,
   useCustomers
 } from "@/features/customers/hooks/use-customers";
@@ -60,6 +65,7 @@ export function CustomerManagement({
   );
   const customersQuery = useCustomers(businessId, filters);
   const createMutation = useCreateCustomer(businessId);
+  const showCustomersSkeleton = useDelayedVisibility(customersQuery.isLoading);
   const customers = useMemo(
     () => customersQuery.data?.customers || [],
     [customersQuery.data?.customers]
@@ -118,6 +124,13 @@ export function CustomerManagement({
         </div>
       ) : null}
 
+      {customersQuery.isLoading ? (
+        showCustomersSkeleton ? (
+          <MetricCardsSkeleton count={4} />
+        ) : (
+          <div className="min-h-28" role="status" aria-label="Loading customer metrics" />
+        )
+      ) : (
       <div className="grid gap-3 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -160,6 +173,7 @@ export function CustomerManagement({
           </CardContent>
         </Card>
       </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -213,9 +227,11 @@ export function CustomerManagement({
 
         <CardContent>
           {customersQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">
-              Loading customers...
-            </p>
+            showCustomersSkeleton ? (
+              <TableSkeleton columns={6} rows={6} minWidth="900px" />
+            ) : (
+              <div className="min-h-80" role="status" aria-label="Loading customers" />
+            )
           ) : customers.length === 0 ? (
             <EmptyState
               title="No customers found"

@@ -128,6 +128,30 @@ export async function sendPasswordResetEmail({
   return result;
 }
 
+export async function sendEmailVerificationEmail({
+  email,
+  verificationUrl,
+  tokenHash
+}) {
+  const result = await sendTransactionalEmail({
+    to: email,
+    subject: "Verify your ServiceFlow email",
+    message:
+      "Confirm your email address to secure your ServiceFlow customer account.",
+    actionUrl: verificationUrl,
+    actionLabel: "Verify email",
+    idempotencyKey: `email-verification:${tokenHash}`,
+    template: "email-verification",
+    templateData: {
+      verificationUrl
+    }
+  });
+
+  throwIfSkippedEmail(result);
+
+  return result;
+}
+
 export async function notifyTeamMemberJoined({
   business,
   membership
@@ -195,6 +219,36 @@ async function getBusinessNotificationRecipient(businessId) {
       }
     }
   });
+}
+
+async function getCustomerNotificationPreferences(customerId) {
+  if (!customerId) {
+    return {
+      emailNotifications: true,
+      bookingReminders: true
+    };
+  }
+
+  const customer = await prisma.customer.findUnique({
+    where: {
+      id: customerId
+    },
+    select: {
+      user: {
+        select: {
+          customerEmailNotifications: true,
+          customerBookingReminders: true
+        }
+      }
+    }
+  });
+
+  return {
+    emailNotifications:
+      customer?.user?.customerEmailNotifications ?? true,
+    bookingReminders:
+      customer?.user?.customerBookingReminders ?? true
+  };
 }
 
 export async function notifyReviewSubmitted({
@@ -274,8 +328,9 @@ export async function notifyBookingCreated({
         `/${encodeURIComponent(business.slug)}/booking/${encodeURIComponent(booking.bookingNumber)}?token=${encodeURIComponent(customerAccessToken)}`
       )
     : null;
-
-  await Promise.all([
+  const customerPreferences =
+    await getCustomerNotificationPreferences(booking.customerId);
+  const notifications = [
     queueNotification({
       businessId: booking.businessId,
       bookingId: booking.id,
@@ -289,41 +344,48 @@ export async function notifyBookingCreated({
       metadata: {
         bookingNumber: booking.bookingNumber
       }
-    }),
-    queueNotification({
-      businessId: booking.businessId,
-      bookingId: booking.id,
-      dedupeKey: `booking:${booking.id}:created:customer:email`,
-      type: "BOOKING_CREATED",
-      audience: "CUSTOMER",
-      channel: "EMAIL",
-      recipientEmail: booking.customerEmail,
-      title:
-        booking.status === "CONFIRMED"
-          ? "Your booking is confirmed"
-          : "Your booking request was received",
-      message: `${booking.customerName}, your ${booking.serviceNameSnapshot} appointment is scheduled for ${appointment}. Reference: ${booking.bookingNumber}.`,
-      actionUrl: manageBookingUrl,
-      metadata: {
-        bookingNumber: booking.bookingNumber,
-        ...emailMetadata(
-          "booking-confirmation",
-          {
-            customerName: booking.customerName,
-            serviceName: booking.serviceNameSnapshot,
-            appointment,
-            bookingNumber: booking.bookingNumber,
-            businessName: business.name,
-            statusLabel:
-              booking.status === "CONFIRMED"
-                ? "Booking confirmed"
-                : "Booking request received"
-          },
-          "Manage booking"
-        )
-      }
     })
-  ]);
+  ];
+
+  if (customerPreferences.emailNotifications) {
+    notifications.push(
+      queueNotification({
+        businessId: booking.businessId,
+        bookingId: booking.id,
+        dedupeKey: `booking:${booking.id}:created:customer:email`,
+        type: "BOOKING_CREATED",
+        audience: "CUSTOMER",
+        channel: "EMAIL",
+        recipientEmail: booking.customerEmail,
+        title:
+          booking.status === "CONFIRMED"
+            ? "Your booking is confirmed"
+            : "Your booking request was received",
+        message: `${booking.customerName}, your ${booking.serviceNameSnapshot} appointment is scheduled for ${appointment}. Reference: ${booking.bookingNumber}.`,
+        actionUrl: manageBookingUrl,
+        metadata: {
+          bookingNumber: booking.bookingNumber,
+          ...emailMetadata(
+            "booking-confirmation",
+            {
+              customerName: booking.customerName,
+              serviceName: booking.serviceNameSnapshot,
+              appointment,
+              bookingNumber: booking.bookingNumber,
+              businessName: business.name,
+              statusLabel:
+                booking.status === "CONFIRMED"
+                  ? "Booking confirmed"
+                  : "Booking request received"
+            },
+            "Manage booking"
+          )
+        }
+      })
+    );
+  }
+
+  await Promise.all(notifications);
 }
 
 export async function notifyBookingStatusChanged({ booking }) {
@@ -341,8 +403,9 @@ export async function notifyBookingStatusChanged({ booking }) {
 
   const appointment = formatAppointment(booking.startsAt, booking.timezone);
   const statusLabel = booking.status.toLowerCase().replaceAll("_", " ");
-
-  await Promise.all([
+  const customerPreferences =
+    await getCustomerNotificationPreferences(booking.customerId);
+  const notifications = [
     queueNotification({
       businessId: booking.businessId,
       bookingId: booking.id,
@@ -357,35 +420,42 @@ export async function notifyBookingStatusChanged({ booking }) {
         bookingNumber: booking.bookingNumber,
         status: booking.status
       }
-    }),
-    queueNotification({
-      businessId: booking.businessId,
-      bookingId: booking.id,
-      dedupeKey: `booking:${booking.id}:${booking.status}:customer:email`,
-      type,
-      audience: "CUSTOMER",
-      channel: "EMAIL",
-      recipientEmail: booking.customerEmail,
-      title: `Booking ${statusLabel}`,
-      message: `Your ${booking.serviceNameSnapshot} booking for ${appointment} is now ${statusLabel}. Reference: ${booking.bookingNumber}.`,
-      metadata: {
-        bookingNumber: booking.bookingNumber,
-        status: booking.status,
-        ...emailMetadata(
-          bookingEmailTemplateForStatus(booking.status),
-          {
-            customerName: booking.customerName,
-            serviceName: booking.serviceNameSnapshot,
-            appointment,
-            bookingNumber: booking.bookingNumber,
-            businessName: business.name,
-            statusLabel: `Booking ${statusLabel}`
-          },
-          booking.status === "CANCELED" ? "View booking" : "Manage booking"
-        )
-      }
     })
-  ]);
+  ];
+
+  if (customerPreferences.emailNotifications) {
+    notifications.push(
+      queueNotification({
+        businessId: booking.businessId,
+        bookingId: booking.id,
+        dedupeKey: `booking:${booking.id}:${booking.status}:customer:email`,
+        type,
+        audience: "CUSTOMER",
+        channel: "EMAIL",
+        recipientEmail: booking.customerEmail,
+        title: `Booking ${statusLabel}`,
+        message: `Your ${booking.serviceNameSnapshot} booking for ${appointment} is now ${statusLabel}. Reference: ${booking.bookingNumber}.`,
+        metadata: {
+          bookingNumber: booking.bookingNumber,
+          status: booking.status,
+          ...emailMetadata(
+            bookingEmailTemplateForStatus(booking.status),
+            {
+              customerName: booking.customerName,
+              serviceName: booking.serviceNameSnapshot,
+              appointment,
+              bookingNumber: booking.bookingNumber,
+              businessName: business.name,
+              statusLabel: `Booking ${statusLabel}`
+            },
+            booking.status === "CANCELED" ? "View booking" : "Manage booking"
+          )
+        }
+      })
+    );
+  }
+
+  await Promise.all(notifications);
 }
 
 export async function notifyCustomerCanceledBooking({ booking }) {
@@ -397,8 +467,9 @@ export async function notifyCustomerCanceledBooking({ booking }) {
 
   const appointment = formatAppointment(booking.startsAt, booking.timezone);
   const recipientEmail = business.email || business.owner?.email || null;
-
-  await Promise.all([
+  const customerPreferences =
+    await getCustomerNotificationPreferences(booking.customerId);
+  const notifications = [
     queueNotification({
       businessId: booking.businessId,
       bookingId: booking.id,
@@ -438,33 +509,40 @@ export async function notifyCustomerCanceledBooking({ booking }) {
           "View booking"
         )
       }
-    }),
-    queueNotification({
-      businessId: booking.businessId,
-      bookingId: booking.id,
-      dedupeKey: `booking:${booking.id}:customer-canceled:customer:email`,
-      type: "BOOKING_CANCELED",
-      audience: "CUSTOMER",
-      channel: "EMAIL",
-      recipientEmail: booking.customerEmail,
-      title: "Your booking was canceled",
-      message: `Your ${booking.serviceNameSnapshot} booking scheduled for ${appointment} has been canceled. Reference: ${booking.bookingNumber}.`,
-      metadata: {
-        bookingNumber: booking.bookingNumber,
-        ...emailMetadata(
-          "booking-cancellation",
-          {
-            customerName: booking.customerName,
-            serviceName: booking.serviceNameSnapshot,
-            appointment,
-            bookingNumber: booking.bookingNumber,
-            businessName: business.name
-          },
-          "View booking"
-        )
-      }
     })
-  ]);
+  ];
+
+  if (customerPreferences.emailNotifications) {
+    notifications.push(
+      queueNotification({
+        businessId: booking.businessId,
+        bookingId: booking.id,
+        dedupeKey: `booking:${booking.id}:customer-canceled:customer:email`,
+        type: "BOOKING_CANCELED",
+        audience: "CUSTOMER",
+        channel: "EMAIL",
+        recipientEmail: booking.customerEmail,
+        title: "Your booking was canceled",
+        message: `Your ${booking.serviceNameSnapshot} booking scheduled for ${appointment} has been canceled. Reference: ${booking.bookingNumber}.`,
+        metadata: {
+          bookingNumber: booking.bookingNumber,
+          ...emailMetadata(
+            "booking-cancellation",
+            {
+              customerName: booking.customerName,
+              serviceName: booking.serviceNameSnapshot,
+              appointment,
+              bookingNumber: booking.bookingNumber,
+              businessName: business.name
+            },
+            "View booking"
+          )
+        }
+      })
+    );
+  }
+
+  await Promise.all(notifications);
 }
 
 export async function notifyBookingReminder({
@@ -472,6 +550,16 @@ export async function notifyBookingReminder({
   booking,
   customerAccessToken = null
 }) {
+  const customerPreferences =
+    await getCustomerNotificationPreferences(booking.customerId);
+
+  if (
+    !customerPreferences.emailNotifications ||
+    !customerPreferences.bookingReminders
+  ) {
+    return null;
+  }
+
   const appointment = formatAppointment(booking.startsAt, booking.timezone);
   const actionUrl = customerAccessToken
     ? getAppUrl(

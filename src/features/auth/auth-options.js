@@ -16,14 +16,17 @@ function invalidateMissingUserToken(token) {
     ...token,
     id: null,
     accountMissing: true,
+    emailVerified: null,
     activeBusinessId: null,
     activeBusinessMembershipId: null,
     activeBusinessSlug: null,
     activeBusinessName: null,
     activeBusinessStatus: null,
     businessRole: null,
+    customerRole: null,
     customerId: null,
-    customerBusinessId: null
+    customerBusinessId: null,
+    customerProfileCount: 0
   };
 }
 
@@ -82,7 +85,8 @@ if (isGoogleProviderEnabled) {
           id: profile.sub,
           name: profile.name,
           email,
-          image: profile.picture
+          image: profile.picture,
+          emailVerified: new Date()
         };
       }
     })
@@ -117,14 +121,19 @@ export const authOptions = {
 
         token.accountMissing = false;
         token.platformRole = context.platformRole || user?.platformRole || token.platformRole || "USER";
+        token.emailVerified = context.emailVerified
+          ? new Date(context.emailVerified).toISOString()
+          : null;
         token.activeBusinessId = context.activeBusinessId;
         token.activeBusinessMembershipId = context.activeBusinessMembershipId;
         token.activeBusinessSlug = context.activeBusinessSlug;
         token.activeBusinessName = context.activeBusinessName;
         token.activeBusinessStatus = context.activeBusinessStatus;
         token.businessRole = context.businessRole;
+        token.customerRole = context.customerRole;
         token.customerId = context.customerId;
         token.customerBusinessId = context.customerBusinessId;
+        token.customerProfileCount = context.customerProfileCount || 0;
       }
 
       return token;
@@ -137,6 +146,7 @@ export const authOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.platformRole = token.platformRole || "USER";
+        session.user.emailVerified = token.emailVerified || null;
         session.user.activeBusinessId = token.activeBusinessId || null;
         session.user.activeBusinessMembershipId =
         token.activeBusinessMembershipId || null;
@@ -144,8 +154,10 @@ export const authOptions = {
         session.user.activeBusinessName = token.activeBusinessName || null;
         session.user.activeBusinessStatus = token.activeBusinessStatus || null;
         session.user.businessRole = token.businessRole || null;
+        session.user.customerRole = token.customerRole || null;
         session.user.customerId = token.customerId || null;
         session.user.customerBusinessId = token.customerBusinessId || null;
+        session.user.customerProfileCount = token.customerProfileCount || 0;
       }
 
       return session;

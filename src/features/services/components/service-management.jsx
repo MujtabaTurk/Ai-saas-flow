@@ -4,6 +4,14 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ErrorDialog } from "@/components/ui/error-dialog";
+import { Modal } from "@/components/ui/modal";
+import {
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import {
   useCreateService,
   useDeleteService,
@@ -29,16 +37,18 @@ export function ServiceManagement({
   businessCurrency = "usd",
   isReadOnly = false
 }) {
+  const { showToast } = useToast();
   const [mode, setMode] = useState("list");
   const [selectedService, setSelectedService] = useState(null);
-  const [message, setMessage] = useState(null);
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
+  const [actionError, setActionError] = useState(null);
 
   const servicesQuery = useServices(businessId);
   const createMutation = useCreateService(businessId);
   const updateMutation = useUpdateService(businessId);
   const deleteMutation = useDeleteService(businessId);
   const statusMutation = useUpdateServiceStatus(businessId);
+  const showServicesSkeleton = useDelayedVisibility(servicesQuery.isLoading);
 
   const services = useMemo(() => servicesQuery.data?.services || [], [servicesQuery.data?.services]);
   const summary = servicesQuery.data?.summary;
@@ -58,109 +68,123 @@ export function ServiceManagement({
     summary?.canCreate === true;
 
   async function handleCreate(values, helpers) {
-    setErrorMessage(null);
-    setMessage(null);
     const result = await createMutation.mutateAsync(values);
-    setMessage(result.message);
+    showToast({ title: result.message, variant: "success" });
     helpers.resetForm();
     setMode("list");
   }
 
   async function handleUpdate(values) {
-    setErrorMessage(null);
-    setMessage(null);
     const result = await updateMutation.mutateAsync({
       serviceId: selectedService.id,
       values
     });
-    setMessage(result.message);
+    showToast({ title: result.message, variant: "success" });
     setSelectedService(null);
     setMode("list");
   }
 
-  async function handleDelete(service) {
-    const confirmed = window.confirm(`Delete "${service.name}"? This only works if the service has no bookings.`);
+  function closeServiceForm() {
+    setSelectedService(null);
+    setMode("list");
+  }
 
-    if (!confirmed) {
+  async function handleDelete() {
+    if (!serviceToDelete) {
       return;
     }
 
     try {
-      setErrorMessage(null);
-      setMessage(null);
-      const result = await deleteMutation.mutateAsync(service.id);
-      setMessage(result.message);
+      const result = await deleteMutation.mutateAsync(serviceToDelete.id);
+      setServiceToDelete(null);
+      showToast({ title: result.message, variant: "success" });
     } catch (error) {
-      setErrorMessage(error.message || "Could not delete service.");
+      setServiceToDelete(null);
+      setActionError({
+        description: "We could not delete this service. Services with existing bookings usually need to be archived or deactivated instead.",
+        details: error.message,
+        title: "Delete service failed"
+      });
     }
   }
 
   async function handleStatus(service) {
     try {
-      setErrorMessage(null);
-      setMessage(null);
       const result = await statusMutation.mutateAsync({
         serviceId: service.id,
         isActive: !service.isActive
       });
-      setMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
     } catch (error) {
-      setErrorMessage(error.message || "Could not update service status.");
+      setActionError({
+        description: "We could not update this service status. Please try again.",
+        details: error.message,
+        title: "Service update failed"
+      });
     }
-  }
-
-  if (mode === "create") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Create service</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ServiceForm businessCurrency={businessCurrency} onCancel={() => setMode("list")} onSubmit={handleCreate} />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (mode === "edit" && selectedService) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit service</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ServiceForm
-            businessCurrency={businessCurrency}
-            mode="edit"
-            service={selectedService}
-            onCancel={() => {
-              setSelectedService(null);
-              setMode("list");
-            }}
-            onSubmit={handleUpdate}
-          />
-        </CardContent>
-      </Card>
-    );
   }
 
   return (
     <div className="space-y-5">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm font-medium text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <ConfirmationDialog
+        confirmLabel="Delete service"
+        description={
+          serviceToDelete
+            ? `This permanently deletes "${serviceToDelete.name}" if it has no bookings. This action cannot be undone.`
+            : ""
+        }
+        isLoading={deleteMutation.isPending}
+        loadingLabel="Deleting..."
+        open={Boolean(serviceToDelete)}
+        title="Delete service?"
+        onConfirm={handleDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setServiceToDelete(null);
+          }
+        }}
+      />
+
+      <Modal
+        description={
+          mode === "edit"
+            ? "Update the customer-facing details, duration, pricing, and operational buffers for this service."
+            : "Create a bookable service with pricing, duration, payment, and scheduling defaults."
+        }
+        isDismissDisabled={createMutation.isPending || updateMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeServiceForm();
+          }
+        }}
+        open={mode === "create" || (mode === "edit" && Boolean(selectedService))}
+        size="lg"
+        title={mode === "edit" ? "Edit service" : "Create service"}
+      >
+        <ServiceForm
+          businessCurrency={businessCurrency}
+          mode={mode === "edit" ? "edit" : "create"}
+          service={mode === "edit" ? selectedService : null}
+          onCancel={closeServiceForm}
+          onSubmit={mode === "edit" ? handleUpdate : handleCreate}
+        />
+      </Modal>
 
       {servicesQuery.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {servicesQuery.error.message}
-        </div>
-      ) : null}
-
-      {errorMessage ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
         </div>
       ) : null}
 
@@ -196,7 +220,11 @@ export function ServiceManagement({
         </CardHeader>
         <CardContent>
           {servicesQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading services...</p>
+            showServicesSkeleton ? (
+              <TableSkeleton columns={6} rows={5} minWidth="760px" />
+            ) : (
+              <div className="min-h-56" role="status" aria-label="Loading services" />
+            )
           ) : services.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-growth-border bg-growth-dashboard p-8 text-center">
               <h3 className="text-lg font-bold text-growth-sidebar">No services yet</h3>
@@ -275,7 +303,7 @@ export function ServiceManagement({
                             type="button"
                             variant="destructive"
                             disabled={effectiveReadOnly || deleteMutation.isPending}
-                            onClick={() => handleDelete(service)}
+                            onClick={() => setServiceToDelete(service)}
                           >
                             Delete
                           </Button>

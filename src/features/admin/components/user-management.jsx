@@ -5,9 +5,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
+import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
+import {
+  MetricCardsSkeleton,
+  Skeleton,
+  TableSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import {
   AdminPagination,
   AdminSelect,
@@ -21,12 +31,14 @@ import {
 } from "@/features/admin/hooks/use-admin";
 
 export function UserManagement() {
+  const { showToast } = useToast();
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search);
   const [platformRole, setPlatformRole] = useState("ALL");
   const [page, setPage] = useState(1);
   const [pendingRoles, setPendingRoles] = useState({});
-  const [message, setMessage] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [roleReasonDialog, setRoleReasonDialog] = useState(null);
   const filters = useMemo(
     () => ({
       search: deferredSearch,
@@ -38,6 +50,7 @@ export function UserManagement() {
   );
   const usersQuery = useAdminUsers(filters);
   const updateMutation = useUpdateAdminUserRole();
+  const showUsersSkeleton = useDelayedVisibility(usersQuery.isLoading);
   const users = usersQuery.data?.users || [];
   const summary = usersQuery.data?.summary;
   const pagination = usersQuery.data?.pagination;
@@ -49,42 +62,92 @@ export function UserManagement() {
       return;
     }
 
-    const reason = window.prompt(
-      `Why should ${user.email || user.name || "this user"} become ${humanizeAdminValue(nextRole)}?`
-    );
+    setRoleReasonDialog({
+      nextRole,
+      reason: "",
+      user,
+      validationError: null
+    });
+  }
 
-    if (reason === null) {
-      return;
-    }
-
-    if (reason.trim().length < 3) {
-      setMessage("Provide a short reason before changing a platform role.");
-      return;
-    }
-
+  async function submitRoleChange(user, nextRole, reason) {
     try {
       const result = await updateMutation.mutateAsync({
         userId: user.id,
         platformRole: nextRole,
-        reason: reason.trim()
+        reason
       });
-      setMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
       setPendingRoles((current) => {
         const next = { ...current };
         delete next[user.id];
         return next;
       });
+      return true;
     } catch (error) {
-      setMessage(error.message);
+      setActionError({
+        description: "We could not update this platform role. Please review the details and try again.",
+        details: error.message,
+        title: "Role update failed"
+      });
+      return false;
+    }
+  }
+
+  async function submitRoleReason(event) {
+    event.preventDefault();
+
+    if (!roleReasonDialog) {
+      return;
+    }
+
+    const reason = roleReasonDialog.reason.trim();
+
+    if (reason.length < 3) {
+      setRoleReasonDialog((current) =>
+        current
+          ? {
+              ...current,
+              validationError: "Provide a short reason before changing a platform role."
+            }
+          : current
+      );
+      return;
+    }
+
+    const success = await submitRoleChange(
+      roleReasonDialog.user,
+      roleReasonDialog.nextRole,
+      reason
+    );
+
+    if (success) {
+      setRoleReasonDialog(null);
     }
   }
 
   if (usersQuery.isLoading) {
+    if (!showUsersSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading users" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading users"
-        description="Preparing platform identities..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading users">
+        <MetricCardsSkeleton count={5} className="md:grid-cols-5 xl:grid-cols-5" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-5 w-36" />
+            <Skeleton className="h-4 w-96 max-w-full" />
+            <div className="grid gap-3 pt-3 md:grid-cols-[1fr_auto]">
+              <Skeleton className="h-11 rounded-2xl" />
+              <Skeleton className="h-11 w-40 rounded-2xl" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TableSkeleton columns={5} rows={6} minWidth="1050px" />
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
@@ -99,11 +162,77 @@ export function UserManagement() {
 
   return (
     <div className="space-y-5">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/30 px-4 py-3 text-sm text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <Modal
+        description={
+          roleReasonDialog
+            ? `Record why ${roleReasonDialog.user.email || roleReasonDialog.user.name || "this user"} should become ${humanizeAdminValue(roleReasonDialog.nextRole)}.`
+            : ""
+        }
+        isDismissDisabled={updateMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRoleReasonDialog(null);
+          }
+        }}
+        open={Boolean(roleReasonDialog)}
+        title="Role change reason"
+      >
+        <form className="space-y-4" onSubmit={submitRoleReason}>
+          <div className="space-y-2">
+            <Label htmlFor="user-role-reason">Reason</Label>
+            <Textarea
+              id="user-role-reason"
+              rows={5}
+              value={roleReasonDialog?.reason || ""}
+              onChange={(event) =>
+                setRoleReasonDialog((current) =>
+                  current
+                    ? {
+                        ...current,
+                        reason: event.target.value,
+                        validationError: null
+                      }
+                    : current
+                )
+              }
+            />
+            {roleReasonDialog?.validationError ? (
+              <p className="text-xs text-red-600">
+                {roleReasonDialog.validationError}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              disabled={updateMutation.isPending}
+              type="button"
+              variant="outline"
+              onClick={() => setRoleReasonDialog(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              isLoading={updateMutation.isPending}
+              loadingLabel="Saving..."
+              type="submit"
+            >
+              Save role
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       <div className="grid gap-3 md:grid-cols-5">
         <AdminSummaryCard label="Total users" value={summary?.total ?? 0} />

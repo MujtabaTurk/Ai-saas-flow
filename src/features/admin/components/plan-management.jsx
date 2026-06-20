@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/error-state";
-import { LoadingState } from "@/components/ui/loading-state";
+import { Skeleton, useDelayedVisibility } from "@/components/ui/skeleton";
 import { useAdminPlans } from "@/features/admin/hooks/use-admin";
 
 function formatMoney(cents) {
@@ -20,13 +20,39 @@ function formatLimit(limit) {
 
 export function PlanManagement() {
   const plansQuery = useAdminPlans();
+  const showPlansSkeleton = useDelayedVisibility(plansQuery.isLoading);
 
   if (plansQuery.isLoading) {
+    if (!showPlansSkeleton) {
+      return <div className="min-h-80" role="status" aria-label="Loading plans" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading plans"
-        description="Reading pricing and entitlement configuration..."
-      />
+      <div className="grid gap-5 lg:grid-cols-3" role="status" aria-label="Loading plans">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card key={index}>
+            <CardHeader>
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-6 w-28" />
+                <Skeleton className="h-6 w-32 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <Skeleton className="h-9 w-24" />
+              <div className="grid grid-cols-2 gap-3">
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                {Array.from({ length: 5 }).map((__, itemIndex) => (
+                  <Skeleton className="h-4 w-48" key={itemIndex} />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     );
   }
 

@@ -13,6 +13,10 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+export function GET() {
+  return fail("Apply draft requires a POST request.", 405);
+}
+
 export async function POST(request, { params }) {
   try {
     const { user, business } = await requireAiContext(

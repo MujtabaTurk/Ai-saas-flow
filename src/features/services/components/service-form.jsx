@@ -224,12 +224,21 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         {onCancel ? (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button
+            disabled={formik.isSubmitting}
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+          >
             Cancel
           </Button>
         ) : null}
-        <Button disabled={formik.isSubmitting} type="submit">
-          {formik.isSubmitting ? "Saving..." : mode === "edit" ? "Save changes" : "Create service"}
+        <Button
+          isLoading={formik.isSubmitting}
+          loadingLabel="Saving..."
+          type="submit"
+        >
+          {mode === "edit" ? "Save changes" : "Create service"}
         </Button>
       </div>
     </form>

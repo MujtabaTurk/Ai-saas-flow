@@ -110,9 +110,14 @@ export function PublicBookingForm({ business, services }) {
               {t("booking.paymentRequired")}
             </div>
           ) : null}
-          <Link className="font-semibold text-primary hover:underline" href={manageUrl}>
-            {t("booking.manage")}
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Button asChild size="sm">
+              <Link href={manageUrl}>{t("booking.manage")}</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/customer">Customer dashboard</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

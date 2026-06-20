@@ -31,7 +31,11 @@ function getAuthenticationError(error, t) {
   return null;
 }
 
-export function LoginForm({ googleEnabled = false }) {
+export function LoginForm({
+  googleEnabled = false,
+  defaultCallbackUrl = null,
+  forgotPasswordPath = "/forgot-password"
+}) {
   const { t } = useTranslation("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,7 +43,8 @@ export function LoginForm({ googleEnabled = false }) {
   const [rememberMe, setRememberMe] = useState(false);
   const rememberedEmailLoadedRef = useRef(false);
   const callbackUrl = getSafeCallbackUrl(
-    searchParams.get("callbackUrl")
+    searchParams.get("callbackUrl"),
+    defaultCallbackUrl
   );
   const postLoginUrl = buildPostLoginUrl({
     callbackUrl
@@ -189,7 +194,7 @@ export function LoginForm({ googleEnabled = false }) {
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
           <Label htmlFor="password">{t("login.password")}</Label>
-          <Link className="text-sm font-medium text-primary hover:underline" href="/forgot-password">
+          <Link className="text-sm font-medium text-primary hover:underline" href={forgotPasswordPath}>
             {t("login.forgot")}
           </Link>
         </div>

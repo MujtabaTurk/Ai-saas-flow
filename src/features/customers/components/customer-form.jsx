@@ -186,15 +186,20 @@ export function CustomerForm({
       </div>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button type="button" variant="outline" onClick={onCancel}>
+        <Button
+          disabled={formik.isSubmitting}
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+        >
           Cancel
         </Button>
-        <Button disabled={formik.isSubmitting} type="submit">
-          {formik.isSubmitting
-            ? "Saving..."
-            : customer
-              ? "Save customer"
-              : "Create customer"}
+        <Button
+          isLoading={formik.isSubmitting}
+          loadingLabel="Saving..."
+          type="submit"
+        >
+          {customer ? "Save customer" : "Create customer"}
         </Button>
       </div>
     </form>

@@ -1,4 +1,4 @@
-import { BUSINESS_ROLES, PLATFORM_ROLES } from "@/constants/roles";
+import { BUSINESS_ROLES, CUSTOMER_ROLE, PLATFORM_ROLES } from "@/constants/roles";
 import { ForbiddenError } from "@/lib/api/errors";
 
 export function isSuperAdmin(user) {
@@ -22,11 +22,19 @@ export function isBusinessStaff(user) {
 }
 
 export function isCustomer(user) {
-  return Boolean(user?.customerId);
+  return Boolean(
+    user?.customerRole === CUSTOMER_ROLE ||
+    user?.customerId ||
+    user?.customerProfileCount > 0
+  );
 }
 
 export function canAccessDashboard(user) {
   return isSuperAdmin(user) || Boolean(user?.activeBusinessId && user?.businessRole);
+}
+
+export function canAccessCustomerPortal(user) {
+  return Boolean(user?.id);
 }
 
 export function needsBusinessOnboarding(user) {
@@ -88,12 +96,16 @@ export function getAuthorizationSummary(user) {
     isCustomer: isCustomer(user),
     canAccessAdmin: isSuperAdmin(user),
     canAccessDashboard: canAccessDashboard(user),
+    canAccessCustomerPortal: canAccessCustomerPortal(user),
     needsBusinessOnboarding: needsBusinessOnboarding(user),
+    emailVerified: user?.emailVerified || null,
     activeBusinessId: user?.activeBusinessId || null,
     activeBusinessMembershipId: user?.activeBusinessMembershipId || null,
     activeBusinessStatus: user?.activeBusinessStatus || null,
     businessRole: user?.businessRole || null,
+    customerRole: user?.customerRole || null,
     customerId: user?.customerId || null,
-    customerBusinessId: user?.customerBusinessId || null
+    customerBusinessId: user?.customerBusinessId || null,
+    customerProfileCount: user?.customerProfileCount || 0
   };
 }

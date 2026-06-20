@@ -5,7 +5,18 @@ import { useDeferredValue, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Modal } from "@/components/ui/modal";
+import {
+  CardListSkeleton,
+  FormSkeleton,
+  MetricCardsSkeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 import {
   useBookings,
   useBookingSettings,
@@ -42,13 +53,15 @@ export function BookingManagement({
   isReadOnly,
   businessRole
 }) {
+  const { showToast } = useToast();
   const [mode, setMode] = useState("list");
   const [status, setStatus] = useState("ALL");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const deferredSearch = useDeferredValue(search);
-  const [message, setMessage] = useState(null);
-  const [error, setError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [cancellationDialog, setCancellationDialog] = useState(null);
+  const [notesDialog, setNotesDialog] = useState(null);
   const filters = useMemo(
     () => ({ status, search: deferredSearch, page, pageSize: 25 }),
     [status, deferredSearch, page]
@@ -61,6 +74,8 @@ export function BookingManagement({
   const notesMutation = useUpdateBookingNotes(businessId);
   const assignmentMutation = useUpdateBookingAssignment(businessId);
   const settingsMutation = useUpdateBookingSettings(businessId);
+  const showBookingsSkeleton = useDelayedVisibility(bookingsQuery.isLoading);
+  const showSettingsSkeleton = useDelayedVisibility(settingsQuery.isLoading);
   const bookings = useMemo(() => bookingsQuery.data?.bookings || [], [bookingsQuery.data?.bookings]);
   const summary = bookingsQuery.data?.summary;
   const access = summary?.access;
@@ -96,17 +111,7 @@ export function BookingManagement({
     return summary.statusCounts[option] ?? 0;
   }
 
-  async function changeStatus(booking, nextStatus) {
-    let cancellationReason = null;
-
-    if (nextStatus === "CANCELED") {
-      cancellationReason = window.prompt("Cancellation reason:", "Canceled by business");
-
-      if (cancellationReason === null) {
-        return;
-      }
-    }
-
+  async function submitStatusChange(booking, nextStatus, cancellationReason = null) {
     try {
       const result = await statusMutation.mutateAsync({
         bookingId: booking.id,
@@ -115,34 +120,84 @@ export function BookingManagement({
           cancellationReason
         }
       });
-      setError(null);
-      setMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
+      return true;
     } catch (actionError) {
-      setMessage(null);
-      setError(actionError.message);
+      setActionError({
+        description: "We could not update this booking status. Please review the details and try again.",
+        details: actionError.message,
+        title: "Booking update failed"
+      });
+      return false;
     }
   }
 
-  async function editInternalNotes(booking) {
-    const internalNotes = window.prompt(
-      "Internal notes:",
-      booking.internalNotes || ""
+  async function changeStatus(booking, nextStatus) {
+    if (nextStatus === "CANCELED") {
+      setCancellationDialog({
+        booking,
+        reason: "Canceled by business",
+        validationError: null
+      });
+      return;
+    }
+
+    await submitStatusChange(booking, nextStatus);
+  }
+
+  async function submitCancellation(event) {
+    event.preventDefault();
+
+    if (!cancellationDialog) {
+      return;
+    }
+
+    const reason = cancellationDialog.reason.trim();
+
+    if (reason.length < 3) {
+      setCancellationDialog((current) =>
+        current
+          ? {
+              ...current,
+              validationError: "Provide a short cancellation reason."
+            }
+          : current
+      );
+      return;
+    }
+
+    const success = await submitStatusChange(
+      cancellationDialog.booking,
+      "CANCELED",
+      reason
     );
 
-    if (internalNotes === null) {
+    if (success) {
+      setCancellationDialog(null);
+    }
+  }
+
+  async function submitInternalNotes(event) {
+    event.preventDefault();
+
+    if (!notesDialog) {
       return;
     }
 
     try {
       const result = await notesMutation.mutateAsync({
-        bookingId: booking.id,
-        internalNotes
+        bookingId: notesDialog.booking.id,
+        internalNotes: notesDialog.internalNotes
       });
-      setError(null);
-      setMessage(result.message);
+      setNotesDialog(null);
+      showToast({ title: result.message, variant: "success" });
     } catch (actionError) {
-      setMessage(null);
-      setError(actionError.message);
+      setNotesDialog(null);
+      setActionError({
+        description: "We could not save the internal notes for this booking. Please try again.",
+        details: actionError.message,
+        title: "Notes update failed"
+      });
     }
   }
 
@@ -152,52 +207,173 @@ export function BookingManagement({
         bookingId: booking.id,
         membershipId: membershipId || null
       });
-      setError(null);
-      setMessage(result.message);
+      showToast({ title: result.message, variant: "success" });
     } catch (actionError) {
-      setMessage(null);
-      setError(actionError.message);
+      setActionError({
+        description: "We could not update the assignment for this booking. Please try again.",
+        details: actionError.message,
+        title: "Assignment update failed"
+      });
     }
-  }
-
-  if (mode === "create") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Create booking</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DashboardBookingForm
-            bookingWindowDays={
-              settingsQuery.data?.settings?.bookingWindowDays || 30
-            }
-            businessId={businessId}
-            services={services}
-            timezone={timezone}
-            onCancel={() => setMode("list")}
-            onSuccess={(result) => {
-              setError(null);
-              setMessage(result.message);
-              setMode("list");
-            }}
-          />
-        </CardContent>
-      </Card>
-    );
   }
 
   return (
     <div className="space-y-6">
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
-      {error ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      ) : null}
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <Modal
+        description="Create a booking from the dashboard by choosing a service, open slot, and customer details."
+        onOpenChange={(open) => {
+          if (!open) {
+            setMode("list");
+          }
+        }}
+        open={mode === "create"}
+        size="xl"
+        title="Create booking"
+      >
+        <DashboardBookingForm
+          bookingWindowDays={
+            settingsQuery.data?.settings?.bookingWindowDays || 30
+          }
+          businessId={businessId}
+          services={services}
+          timezone={timezone}
+          onCancel={() => setMode("list")}
+          onSuccess={(result) => {
+            showToast({ title: result.message, variant: "success" });
+            setMode("list");
+          }}
+        />
+      </Modal>
+
+      <Modal
+        description={
+          cancellationDialog
+            ? `Cancel booking ${cancellationDialog.booking.bookingNumber}. The customer-facing record will keep this reason.`
+            : ""
+        }
+        isDismissDisabled={statusMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCancellationDialog(null);
+          }
+        }}
+        open={Boolean(cancellationDialog)}
+        title="Cancel booking"
+      >
+        <form className="space-y-4" onSubmit={submitCancellation}>
+          <div className="space-y-2">
+            <Label htmlFor="booking-cancellation-reason">
+              Cancellation reason
+            </Label>
+            <Textarea
+              id="booking-cancellation-reason"
+              rows={4}
+              value={cancellationDialog?.reason || ""}
+              onChange={(event) =>
+                setCancellationDialog((current) =>
+                  current
+                    ? {
+                        ...current,
+                        reason: event.target.value,
+                        validationError: null
+                      }
+                    : current
+                )
+              }
+            />
+            {cancellationDialog?.validationError ? (
+              <p className="text-xs text-red-600">
+                {cancellationDialog.validationError}
+              </p>
+            ) : null}
+          </div>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              disabled={statusMutation.isPending}
+              type="button"
+              variant="outline"
+              onClick={() => setCancellationDialog(null)}
+            >
+              Keep booking
+            </Button>
+            <Button
+              disabled={statusMutation.isPending}
+              isLoading={statusMutation.isPending}
+              loadingLabel="Canceling..."
+              type="submit"
+              variant="destructive"
+            >
+              Cancel booking
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        description={
+          notesDialog
+            ? `Private notes for booking ${notesDialog.booking.bookingNumber}. These notes are visible only inside the dashboard.`
+            : ""
+        }
+        isDismissDisabled={notesMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setNotesDialog(null);
+          }
+        }}
+        open={Boolean(notesDialog)}
+        title="Internal notes"
+      >
+        <form className="space-y-4" onSubmit={submitInternalNotes}>
+          <div className="space-y-2">
+            <Label htmlFor="booking-internal-notes">Notes</Label>
+            <Textarea
+              id="booking-internal-notes"
+              rows={6}
+              value={notesDialog?.internalNotes || ""}
+              onChange={(event) =>
+                setNotesDialog((current) =>
+                  current
+                    ? {
+                        ...current,
+                        internalNotes: event.target.value
+                      }
+                    : current
+                )
+              }
+            />
+          </div>
+          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+            <Button
+              disabled={notesMutation.isPending}
+              type="button"
+              variant="outline"
+              onClick={() => setNotesDialog(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              isLoading={notesMutation.isPending}
+              loadingLabel="Saving..."
+              type="submit"
+            >
+              Save notes
+            </Button>
+          </div>
+        </form>
+      </Modal>
       {bookingsQuery.error ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {bookingsQuery.error.message}
@@ -237,6 +413,13 @@ export function BookingManagement({
         </div>
       ) : null}
 
+      {bookingsQuery.isLoading ? (
+      showBookingsSkeleton ? (
+        <MetricCardsSkeleton count={4} />
+      ) : (
+        <div className="min-h-28" role="status" aria-label="Loading booking metrics" />
+      )
+      ) : (
       <div className="grid gap-3 md:grid-cols-4">
         <Card>
           <CardContent className="p-4">
@@ -267,6 +450,7 @@ export function BookingManagement({
           </CardContent>
         </Card>
       </div>
+      )}
 
       {businessRole !== "STAFF" ? (
       <div className="flex justify-end">
@@ -290,12 +474,22 @@ export function BookingManagement({
         </CardHeader>
         <CardContent>
           {settingsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading settings...</p>
+            showSettingsSkeleton ? (
+              <FormSkeleton fields={4} />
+            ) : (
+              <div className="min-h-56" role="status" aria-label="Loading booking settings" />
+            )
           ) : (
             <BookingSettingsForm
               disabled={!canConfigure}
               settings={settingsQuery.data?.settings}
-              onSubmit={(values) => settingsMutation.mutateAsync(values)}
+              onSubmit={async (values) => {
+                const result = await settingsMutation.mutateAsync(values);
+                showToast({
+                  title: result.message || "Booking settings saved.",
+                  variant: "success"
+                });
+              }}
             />
           )}
         </CardContent>
@@ -341,7 +535,11 @@ export function BookingManagement({
         </CardHeader>
         <CardContent>
           {bookingsQuery.isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading bookings...</p>
+            showBookingsSkeleton ? (
+              <CardListSkeleton count={5} />
+            ) : (
+              <div className="min-h-80" role="status" aria-label="Loading bookings" />
+            )
           ) : bookings.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-growth-border bg-growth-dashboard p-8 text-center">
               <h3 className="font-bold text-growth-sidebar">No bookings found</h3>
@@ -422,22 +620,40 @@ export function BookingManagement({
                         </select>
                       ) : null}
                       {booking.status === "PENDING" ? (
-                        <Button size="sm" onClick={() => changeStatus(booking, "CONFIRMED")}>
+                        <Button
+                          disabled={statusMutation.isPending}
+                          size="sm"
+                          onClick={() => changeStatus(booking, "CONFIRMED")}
+                        >
                           Confirm
                         </Button>
                       ) : null}
                       {booking.status === "CONFIRMED" ? (
                         <>
-                          <Button size="sm" onClick={() => changeStatus(booking, "COMPLETED")}>
+                          <Button
+                            disabled={statusMutation.isPending}
+                            size="sm"
+                            onClick={() => changeStatus(booking, "COMPLETED")}
+                          >
                             Complete
                           </Button>
-                          <Button size="sm" variant="outline" onClick={() => changeStatus(booking, "NO_SHOW")}>
+                          <Button
+                            disabled={statusMutation.isPending}
+                            size="sm"
+                            variant="outline"
+                            onClick={() => changeStatus(booking, "NO_SHOW")}
+                          >
                             No-show
                           </Button>
                         </>
                       ) : null}
                       {["PENDING", "CONFIRMED"].includes(booking.status) ? (
-                        <Button size="sm" variant="destructive" onClick={() => changeStatus(booking, "CANCELED")}>
+                        <Button
+                          disabled={statusMutation.isPending}
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => changeStatus(booking, "CANCELED")}
+                        >
                           Cancel
                         </Button>
                       ) : null}
@@ -445,7 +661,12 @@ export function BookingManagement({
                         disabled={notesMutation.isPending}
                         size="sm"
                         variant="outline"
-                        onClick={() => editInternalNotes(booking)}
+                        onClick={() =>
+                          setNotesDialog({
+                            booking,
+                            internalNotes: booking.internalNotes || ""
+                          })
+                        }
                       >
                         Internal notes
                       </Button>

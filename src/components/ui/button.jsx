@@ -1,5 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
@@ -25,11 +26,51 @@ const buttonVariants = cva(
   }
 );
 
-function Button({ className, variant, size, asChild = false, ...props }) {
-  const Comp = asChild ? Slot : "button";
+function Button({
+  children,
+  className,
+  disabled,
+  isLoading = false,
+  loadingLabel,
+  type,
+  variant,
+  size,
+  asChild = false,
+  ...props
+}) {
+  const isDisabled = disabled || isLoading;
+  const classNames = cn(
+    buttonVariants({ variant, size, className }),
+    asChild && isDisabled ? "pointer-events-none opacity-50" : null
+  );
 
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} {...props} />;
+  if (asChild) {
+    return (
+      <Slot
+        aria-busy={isLoading || undefined}
+        aria-disabled={isDisabled || undefined}
+        className={classNames}
+        {...props}
+      >
+        {children}
+      </Slot>
+    );
+  }
+
+  return (
+    <button
+      aria-busy={isLoading || undefined}
+      className={classNames}
+      disabled={isDisabled}
+      type={type || "button"}
+      {...props}
+    >
+      {isLoading ? (
+        <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+      ) : null}
+      {isLoading && loadingLabel ? loadingLabel : children}
+    </button>
+  );
 }
 
 export { Button, buttonVariants };
-

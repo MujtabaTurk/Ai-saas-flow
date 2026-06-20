@@ -1,10 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CreditCard, ExternalLink, Loader2 } from "lucide-react";
+import { CreditCard, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  CardListSkeleton,
+  MetricCardsSkeleton,
+  Skeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
 import {
   getSubscriptionStatusVariant,
   STRIPE_MANAGED_SUBSCRIPTION_STATUSES
@@ -52,6 +58,7 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
   const checkoutMutation = useCreateCheckoutSession();
   const portalMutation = useCreateBillingPortalSession();
   const reconciliationMutation = useReconcileCheckoutSession();
+  const showBillingSkeleton = useDelayedVisibility(billingQuery.isLoading);
   const reconcileCheckout = reconciliationMutation.mutateAsync;
   const data = billingQuery.data;
   const subscription = data?.subscription;
@@ -141,13 +148,49 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
   }
 
   if (billingQuery.isLoading) {
+    if (!showBillingSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading billing workspace" />;
+    }
+
     return (
-      <Card>
-        <CardContent className="flex items-center gap-3 pt-6 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading billing details...
-        </CardContent>
-      </Card>
+      <div className="space-y-6" role="status" aria-label="Loading billing workspace">
+        <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-44" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-8 w-32" />
+              <MetricCardsSkeleton count={2} className="md:grid-cols-2 xl:grid-cols-2" />
+              <Skeleton className="h-11 w-40 rounded-2xl" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-32" />
+            </CardHeader>
+            <CardContent>
+              <CardListSkeleton count={2} />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <Skeleton className="h-6 w-28" />
+                <Skeleton className="h-4 w-full" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-11 w-full rounded-2xl" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
     );
   }
 
@@ -240,11 +283,13 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
 
             <div className="flex flex-wrap gap-3">
               <Button
-                disabled={!data.business.hasStripeCustomer || portalMutation.isPending}
+                disabled={!data.business.hasStripeCustomer}
+                isLoading={portalMutation.isPending}
+                loadingLabel="Opening..."
                 onClick={openPortal}
               >
                 <CreditCard className="mr-2 h-4 w-4" />
-                {portalMutation.isPending ? "Opening..." : "Manage billing"}
+                Manage billing
               </Button>
               <p className="text-xs text-muted-foreground">
                 Payment methods, invoices, cancellation, and plan changes are handled in Stripe.
@@ -337,6 +382,13 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
                 <Button
                   className="w-full"
                   disabled={actionDisabled}
+                  isLoading={
+                    (!shouldUsePortal && checkoutMutation.isPending) ||
+                    (shouldUsePortal && portalMutation.isPending)
+                  }
+                  loadingLabel={
+                    shouldUsePortal ? "Opening portal..." : "Starting checkout..."
+                  }
                   variant={plan.highlighted ? "default" : "outline"}
                   onClick={() =>
                     shouldUsePortal ? openPortal() : startCheckout(plan.code)

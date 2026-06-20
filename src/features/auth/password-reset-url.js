@@ -45,14 +45,21 @@ export function getPasswordResetUrlDiagnostics() {
   };
 }
 
-export function buildPasswordResetUrl(token) {
+function isSafeResetPath(path) {
+  return ["/reset-password", "/customer/reset-password"].includes(path);
+}
+
+export function buildPasswordResetUrl(token, path = "/reset-password") {
   const diagnostics = getPasswordResetUrlDiagnostics();
 
   if (!diagnostics.ready) {
     return null;
   }
 
-  const resetUrl = new URL("/reset-password", diagnostics.baseUrl);
+  const resetUrl = new URL(
+    isSafeResetPath(path) ? path : "/reset-password",
+    diagnostics.baseUrl
+  );
   resetUrl.searchParams.set("token", token);
 
   return resetUrl.toString();

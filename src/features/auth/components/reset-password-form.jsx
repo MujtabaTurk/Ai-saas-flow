@@ -10,7 +10,9 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { resetPasswordSchema } from "@/features/auth/validation/reset-password-schema";
 import { FieldError } from "./field-error";
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({
+  loginPath = "/login"
+}) {
   const { t } = useTranslation("auth");
   const searchParams = useSearchParams();
   const token = searchParams.get("token") || "";
@@ -70,7 +72,7 @@ export function ResetPasswordForm() {
         >
           <p>{formik.status.message}</p>
           {formik.status.type === "success" ? (
-            <Link className="mt-2 block font-semibold text-primary hover:underline" href="/login">
+            <Link className="mt-2 block font-semibold text-primary hover:underline" href={loginPath}>
               {t("resetPassword.goLogin")}
             </Link>
           ) : null}

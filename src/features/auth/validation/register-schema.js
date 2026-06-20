@@ -12,5 +12,8 @@ export const registerSchema = Yup.object({
   invitationToken: Yup.string()
     .trim()
     .min(32, "Invitation token is invalid.")
-    .optional()
+    .optional(),
+  accountType: Yup.string()
+    .oneOf(["BUSINESS", "CUSTOMER"], "Choose a valid account type.")
+    .default("BUSINESS")
 });

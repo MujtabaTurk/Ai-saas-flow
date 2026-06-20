@@ -1,6 +1,5 @@
 import { Clock3, Mail, Phone } from "lucide-react";
 import { notFound } from "next/navigation";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { LocaleBoundary } from "@/components/i18n/locale-boundary";
 import { PublicBookingForm } from "@/features/bookings/components/public-booking-form";
 import { getBookingCreationAccess } from "@/features/bookings/access";
@@ -94,9 +93,6 @@ export default async function PublicBusinessPage({ params }) {
   return (
     <LocaleBoundary language={language}>
       <main className="min-h-screen bg-growth-dashboard px-4 py-10 text-growth-sidebar sm:px-6">
-        <div className="mx-auto mb-5 flex max-w-6xl justify-end">
-          <LanguageSwitcher />
-        </div>
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.8fr_1.2fr]">
         <section className="space-y-6">
           <div>

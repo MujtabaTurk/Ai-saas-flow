@@ -102,7 +102,7 @@ export async function POST(request) {
     const { token, tokenHash } = createPasswordResetToken();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
 
-    resetUrl = buildPasswordResetUrl(token);
+    resetUrl = buildPasswordResetUrl(token, data.resetPath);
 
     if (!resetUrl) {
       const resetUrlError = new Error(

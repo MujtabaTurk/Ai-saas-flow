@@ -172,6 +172,18 @@ const templateRenderers = {
       actionUrl: data.resetUrl || data.actionUrl,
       actionLabel: "Reset password"
     }),
+  "email-verification": (data) =>
+    renderLayout({
+      subject: data.subject || "Verify your ServiceFlow email",
+      preheader: "Confirm your ServiceFlow email address.",
+      eyebrow: "Email verification",
+      title: "Verify your email",
+      intro:
+        "Confirm your email address to secure your ServiceFlow account and connect customer booking history that belongs to this email.",
+      body: paragraph("If you did not create a ServiceFlow account, you can ignore this email."),
+      actionUrl: data.verificationUrl || data.actionUrl,
+      actionLabel: "Verify email"
+    }),
   "team-invitation": (data) =>
     renderLayout({
       subject: data.subject || `Join ${data.businessName || PRODUCT_NAME} on ServiceFlow`,

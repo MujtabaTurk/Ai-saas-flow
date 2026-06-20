@@ -6,8 +6,17 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
-import { LoadingState } from "@/components/ui/loading-state";
+import { Modal } from "@/components/ui/modal";
+import {
+  CardListSkeleton,
+  MetricCardsSkeleton,
+  Skeleton,
+  useDelayedVisibility
+} from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/toast";
 import {
   useCustomer,
   useDeleteCustomer,
@@ -61,20 +70,60 @@ export function CustomerProfile({
   isReadOnly = false
 }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [mode, setMode] = useState("view");
   const [page, setPage] = useState(1);
-  const [message, setMessage] = useState(null);
-  const [operationError, setOperationError] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const customerQuery = useCustomer(businessId, customerId, page);
   const updateMutation = useUpdateCustomer(businessId, customerId);
   const deleteMutation = useDeleteCustomer(businessId, customerId);
+  const showCustomerSkeleton = useDelayedVisibility(customerQuery.isLoading);
 
   if (customerQuery.isLoading) {
+    if (!showCustomerSkeleton) {
+      return <div className="min-h-96" role="status" aria-label="Loading customer profile" />;
+    }
+
     return (
-      <LoadingState
-        title="Loading customer"
-        description="Preparing the customer profile and booking history..."
-      />
+      <div className="space-y-5" role="status" aria-label="Loading customer profile">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="mt-3 h-9 w-56" />
+            <Skeleton className="mt-3 h-4 w-64" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-28 rounded-2xl" />
+            <Skeleton className="h-10 w-20 rounded-2xl" />
+          </div>
+        </div>
+        <MetricCardsSkeleton count={4} />
+        <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-24" />
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index}>
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="mt-2 h-4 w-48" />
+                  <Skeleton className="mt-2 h-3 w-36" />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-5 w-36" />
+            </CardHeader>
+            <CardContent>
+              <CardListSkeleton count={4} />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
   }
 
@@ -93,51 +142,73 @@ export function CustomerProfile({
   const pagination = data.pagination;
   const effectiveReadOnly = isReadOnly || data.access?.isReadOnly === true;
 
-  if (mode === "edit") {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Edit customer</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <CustomerForm
-            businessLocale={businessLocale}
-            businessTimezone={businessTimezone}
-            customer={customer}
-            onCancel={() => setMode("view")}
-            onSubmit={async (values) => {
-              const result = await updateMutation.mutateAsync(values);
-              setOperationError(null);
-              setMessage(result.message);
-              setMode("view");
-            }}
-          />
-        </CardContent>
-      </Card>
-    );
-  }
-
   async function handleDelete() {
-    const confirmed = window.confirm(
-      `Delete "${customer.name}"? This is only allowed when the customer has no booking history.`
-    );
-
-    if (!confirmed) {
-      return;
-    }
-
     try {
       await deleteMutation.mutateAsync();
+      setDeleteDialogOpen(false);
+      showToast({ title: "Customer deleted.", variant: "success" });
       router.push("/dashboard/customers");
       router.refresh();
     } catch (error) {
-      setMessage(null);
-      setOperationError(error.message);
+      setDeleteDialogOpen(false);
+      setActionError({
+        description: "We could not delete this customer. Customers with booking history must remain available for records.",
+        details: error.message,
+        title: "Delete customer failed"
+      });
     }
   }
 
   return (
     <div className="space-y-5">
+      <ErrorDialog
+        description={actionError?.description}
+        details={actionError?.details}
+        open={Boolean(actionError)}
+        title={actionError?.title}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionError(null);
+          }
+        }}
+      />
+
+      <ConfirmationDialog
+        confirmLabel="Delete customer"
+        description={`This permanently deletes "${customer.name}" only if the customer has no booking history.`}
+        isLoading={deleteMutation.isPending}
+        loadingLabel="Deleting..."
+        open={deleteDialogOpen}
+        title="Delete customer?"
+        onConfirm={handleDelete}
+        onOpenChange={setDeleteDialogOpen}
+      />
+
+      <Modal
+        description="Update contact details, preferences, marketing consent, and private customer notes."
+        isDismissDisabled={updateMutation.isPending}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMode("view");
+          }
+        }}
+        open={mode === "edit"}
+        size="lg"
+        title="Edit customer"
+      >
+        <CustomerForm
+          businessLocale={businessLocale}
+          businessTimezone={businessTimezone}
+          customer={customer}
+          onCancel={() => setMode("view")}
+          onSubmit={async (values) => {
+            const result = await updateMutation.mutateAsync(values);
+            showToast({ title: result.message, variant: "success" });
+            setMode("view");
+          }}
+        />
+      </Modal>
+
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <Link
@@ -166,24 +237,12 @@ export function CustomerProfile({
               summary.bookingTotal > 0
             }
             variant="destructive"
-            onClick={handleDelete}
+            onClick={() => setDeleteDialogOpen(true)}
           >
             Delete
           </Button>
         </div>
       </div>
-
-      {message ? (
-        <div className="rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm font-medium text-growth-sidebar">
-          {message}
-        </div>
-      ) : null}
-
-      {operationError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {operationError}
-        </div>
-      ) : null}
 
       {effectiveReadOnly ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
