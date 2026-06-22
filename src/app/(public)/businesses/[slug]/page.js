@@ -5,6 +5,7 @@ import {
   ArrowRight,
   CalendarCheck2,
   Clock3,
+  CreditCard,
   ExternalLink,
   Globe2,
   Mail,
@@ -19,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { PublicBookingForm } from "@/features/bookings/components/public-booking-form";
 import { getBusinessDiscoveryDetail } from "@/features/businesses/discovery";
 import { normalizeWebsiteUrl } from "@/features/businesses/url";
+import { getIntervalLabel } from "@/features/memberships/lifecycle";
+import { PublicMembershipEnrollment } from "@/features/memberships/components/public-membership-enrollment";
 import { ReviewStars } from "@/features/reviews/components/review-stars";
 import {
   formatLocalizedDateTime,
@@ -47,6 +50,14 @@ function formatPrice(service, language) {
   }
 
   return formatLocalizedMoney(service.priceCents, service.currency, language);
+}
+
+function formatPlanPrice(plan, language) {
+  return `${formatLocalizedMoney(
+    plan.priceCents,
+    plan.currency,
+    language
+  )}/${getIntervalLabel(plan.billingInterval)}`;
 }
 
 function ContactRow({ icon: Icon, children }) {
@@ -118,6 +129,63 @@ function ServiceList({ business, language }) {
             <Button asChild className="mt-5" size="sm" variant="outline">
               <Link href="#book">
                 Select service
+                <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function MembershipPlanList({ business, language }) {
+  if (business.membershipPlans.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="space-y-4" id="memberships">
+      <SectionHeading
+        description="Active public membership plans from this business."
+        eyebrow="Memberships"
+        title="Plans you can join"
+      />
+      <div className="grid gap-4 md:grid-cols-2">
+        {business.membershipPlans.map((plan) => (
+          <article
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            key={plan.id}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-bold text-growth-sidebar">
+                  {plan.name}
+                </h3>
+                <p className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <CreditCard className="size-4" aria-hidden="true" />
+                  {plan.durationDays} days
+                </p>
+              </div>
+              <p className="shrink-0 font-bold text-primary">
+                {formatPlanPrice(plan, language)}
+              </p>
+            </div>
+            {plan.description ? (
+              <p className="mt-4 text-sm leading-6 text-slate-600">
+                {plan.description}
+              </p>
+            ) : null}
+            {Array.isArray(plan.features) && plan.features.length > 0 ? (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {plan.features.slice(0, 4).map((feature) => (
+                  <Badge key={feature} variant="outline">{feature}</Badge>
+                ))}
+              </div>
+            ) : null}
+            <Button asChild className="mt-5" size="sm" variant="outline">
+              <Link href="#memberships-join">
+                Select plan
                 <ArrowRight className="ml-2 size-4" aria-hidden="true" />
               </Link>
             </Button>
@@ -292,6 +360,8 @@ export default async function BusinessDiscoveryDetailPage({ params }) {
 
   const language = await resolveRequestLanguage(business.locale);
   const websiteUrl = normalizeWebsiteUrl(business.website);
+  const hasPublicActions =
+    business.acceptingBookings || business.membershipPlans.length > 0;
 
   return (
     <LocaleBoundary language={language}>
@@ -330,6 +400,9 @@ export default async function BusinessDiscoveryDetailPage({ params }) {
                     ) : (
                       <Badge variant="warning">Bookings unavailable</Badge>
                     )}
+                    {business.membershipPlans.length > 0 ? (
+                      <Badge variant="success">Memberships available</Badge>
+                    ) : null}
                     {business.reviewSummary.total > 0 ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
                         <Star className="size-3.5 fill-current" aria-hidden="true" />
@@ -381,9 +454,9 @@ export default async function BusinessDiscoveryDetailPage({ params }) {
                     ) : null}
                   </ContactRow>
                 </div>
-                <Button asChild className="mt-5 w-full" disabled={!business.acceptingBookings}>
-                  <Link href="#book">
-                    Book now
+                <Button asChild className="mt-5 w-full" disabled={!hasPublicActions}>
+                  <Link href={business.acceptingBookings ? "#book" : "#memberships-join"}>
+                    {business.acceptingBookings ? "Book now" : "View plans"}
                     <CalendarCheck2 className="ml-2 size-4" aria-hidden="true" />
                   </Link>
                 </Button>
@@ -395,36 +468,57 @@ export default async function BusinessDiscoveryDetailPage({ params }) {
         <section className="px-4 py-8 sm:px-6">
           <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_25rem]">
             <div className="space-y-10">
-              <ServiceList business={business} language={language} />
+              {business.services.length > 0 ? (
+                <ServiceList business={business} language={language} />
+              ) : null}
+              <MembershipPlanList business={business} language={language} />
               <TeamMembers members={business.teamMembers} />
               <Availability business={business} language={language} />
               <Reviews business={business} />
             </div>
 
             <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start" id="book">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
-                  Book appointment
-                </p>
-                <h2 className="mt-2 text-2xl font-bold text-growth-sidebar">
-                  Select a service and time
-                </h2>
-              </div>
               {business.acceptingBookings ? (
-                <PublicBookingForm
-                  business={{
-                    name: business.name,
-                    slug: business.slug,
-                    timezone: business.timezone,
-                    bookingWindowDays: business.settings.bookingWindowDays
-                  }}
-                  services={business.services}
-                />
-              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold uppercase tracking-[0.14em] text-primary">
+                      Book appointment
+                    </p>
+                    <h2 className="mt-2 text-2xl font-bold text-growth-sidebar">
+                      Select a service and time
+                    </h2>
+                  </div>
+                  <PublicBookingForm
+                    business={{
+                      name: business.name,
+                      slug: business.slug,
+                      timezone: business.timezone,
+                      bookingWindowDays: business.settings.bookingWindowDays
+                    }}
+                    services={business.services}
+                  />
+                </div>
+              ) : null}
+
+              {business.membershipPlans.length > 0 ? (
+                <div id="memberships-join">
+                  <PublicMembershipEnrollment
+                    business={{
+                      name: business.name,
+                      slug: business.slug,
+                      timezone: business.timezone
+                    }}
+                    language={language}
+                    plans={business.membershipPlans}
+                  />
+                </div>
+              ) : null}
+
+              {!business.acceptingBookings && business.membershipPlans.length === 0 ? (
                 <div className="rounded-2xl border border-amber-200 bg-white p-6 text-sm text-amber-800 shadow-sm">
                   This business is not accepting new public bookings right now.
                 </div>
-              )}
+              ) : null}
             </aside>
           </div>
         </section>

@@ -132,7 +132,8 @@ export async function assertServiceBelongsToBusiness(serviceId, businessId) {
   const service = await prisma.service.findFirst({
     where: {
       id: serviceId,
-      businessId
+      businessId,
+      type: "BOOKING"
     },
     select: {
       id: true

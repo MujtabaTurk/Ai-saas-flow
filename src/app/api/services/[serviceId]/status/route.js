@@ -58,6 +58,7 @@ export async function PATCH(request, { params }) {
       const activeServiceCount = await prisma.service.count({
         where: {
           businessId: currentService.businessId,
+          type: "BOOKING",
           isActive: true
         }
       });

@@ -63,6 +63,7 @@ export async function GET(request) {
       where: {
         id: serviceId,
         businessId: business.id,
+        type: "BOOKING",
         isActive: true
       },
       select: {

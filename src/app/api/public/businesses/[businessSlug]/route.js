@@ -19,10 +19,11 @@ export async function GET(_request, { params }) {
       slug: businessSlug
     });
     const access = await getBookingCreationAccess({ business });
-    const [services, reviews, reviewSummary] = await Promise.all([
+    const [services, membershipPlans, reviews, reviewSummary] = await Promise.all([
       prisma.service.findMany({
         where: {
           businessId: business.id,
+          type: "BOOKING",
           isActive: true
         },
         orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -34,6 +35,26 @@ export async function GET(_request, { params }) {
           durationMin: true,
           priceCents: true,
           currency: true,
+          requiresPayment: true
+        }
+      }),
+      prisma.membershipPlan.findMany({
+        where: {
+          businessId: business.id,
+          isActive: true
+        },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          features: true,
+          priceCents: true,
+          currency: true,
+          billingInterval: true,
+          durationDays: true,
+          trialDays: true,
           requiresPayment: true
         }
       }),
@@ -67,6 +88,7 @@ export async function GET(_request, { params }) {
       },
       settings: getBookingSettings(business.settings),
       services,
+      membershipPlans,
       reviews: reviews.map(mapPublicReview),
       reviewSummary
     });

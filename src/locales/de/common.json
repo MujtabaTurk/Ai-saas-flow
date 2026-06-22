@@ -23,7 +23,8 @@
     "businesses": "Unternehmen",
     "users": "Benutzer",
     "plans": "Pläne",
-    "subscriptions": "Abonnements"
+    "subscriptions": "Abonnements",
+    "memberships": "Memberships"
   },
   "actions": {
     "startBuilding": "Loslegen",

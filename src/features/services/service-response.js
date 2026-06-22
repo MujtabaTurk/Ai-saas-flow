@@ -10,6 +10,7 @@ export const serviceSelect = {
   businessId: true,
   name: true,
   slug: true,
+  type: true,
   description: true,
   durationMin: true,
   bufferBeforeMin: true,

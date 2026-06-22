@@ -2,6 +2,7 @@ export const dashboardNavigation = [
   { label: "Dashboard", labelKey: "navigation.dashboard", href: "/dashboard" },
   { label: "Analytics", labelKey: "navigation.analytics", href: "/dashboard/analytics", roles: ["OWNER", "ADMIN"] },
   { label: "Services", labelKey: "navigation.services", href: "/dashboard/services", roles: ["OWNER", "ADMIN"] },
+  { label: "Memberships", labelKey: "navigation.memberships", href: "/dashboard/memberships", roles: ["OWNER", "ADMIN"] },
   { label: "Bookings", labelKey: "navigation.bookings", href: "/dashboard/bookings" },
   { label: "Customers", labelKey: "navigation.customers", href: "/dashboard/customers", roles: ["OWNER", "ADMIN"] },
   { label: "Reviews", labelKey: "navigation.reviews", href: "/dashboard/reviews", roles: ["OWNER", "ADMIN"] },

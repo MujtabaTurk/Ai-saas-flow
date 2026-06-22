@@ -1022,7 +1022,7 @@ export async function syncStripeSubscription(
   }
 
   if (
-    planCode !== PLAN_CODES.TRIAL &&
+    planCode !== "TRIAL" &&
     ["ACTIVE", "TRIALING"].includes(localSubscription.status)
   ) {
     const retiredAt = new Date();
@@ -1032,7 +1032,7 @@ export async function syncStripeSubscription(
         id: {
           not: localSubscription.id
         },
-        planCode: PLAN_CODES.TRIAL,
+        planCode: "TRIAL",
         status: "TRIALING",
         OR: [
           {

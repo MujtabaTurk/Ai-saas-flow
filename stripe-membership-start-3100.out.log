@@ -1,0 +1,10 @@
+
+> serviceflow-saas@0.1.0 start
+> next start -p 3100
+
+▲ Next.js 16.2.7
+- Local:         http://localhost:3100
+- Network:       http://192.168.100.8:3100
+✓ Ready in 1168ms
+[billing] {"timestamp":"2026-06-22T18:20:31.482Z","event":"stripe.membership.activated","requestId":"b7e15acb-35c3-4fd5-895d-ddee80e83853","checkoutSessionId":"cs_test_a1LXgCotfNCmm4ojXTCb9JvVyKsmneVmtzbGVHST4Ano1YEdKi4TMJvW3x","businessId":"6a3678caf934061f6871ffdf","customerId":"6a39179625002449942fca7b","planId":"6a369f7f0756af16382494da","membershipId":"6a397ced9a05cf8556e271ec","providerSubscriptionId":"sub_1Tl75NCs4jN8l1porV01VXsp","providerPaymentId":"in_1Tl75NCs4jN8l1poTpKbgmlA"}
+[billing] {"timestamp":"2026-06-22T18:20:31.494Z","event":"stripe.membership_checkout.reconciled","requestId":"b7e15acb-35c3-4fd5-895d-ddee80e83853","businessId":"6a3678caf934061f6871ffdf","checkoutSessionId":"cs_test_a1LXgCotfNCmm4ojXTCb9JvVyKsmneVmtzbGVHST4Ano1YEdKi4TMJvW3x","membershipId":"6a397ced9a05cf8556e271ec","paymentId":"6a397cee9a05cf8556e271ed"}

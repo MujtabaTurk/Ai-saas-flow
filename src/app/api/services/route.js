@@ -29,7 +29,7 @@ export async function GET(request) {
     );
 
     const services = await prisma.service.findMany({
-      where: { businessId: business.id },
+      where: { businessId: business.id, type: "BOOKING" },
       orderBy: serviceListOrder,
       select: serviceSelect
     });
@@ -66,7 +66,7 @@ export async function POST(request) {
     }
 
     const currentServiceCount = await prisma.service.count({
-      where: { businessId: business.id }
+      where: { businessId: business.id, type: "BOOKING" }
     });
 
     if (!canCreateServiceForPlan(activeSubscription.planCode, currentServiceCount)) {
@@ -99,6 +99,7 @@ export async function POST(request) {
       data: {
         ...normalized,
         businessId: business.id,
+        type: "BOOKING",
         currency: normalized.currency || business.currency
       },
       select: serviceSelect

@@ -4,6 +4,13 @@ import {
   syncStripeSubscription
 } from "@/features/billing/server";
 import {
+  MEMBERSHIP_STRIPE_FLOW,
+  activateMembershipFromStripeCheckout,
+  syncStripeMembershipInvoiceFailure,
+  syncStripeMembershipInvoicePayment,
+  syncStripeMembershipSubscription
+} from "@/features/memberships/server";
+import {
   getBillingRequestId,
   logBillingEvent
 } from "@/features/billing/logging";
@@ -222,6 +229,63 @@ async function handleCheckoutSessionCompleted(session, context = {}) {
   return null;
 }
 
+async function handleMembershipStripeEvent(event, context = {}) {
+  const object = event.data.object;
+
+  if (
+    event.type === "checkout.session.completed" &&
+    object.metadata?.flow === MEMBERSHIP_STRIPE_FLOW
+  ) {
+    const result = await activateMembershipFromStripeCheckout(object, context);
+
+    return {
+      handled: true,
+      membership: result.membership,
+      payment: result.payment
+    };
+  }
+
+  if (
+    event.type.startsWith("customer.subscription.") &&
+    object.metadata?.flow === MEMBERSHIP_STRIPE_FLOW
+  ) {
+    const membership = await syncStripeMembershipSubscription(object, context);
+
+    return {
+      handled: true,
+      membership
+    };
+  }
+
+  if (event.type === "invoice.paid") {
+    const result = await syncStripeMembershipInvoicePayment(object, context);
+
+    if (result) {
+      return {
+        handled: true,
+        membership: result.membership,
+        payment: result.payment
+      };
+    }
+  }
+
+  if (event.type === "invoice.payment_failed") {
+    const result = await syncStripeMembershipInvoiceFailure(object, context);
+
+    if (result) {
+      return {
+        handled: true,
+        membership: result.membership,
+        payment: result.payment
+      };
+    }
+  }
+
+  return {
+    handled: false
+  };
+}
+
 function getSubscriptionNotification(eventType, subscription) {
   if (!subscription) {
     return null;
@@ -278,6 +342,23 @@ function getSubscriptionNotification(eventType, subscription) {
 async function handleStripeEvent(event, context = {}) {
   const object = event.data.object;
   let subscription = null;
+  const membershipResult = await handleMembershipStripeEvent(event, context);
+
+  if (membershipResult.handled) {
+    logBillingEvent("stripe.membership.event_processed", {
+      ...context,
+      stripeObjectId: object.id,
+      membershipId: membershipResult.membership?.id,
+      paymentId: membershipResult.payment?.id
+    });
+
+    return {
+      subscription: null,
+      notification: null,
+      membership: membershipResult.membership,
+      payment: membershipResult.payment
+    };
+  }
 
   if (SUBSCRIPTION_RELATED_EVENT_TYPES.has(event.type)) {
     logBillingEvent("stripe.subscription.event_processing", {

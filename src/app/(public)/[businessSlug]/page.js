@@ -5,6 +5,7 @@ import { PublicBookingForm } from "@/features/bookings/components/public-booking
 import { getBookingCreationAccess } from "@/features/bookings/access";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { getBusinessForBooking } from "@/features/bookings/server";
+import { PublicMembershipEnrollment } from "@/features/memberships/components/public-membership-enrollment";
 import { ReviewStars } from "@/features/reviews/components/review-stars";
 import {
   getPublicReviewSummary,
@@ -50,10 +51,11 @@ export default async function PublicBusinessPage({ params }) {
     throw error;
   }
 
-  const [services, publishedReviews, reviewSummary] = await Promise.all([
+  const [services, membershipPlans, publishedReviews, reviewSummary] = await Promise.all([
     prisma.service.findMany({
       where: {
         businessId: business.id,
+        type: "BOOKING",
         isActive: true
       },
       orderBy: {
@@ -66,6 +68,26 @@ export default async function PublicBusinessPage({ params }) {
         durationMin: true,
         priceCents: true,
         currency: true,
+        requiresPayment: true
+      }
+    }),
+    prisma.membershipPlan.findMany({
+      where: {
+        businessId: business.id,
+        isActive: true
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        features: true,
+        priceCents: true,
+        currency: true,
+        billingInterval: true,
+        durationDays: true,
+        trialDays: true,
         requiresPayment: true
       }
     }),
@@ -128,7 +150,7 @@ export default async function PublicBusinessPage({ params }) {
 
           <div className="space-y-3">
             <h2 className="text-lg font-bold">{t("page.services")}</h2>
-            {services.map((service) => (
+            {services.length > 0 ? services.map((service) => (
               <article
                 className="rounded-2xl border border-growth-border bg-white p-5 shadow-sm"
                 key={service.id}
@@ -152,8 +174,45 @@ export default async function PublicBusinessPage({ params }) {
                   </p>
                 ) : null}
               </article>
-            ))}
+            )) : (
+              <p className="rounded-2xl border border-growth-border bg-white p-5 text-sm text-muted-foreground">
+                No appointment services are currently listed.
+              </p>
+            )}
           </div>
+
+          {membershipPlans.length > 0 ? (
+            <div className="space-y-3">
+              <h2 className="text-lg font-bold">Membership Plans</h2>
+              {membershipPlans.map((plan) => (
+                <article
+                  className="rounded-2xl border border-growth-border bg-white p-5 shadow-sm"
+                  key={plan.id}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-bold">{plan.name}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {plan.durationDays} days
+                      </p>
+                    </div>
+                    <p className="font-bold text-primary">
+                      {formatLocalizedMoney(
+                        plan.priceCents,
+                        plan.currency,
+                        language
+                      )}
+                    </p>
+                  </div>
+                  {plan.description ? (
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                      {plan.description}
+                    </p>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : null}
 
           {reviews.length > 0 ? (
             <div className="space-y-3">
@@ -197,7 +256,7 @@ export default async function PublicBusinessPage({ params }) {
           ) : null}
         </section>
 
-        <section>
+        <section className="space-y-6">
           {acceptingBookings ? (
             <PublicBookingForm
               business={{
@@ -208,7 +267,21 @@ export default async function PublicBusinessPage({ params }) {
               }}
               services={services}
             />
-          ) : (
+          ) : null}
+
+          {business.status === "ACTIVE" && membershipPlans.length > 0 ? (
+            <PublicMembershipEnrollment
+              business={{
+                name: business.name,
+                slug: business.slug,
+                timezone: business.timezone
+              }}
+              language={language}
+              plans={membershipPlans}
+            />
+          ) : null}
+
+          {!acceptingBookings && membershipPlans.length === 0 ? (
             <div className="rounded-2xl border border-amber-200 bg-white p-8 shadow-sm">
               <h2 className="text-xl font-bold">
                 {t("page.bookingUnavailable")}
@@ -217,7 +290,7 @@ export default async function PublicBusinessPage({ params }) {
                 {t("page.bookingUnavailableDescription")}
               </p>
             </div>
-          )}
+          ) : null}
         </section>
         </div>
       </main>

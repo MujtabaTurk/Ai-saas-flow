@@ -75,7 +75,8 @@ export async function findTenantService({
   return prisma.service.findFirst({
     where: {
       id: serviceId,
-      businessId
+      businessId,
+      type: "BOOKING"
     },
     select
   });

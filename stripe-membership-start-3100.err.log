@@ -1,0 +1,24 @@
+[api-error] {
+  event: 'request_failed',
+  status: 401,
+  code: null,
+  name: 'AppError',
+  message: 'Authentication is required.',
+  details: null
+}
+[api-error] {
+  event: 'request_failed',
+  status: 401,
+  code: null,
+  name: 'AppError',
+  message: 'Authentication is required.',
+  details: null
+}
+[api-error] {
+  event: 'request_failed',
+  status: 401,
+  code: null,
+  name: 'AppError',
+  message: 'Authentication is required.',
+  details: null
+}

@@ -25,11 +25,23 @@ const UPCOMING_SLOT_LIMIT = 6;
 
 const activeDiscoverableBusinessWhere = {
   status: "ACTIVE",
-  services: {
-    some: {
-      isActive: true
+  OR: [
+    {
+      services: {
+        some: {
+          isActive: true,
+          type: "BOOKING"
+        }
+      }
+    },
+    {
+      membershipPlans: {
+        some: {
+          isActive: true
+        }
+      }
     }
-  }
+  ]
 };
 
 const latestSubscriptionSelect = {
@@ -48,7 +60,8 @@ const latestSubscriptionSelect = {
 
 const servicePreviewSelect = {
   where: {
-    isActive: true
+    isActive: true,
+    type: "BOOKING"
   },
   orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
   select: {
@@ -62,6 +75,27 @@ const servicePreviewSelect = {
     requiresPayment: true,
     bufferBeforeMin: true,
     bufferAfterMin: true,
+    isActive: true
+  }
+};
+
+const membershipPlanPreviewSelect = {
+  where: {
+    isActive: true
+  },
+  orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  select: {
+    id: true,
+    slug: true,
+    name: true,
+    description: true,
+    features: true,
+    priceCents: true,
+    currency: true,
+    billingInterval: true,
+    durationDays: true,
+    trialDays: true,
+    requiresPayment: true,
     isActive: true
   }
 };
@@ -139,6 +173,18 @@ function buildDirectoryWhere(filters) {
         { country: containsSearch },
         {
           services: {
+            some: {
+              isActive: true,
+              type: "BOOKING",
+              OR: [
+                { name: containsSearch },
+                { description: containsSearch }
+              ]
+            }
+          }
+        },
+        {
+          membershipPlans: {
             some: {
               isActive: true,
               OR: [
@@ -267,6 +313,19 @@ async function mapDirectoryBusiness(business, reviewSummaryMap) {
       currency: service.currency,
       requiresPayment: service.requiresPayment
     })),
+    membershipPlans: business.membershipPlans.map((plan) => ({
+      id: plan.id,
+      slug: plan.slug,
+      name: plan.name,
+      description: plan.description,
+      features: plan.features,
+      priceCents: plan.priceCents,
+      currency: plan.currency,
+      billingInterval: plan.billingInterval,
+      durationDays: plan.durationDays,
+      trialDays: plan.trialDays,
+      requiresPayment: plan.requiresPayment
+    })),
     reviewSummary
   };
 }
@@ -303,6 +362,10 @@ export async function getBusinessDirectory(searchParams = {}) {
         subscriptions: latestSubscriptionSelect,
         services: {
           ...servicePreviewSelect,
+          take: 3
+        },
+        membershipPlans: {
+          ...membershipPlanPreviewSelect,
           take: 3
         }
       }
@@ -463,6 +526,7 @@ export async function getBusinessDiscoveryDetail(slug) {
       settings: true,
       subscriptions: latestSubscriptionSelect,
       services: servicePreviewSelect,
+      membershipPlans: membershipPlanPreviewSelect,
       memberships: {
         where: {
           isActive: true
@@ -517,7 +581,7 @@ export async function getBusinessDiscoveryDetail(slug) {
   if (
     !business ||
     business.status !== "ACTIVE" ||
-    business.services.length === 0
+    (business.services.length === 0 && business.membershipPlans.length === 0)
   ) {
     return null;
   }
@@ -556,6 +620,7 @@ export async function getBusinessDiscoveryDetail(slug) {
     acceptingBookings,
     settings,
     services: business.services,
+    membershipPlans: business.membershipPlans,
     teamMembers: mapTeamMembers(business.memberships),
     availability: mapAvailabilityByDay(business.availabilities),
     upcomingSlots,

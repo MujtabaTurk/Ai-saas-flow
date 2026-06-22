@@ -82,6 +82,39 @@ enum BookingSource {
   AI_ASSISTANT
 }
 
+enum ServiceType {
+  BOOKING
+  MEMBERSHIP
+}
+
+enum MembershipBillingInterval {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum MembershipPaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum MembershipPaymentProvider {
+  MANUAL
+  STRIPE
+}
+
 enum PlanCode {
   TRIAL
   BASIC
@@ -287,6 +320,9 @@ model Business {
   owner                   User                     @relation("BusinessOwner", fields: [ownerId], references: [id])
   settings                BusinessSettings?
   services                Service[]
+  membershipPlans         MembershipPlan[]
+  customerMemberships     CustomerMembership[]
+  membershipPayments      MembershipPayment[]
   bookings                Booking[]
   bookingOccupancies      BookingOccupancy[]
   customers               Customer[]
@@ -331,6 +367,7 @@ model Service {
   businessId       String                   @db.ObjectId
   name             String
   slug             String
+  type             ServiceType              @default(BOOKING)
   description      String?
   durationMin      Int
   bufferBeforeMin  Int                      @default(0)
@@ -342,6 +379,7 @@ model Service {
   sortOrder        Int                      @default(0)
   business         Business                 @relation(fields: [businessId], references: [id])
   bookings         Booking[]
+  membershipPlans  MembershipPlan[]
   availabilities   Availability[]
   unavailableDates UnavailableDate[]
   staffAssignments StaffServiceAssignment[]
@@ -353,6 +391,7 @@ model Service {
   @@unique([businessId, slug])
   @@index([businessId])
   @@index([businessId, isActive])
+  @@index([businessId, type, isActive])
   @@index([businessId, sortOrder])
   @@index([businessId, createdAt])
   @@index([businessId, requiresPayment])
@@ -365,6 +404,7 @@ model Customer {
   name           String
   email          String
   phone          String?
+  stripeCustomerId String?
   notes          String?
   locale         String?
   timezone       String?
@@ -372,6 +412,8 @@ model Customer {
   business       Business  @relation(fields: [businessId], references: [id])
   user           User?     @relation("CustomerUser", fields: [userId], references: [id])
   bookings       Booking[]
+  memberships    CustomerMembership[]
+  membershipPayments MembershipPayment[]
   reviews        Review[]
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -383,6 +425,114 @@ model Customer {
   @@index([businessId, updatedAt])
   @@index([businessId, marketingOptIn])
   @@index([userId])
+  @@index([stripeCustomerId])
+}
+
+model MembershipPlan {
+  id               String                     @id @default(auto()) @map("_id") @db.ObjectId
+  businessId       String                     @db.ObjectId
+  serviceId        String?                    @db.ObjectId
+  name             String
+  slug             String
+  description      String?
+  features         Json?
+  priceCents       Int
+  currency         String                     @default("usd")
+  billingInterval  MembershipBillingInterval  @default(MONTHLY)
+  durationDays     Int                        @default(30)
+  trialDays        Int                        @default(0)
+  maxActiveMembers Int?
+  requiresPayment  Boolean                    @default(true)
+  isActive         Boolean                    @default(true)
+  sortOrder        Int                        @default(0)
+  stripePriceId    String?
+  business         Business                   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  service          Service?                   @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  memberships      CustomerMembership[]
+  payments         MembershipPayment[]
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@unique([businessId, slug])
+  @@index([businessId])
+  @@index([businessId, isActive])
+  @@index([businessId, sortOrder])
+  @@index([businessId, billingInterval])
+  @@index([serviceId])
+  @@index([stripePriceId])
+}
+
+model CustomerMembership {
+  id                         String                    @id @default(auto()) @map("_id") @db.ObjectId
+  businessId                 String                    @db.ObjectId
+  customerId                 String                    @db.ObjectId
+  planId                     String                    @db.ObjectId
+  status                     MembershipStatus          @default(PENDING)
+  startsAt                   DateTime
+  endsAt                     DateTime
+  nextBillingAt              DateTime?
+  autoRenew                  Boolean                   @default(false)
+  cancelAtPeriodEnd          Boolean                   @default(false)
+  canceledAt                 DateTime?
+  cancellationReason         String?
+  expiredAt                  DateTime?
+  renewedAt                  DateTime?
+  renewalCount               Int                       @default(0)
+  planNameSnapshot           String
+  planPriceCentsSnapshot     Int
+  planCurrencySnapshot       String
+  planIntervalSnapshot       MembershipBillingInterval
+  planDurationDaysSnapshot   Int
+  providerSubscriptionId     String?
+  business                   Business                  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer                   Customer                  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plan                       MembershipPlan            @relation(fields: [planId], references: [id], onDelete: Restrict)
+  payments                   MembershipPayment[]
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+
+  @@index([businessId])
+  @@index([businessId, status])
+  @@index([businessId, status, endsAt])
+  @@index([businessId, planId, status])
+  @@index([customerId])
+  @@index([customerId, status, endsAt])
+  @@index([planId])
+  @@index([providerSubscriptionId])
+}
+
+model MembershipPayment {
+  id                   String                  @id @default(auto()) @map("_id") @db.ObjectId
+  businessId           String                  @db.ObjectId
+  customerId           String                  @db.ObjectId
+  planId               String                  @db.ObjectId
+  membershipId         String?                 @db.ObjectId
+  amountCents          Int
+  currency             String                  @default("usd")
+  status               MembershipPaymentStatus @default(PENDING)
+  provider             MembershipPaymentProvider @default(MANUAL)
+  providerPaymentId    String?
+  idempotencyKey       String
+  description          String?
+  paidAt               DateTime?
+  failedAt             DateTime?
+  refundedAt           DateTime?
+  metadata             Json?
+  business             Business                @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer             Customer                @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  plan                 MembershipPlan          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  membership           CustomerMembership?     @relation(fields: [membershipId], references: [id], onDelete: SetNull)
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@unique([businessId, idempotencyKey])
+  @@index([businessId])
+  @@index([businessId, status, createdAt])
+  @@index([businessId, paidAt])
+  @@index([customerId])
+  @@index([planId])
+  @@index([membershipId])
+  @@index([provider, providerPaymentId])
 }
 
 model Booking {

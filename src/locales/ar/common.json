@@ -23,7 +23,8 @@
     "businesses": "الأعمال",
     "users": "المستخدمون",
     "plans": "الباقات",
-    "subscriptions": "الاشتراكات"
+    "subscriptions": "الاشتراكات",
+    "memberships": "Memberships"
   },
   "actions": {
     "startBuilding": "ابدأ البناء",

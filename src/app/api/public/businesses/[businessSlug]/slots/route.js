@@ -41,6 +41,7 @@ export async function GET(request, { params }) {
       where: {
         id: serviceId,
         businessId: business.id,
+        type: "BOOKING",
         isActive: true
       },
       select: {

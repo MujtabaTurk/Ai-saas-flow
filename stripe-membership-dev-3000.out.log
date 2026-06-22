@@ -1,0 +1,21 @@
+
+> serviceflow-saas@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.8:3000
+- Environments: .env
+✓ Ready in 2.1s
+Creating turbopack project {
+  dir: 'C:\\Users\\WAJAHAT TRADERS\\Desktop\\Ai-saas-flow',
+  testMode: true
+}
+
+ POST /api/public/businesses/flex-fit/memberships/reconcile 404 in 2.8s (next.js: 1514ms, application-code: 1312ms)
+✓ Finished filesystem cache database compaction in 10.6s
+○ Compiling /api/public/businesses/[businessSlug]/membership-plans ...
+ GET /api/public/businesses/flex-fit/membership-plans 200 in 27.5s
+prisma:query db.Business.aggregate([ { $match: { $expr: { $and: [ { $and: [ { $and: [ { $eq: [ "$slug", { $literal: "flex-fit", }, ], }, { $ne: [ "$slug", "$$REMOVE", ], }, ], }, ], }, { }, ], }, }, }, { $project: { _id: 1, slug: 1, name: 1, description: 1, status: 1, timezone: 1, currency: 1, locale: 1, }, }, ])
+prisma:query db.MembershipPlan.aggregate([ { $match: { $expr: { $and: [ { $and: [ { $eq: [ "$businessId", { $literal: ObjectId("6a3678caf934061f6871ffdf"), }, ], }, { $ne: [ "$businessId", "$$REMOVE", ], }, ], }, { $and: [ { $eq: [ "$isActive", { $literal: true, }, ], }, { $ne: [ "$isActive", "$$REMOVE", ], }, ], }, ], }, }, }, { $sort: { sortOrder: 1, createdAt: -1, }, }, { $project: { _id: 1, businessId: 1, serviceId: 1, name: 1, slug: 1, description: 1, features: 1, priceCents: 1, currency: 1, billingInterval: 1, durationDays: 1, trialDays: 1, maxActiveMembers: 1, requiresPayment: 1, isActive: 1, sortOrder: 1, stripePriceId: 1, createdAt: 1, updatedAt: 1, }, }, ])
+ POST /api/public/businesses/flex-fit/memberships/reconcile 404 in 191ms (next.js: 48ms, application-code: 143ms)

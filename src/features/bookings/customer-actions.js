@@ -112,6 +112,7 @@ export async function rescheduleCustomerBooking({
     where: {
       id: booking.serviceId,
       businessId: business.id,
+      type: "BOOKING",
       isActive: true
     },
     select: {

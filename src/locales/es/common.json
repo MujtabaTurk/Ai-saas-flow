@@ -23,7 +23,8 @@
     "businesses": "Negocios",
     "users": "Usuarios",
     "plans": "Planes",
-    "subscriptions": "Suscripciones"
+    "subscriptions": "Suscripciones",
+    "memberships": "Memberships"
   },
   "actions": {
     "startBuilding": "Empezar",

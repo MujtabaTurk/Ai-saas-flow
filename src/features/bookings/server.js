@@ -245,6 +245,7 @@ export async function createBooking({
     where: {
       id: input.serviceId,
       businessId: business.id,
+      type: "BOOKING",
       isActive: true
     },
     select: {

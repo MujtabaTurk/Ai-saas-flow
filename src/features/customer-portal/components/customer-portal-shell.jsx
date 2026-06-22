@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   CalendarDays,
+  CreditCard,
   Home,
   Search,
   Settings,
@@ -21,6 +22,11 @@ const customerNavigation = [
     label: "Bookings",
     href: "/customer/bookings",
     icon: CalendarDays
+  },
+  {
+    label: "Memberships",
+    href: "/customer/memberships",
+    icon: CreditCard
   },
   {
     label: "Browse",

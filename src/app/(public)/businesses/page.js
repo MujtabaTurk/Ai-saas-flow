@@ -5,6 +5,7 @@ import {
   Building2,
   CalendarCheck2,
   Clock3,
+  CreditCard,
   Filter,
   MapPin,
   Search,
@@ -19,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import {
   getBusinessDirectory
 } from "@/features/businesses/discovery";
+import { getIntervalLabel } from "@/features/memberships/lifecycle";
 import { formatLocalizedMoney } from "@/i18n/format";
 import { resolveRequestLanguage } from "@/i18n/server";
 
@@ -78,6 +80,14 @@ function formatServicePrice(service, language) {
   }
 
   return formatLocalizedMoney(service.priceCents, service.currency, language);
+}
+
+function formatPlanPrice(plan, language) {
+  return `${formatLocalizedMoney(
+    plan.priceCents,
+    plan.currency,
+    language
+  )}/${getIntervalLabel(plan.billingInterval)}`;
 }
 
 function RatingPill({ summary }) {
@@ -241,12 +251,33 @@ function BusinessCard({ business, language }) {
             </p>
           </div>
         ))}
+        {business.membershipPlans.map((plan) => (
+          <div
+            className="rounded-2xl border border-growth-border bg-growth-dashboard p-3"
+            key={plan.id}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-semibold text-growth-sidebar">{plan.name}</p>
+              <p className="shrink-0 text-sm font-bold text-primary">
+                {formatPlanPrice(plan, language)}
+              </p>
+            </div>
+            <p className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+              <CreditCard className="size-3.5" aria-hidden="true" />
+              {plan.durationDays} days
+            </p>
+          </div>
+        ))}
       </div>
 
       <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row">
         <Button asChild className="flex-1">
-          <Link href={`/businesses/${business.slug}${business.acceptingBookings ? "#book" : ""}`}>
-            {business.acceptingBookings ? "Book now" : "View details"}
+          <Link href={`/businesses/${business.slug}${business.acceptingBookings ? "#book" : business.membershipPlans.length > 0 ? "#memberships-join" : ""}`}>
+            {business.acceptingBookings
+              ? "Book now"
+              : business.membershipPlans.length > 0
+                ? "View plans"
+                : "View details"}
           </Link>
         </Button>
         <Button asChild className="flex-1" variant="outline">
