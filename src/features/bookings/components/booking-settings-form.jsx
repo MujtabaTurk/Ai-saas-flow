@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/features/auth/components/field-error";
@@ -98,23 +99,21 @@ export function BookingSettingsForm({ settings, onSubmit, disabled = false }) {
 
       <div className="grid gap-3 md:grid-cols-2">
         <label className="flex items-center gap-3 rounded-2xl border border-growth-border bg-white px-4 py-3 text-sm">
-          <input
+          <Checkbox
             checked={formik.values.allowGuestBookings}
             className="h-4 w-4"
             disabled={disabled}
             name="allowGuestBookings"
-            type="checkbox"
             onChange={formik.handleChange}
           />
           Allow guest bookings
         </label>
         <label className="flex items-center gap-3 rounded-2xl border border-growth-border bg-white px-4 py-3 text-sm">
-          <input
+          <Checkbox
             checked={formik.values.autoConfirmBookings}
             className="h-4 w-4"
             disabled={disabled}
             name="autoConfirmBookings"
-            type="checkbox"
             onChange={formik.handleChange}
           />
           Auto-confirm free bookings

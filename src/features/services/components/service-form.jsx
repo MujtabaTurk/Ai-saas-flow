@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { SUPPORTED_CURRENCIES } from "@/features/businesses/constants";
 import { FieldError } from "@/features/auth/components/field-error";
@@ -14,12 +16,12 @@ import { serviceFormSchema } from "@/features/services/validation/service-schema
 
 function SelectField({ children, className = "", ...props }) {
   return (
-    <select
+    <Select
       className={`flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 
@@ -194,11 +196,10 @@ export function ServiceForm({ mode = "create", service = null, businessCurrency 
         </div>
 
         <label className="flex items-center gap-3 rounded-2xl border border-growth-border bg-white px-4 py-3 text-sm md:col-span-2">
-          <input
+          <Checkbox
             checked={formik.values.requiresPayment}
             className="h-4 w-4 rounded border-growth-border text-primary focus:ring-primary"
             name="requiresPayment"
-            type="checkbox"
             onBlur={formik.handleBlur}
             onChange={formik.handleChange}
           />

@@ -1,6 +1,7 @@
 const EMAIL_ADDRESS_PATTERN = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/;
 const SMTP_HOST_PATTERN = /^(?!-)(?:[a-z\d-]{1,63}\.)+[a-z\d-]{2,63}$/i;
 const LOCAL_HOSTNAMES = new Set(["localhost", "127.0.0.1", "::1"]);
+const TRUE_VALUES = new Set(["1", "true", "yes"]);
 const SMTP_ENVIRONMENT_VARIABLES = [
   "SMTP_HOST",
   "SMTP_PORT",
@@ -24,8 +25,24 @@ function isValidSmtpHost(value) {
   return SMTP_HOST_PATTERN.test(value);
 }
 
+function readBooleanEnvironmentValue(name) {
+  return TRUE_VALUES.has(String(process.env[name] || "").trim().toLowerCase());
+}
+
+function isStrictProductionEnvironment() {
+  if (readBooleanEnvironmentValue("SERVICEFLOW_LOCAL_PREVIEW")) {
+    return false;
+  }
+
+  return (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.SERVICEFLOW_ENV === "production" ||
+    readBooleanEnvironmentValue("SERVICEFLOW_STRICT_ENV")
+  );
+}
+
 function validateServiceFlowEnvironment() {
-  const isProduction = process.env.NODE_ENV === "production";
+  const isStrictProduction = isStrictProductionEnvironment();
   const failures = [];
   const warnings = [];
   const nextAuthUrl = process.env.NEXTAUTH_URL;
@@ -36,18 +53,18 @@ function validateServiceFlowEnvironment() {
   const senderAddress = getSenderAddress(smtpFrom);
 
   if (!nextAuthUrl) {
-    (isProduction ? failures : warnings).push(
+    (isStrictProduction ? failures : warnings).push(
       "NEXTAUTH_URL is required to build password reset links."
     );
   } else {
     try {
       const parsedUrl = new URL(nextAuthUrl);
 
-      if (isProduction && parsedUrl.protocol !== "https:") {
+      if (isStrictProduction && parsedUrl.protocol !== "https:") {
         failures.push("NEXTAUTH_URL must use HTTPS in production.");
       }
 
-      if (isProduction && LOCAL_HOSTNAMES.has(parsedUrl.hostname)) {
+      if (isStrictProduction && LOCAL_HOSTNAMES.has(parsedUrl.hostname)) {
         failures.push("NEXTAUTH_URL cannot point to localhost in production.");
       }
     } catch {
@@ -60,7 +77,7 @@ function validateServiceFlowEnvironment() {
   );
 
   if (missingSmtpVariables.length > 0) {
-    (isProduction ? failures : warnings).push(
+    (isStrictProduction ? failures : warnings).push(
       `SMTP email delivery is missing: ${missingSmtpVariables.join(", ")}.`
     );
   }

@@ -3,6 +3,7 @@
 import { useFormik } from "formik";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import {
   SUPPORTED_LOCALES,
@@ -27,12 +29,11 @@ function PreferenceCheckbox({
 }) {
   return (
     <label className="flex cursor-pointer gap-3 rounded-2xl border border-growth-border bg-white p-4">
-      <input
+      <Checkbox
         checked={checked}
         className="mt-1 size-4 rounded border-growth-border text-primary accent-primary"
         disabled={disabled}
         name={name}
-        type="checkbox"
         onChange={onChange}
       />
       <span>
@@ -161,7 +162,7 @@ export function CustomerSettingsForm({ data }) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="locale">Language</Label>
-                  <select
+                  <Select
                     className="flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     id="locale"
                     name="locale"
@@ -174,12 +175,12 @@ export function CustomerSettingsForm({ data }) {
                         {locale.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="timezone">Timezone</Label>
-                  <select
+                  <Select
                     className="flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     id="timezone"
                     name="timezone"
@@ -192,7 +193,7 @@ export function CustomerSettingsForm({ data }) {
                         {timezone}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
               </div>
 

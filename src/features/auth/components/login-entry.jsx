@@ -16,6 +16,7 @@ import { LoginForm } from "./login-form";
 
 export function LoginEntry({
   googleEnabled = false,
+  googleClientId = null,
   defaultCallbackUrl = null,
   forgotPasswordPath = "/forgot-password",
   registerPath = "/register"
@@ -111,6 +112,7 @@ export function LoginEntry({
 
                 <LoginForm
                   googleEnabled={googleEnabled}
+                  googleClientId={googleClientId}
                   defaultCallbackUrl={defaultCallbackUrl}
                   forgotPasswordPath={forgotPasswordPath}
                 />

@@ -2,7 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { RegisterForm } from "@/features/auth/components/register-form";
-import { isGoogleProviderEnabled } from "@/features/auth/auth-options";
+import {
+  googleIdentityClientId,
+  isGoogleProviderEnabled
+} from "@/features/auth/auth-options";
 import {
   buildAuthUrl,
   getSafeCallbackUrl
@@ -87,6 +90,7 @@ export default async function RegisterPage({ searchParams }) {
     >
       <RegisterForm
         googleEnabled={isGoogleProviderEnabled}
+        googleClientId={googleIdentityClientId}
         invitationCallbackUrl={invitationToken ? callbackUrl : null}
         invitationEmail={invitationToken ? email : null}
         invitationToken={invitationToken}

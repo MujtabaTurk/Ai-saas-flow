@@ -31,6 +31,12 @@ export const businessOnboardingSchema = Yup.object({
     })
     .required("Public slug is required."),
   industry: Yup.string().oneOf(industryValues, "Choose a supported industry.").required("Industry is required."),
+  logoUrl: Yup.string()
+    .trim()
+    .transform((value) => (value ? value : null))
+    .url("Enter a valid logo URL.")
+    .nullable()
+    .default(null),
   email: Yup.string().trim().email("Enter a valid business email.").nullable().default(null),
   phone: Yup.string().trim().max(30, "Phone must be 30 characters or fewer.").nullable().default(null),
   addressLine1: Yup.string()
@@ -63,5 +69,22 @@ export const businessOnboardingSchema = Yup.object({
     .lowercase()
     .oneOf(SUPPORTED_CURRENCIES, "Choose a supported currency.")
     .required("Currency is required."),
-  locale: Yup.string().oneOf(localeValues, "Choose a supported language.").required("Language is required.")
+  locale: Yup.string().oneOf(localeValues, "Choose a supported language.").required("Language is required."),
+  bookingLeadTimeMin: Yup.number()
+    .integer("Lead time must be a whole number.")
+    .min(0, "Lead time cannot be negative.")
+    .max(10080, "Lead time must be 7 days or fewer.")
+    .required("Booking lead time is required."),
+  bookingWindowDays: Yup.number()
+    .integer("Booking window must be a whole number.")
+    .min(1, "Booking window must be at least 1 day.")
+    .max(365, "Booking window must be 365 days or fewer.")
+    .required("Booking window is required."),
+  cancellationWindowMin: Yup.number()
+    .integer("Cancellation window must be a whole number.")
+    .min(0, "Cancellation window cannot be negative.")
+    .max(10080, "Cancellation window must be 7 days or fewer.")
+    .required("Cancellation window is required."),
+  allowGuestBookings: Yup.boolean().required(),
+  autoConfirmBookings: Yup.boolean().required()
 });

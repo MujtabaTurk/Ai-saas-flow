@@ -49,7 +49,7 @@ export default async function SettingsPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
-          <Card>
+          <Card id="profile">
             <CardHeader>
               <CardTitle>Account</CardTitle>
             </CardHeader>
@@ -77,7 +77,7 @@ export default async function SettingsPage() {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="account">
             <CardHeader>
               <CardTitle>Change password</CardTitle>
               <p className="text-sm text-muted-foreground">
@@ -93,4 +93,3 @@ export default async function SettingsPage() {
     </AppShell>
   );
 }
-

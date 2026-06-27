@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import {
   getBusinessDirectory
 } from "@/features/businesses/discovery";
@@ -128,7 +129,7 @@ function DirectoryFilters({ facets, filters }) {
           <label className="sr-only" htmlFor="industry-filter">
             Industry
           </label>
-          <select
+          <Select
             className={selectClassName}
             defaultValue={filters.industry}
             id="industry-filter"
@@ -140,11 +141,11 @@ function DirectoryFilters({ facets, filters }) {
                 {industry}
               </option>
             ))}
-          </select>
+          </Select>
           <label className="sr-only" htmlFor="city-filter">
             City
           </label>
-          <select
+          <Select
             className={selectClassName}
             defaultValue={filters.city}
             id="city-filter"
@@ -156,11 +157,11 @@ function DirectoryFilters({ facets, filters }) {
                 {city}
               </option>
             ))}
-          </select>
+          </Select>
           <label className="sr-only" htmlFor="sort-filter">
             Sort
           </label>
-          <select
+          <Select
             className={selectClassName}
             defaultValue={filters.sort}
             id="sort-filter"
@@ -169,7 +170,7 @@ function DirectoryFilters({ facets, filters }) {
             <option value="recommended">Recommended</option>
             <option value="newest">Newest</option>
             <option value="name">Name</option>
-          </select>
+          </Select>
           <div className="flex gap-2">
             <Button className="flex-1 xl:flex-none" type="submit">
               <Filter className="mr-2 size-4" aria-hidden="true" />

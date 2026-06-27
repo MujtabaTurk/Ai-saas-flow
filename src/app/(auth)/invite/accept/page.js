@@ -1,5 +1,8 @@
 import { AuthLayout } from "@/features/auth/components/auth-layout";
-import { isGoogleProviderEnabled } from "@/features/auth/auth-options";
+import {
+  googleIdentityClientId,
+  isGoogleProviderEnabled
+} from "@/features/auth/auth-options";
 import { TeamInvitationAcceptance } from "@/features/team/components/team-invitation-acceptance";
 import { getPublicTeamInvitation } from "@/features/team/invitation-access";
 import { getCurrentSession } from "@/lib/auth/session";
@@ -47,6 +50,7 @@ export default async function TeamInvitationPage({ searchParams }) {
       <TeamInvitationAcceptance
         currentUser={currentUser}
         googleEnabled={isGoogleProviderEnabled}
+        googleClientId={googleIdentityClientId}
         invitation={invitation}
         token={token}
       />

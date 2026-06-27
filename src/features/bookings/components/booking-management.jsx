@@ -9,6 +9,7 @@ import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import {
   CardListSkeleton,
   FormSkeleton,
@@ -468,7 +469,7 @@ export function BookingManagement({
       ) : null}
 
       {businessRole !== "STAFF" ? (
-      <Card>
+      <Card id="booking-rules">
         <CardHeader>
           <CardTitle>Booking rules</CardTitle>
         </CardHeader>
@@ -596,7 +597,7 @@ export function BookingManagement({
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {access?.canAssign ? (
-                        <select
+                        <Select
                           className="h-9 rounded-xl border border-input bg-white px-3 text-sm"
                           disabled={assignmentMutation.isPending}
                           value={booking.assignedMemberId || ""}
@@ -617,7 +618,7 @@ export function BookingManagement({
                                 {member.user.name || member.user.email}
                               </option>
                             ))}
-                        </select>
+                        </Select>
                       ) : null}
                       {booking.status === "PENDING" ? (
                         <Button

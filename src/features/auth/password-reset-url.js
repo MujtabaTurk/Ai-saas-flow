@@ -1,11 +1,30 @@
 import { appConfig } from "@/config/app";
 
+const TRUE_VALUES = new Set(["1", "true", "yes"]);
+
+function readBooleanEnvironmentValue(name) {
+  return TRUE_VALUES.has(String(process.env[name] || "").trim().toLowerCase());
+}
+
+function isStrictProductionEnvironment() {
+  if (readBooleanEnvironmentValue("SERVICEFLOW_LOCAL_PREVIEW")) {
+    return false;
+  }
+
+  return (
+    process.env.VERCEL_ENV === "production" ||
+    process.env.SERVICEFLOW_ENV === "production" ||
+    readBooleanEnvironmentValue("SERVICEFLOW_STRICT_ENV")
+  );
+}
+
 function isLocalHostname(hostname) {
   return ["localhost", "127.0.0.1", "::1"].includes(hostname);
 }
 
 export function getPasswordResetUrlDiagnostics() {
   const configuredUrl = process.env.NEXTAUTH_URL || null;
+  const isStrictProduction = isStrictProductionEnvironment();
   const issues = [];
   let parsedUrl = null;
 
@@ -15,12 +34,12 @@ export function getPasswordResetUrlDiagnostics() {
     issues.push("NEXTAUTH_URL must be a valid absolute URL.");
   }
 
-  if (process.env.NODE_ENV === "production" && !configuredUrl) {
+  if (isStrictProduction && !configuredUrl) {
     issues.push("NEXTAUTH_URL is required in production.");
   }
 
   if (
-    process.env.NODE_ENV === "production" &&
+    isStrictProduction &&
     parsedUrl &&
     parsedUrl.protocol !== "https:"
   ) {
@@ -28,7 +47,7 @@ export function getPasswordResetUrlDiagnostics() {
   }
 
   if (
-    process.env.NODE_ENV === "production" &&
+    isStrictProduction &&
     parsedUrl &&
     isLocalHostname(parsedUrl.hostname)
   ) {

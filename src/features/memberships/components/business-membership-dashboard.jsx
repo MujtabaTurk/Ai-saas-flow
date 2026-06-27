@@ -1,5 +1,6 @@
 "use client";
 
+import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useMemo, useState } from "react";
 import {
   BarChart3,
@@ -21,6 +22,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import {
   TableSkeleton,
   useDelayedVisibility
@@ -247,31 +249,36 @@ export function BusinessMembershipDashboard({
         />
       </div>
 
-      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <Button
-                key={tab.id}
-                size="sm"
-                type="button"
-                variant={activeTab === tab.id ? "default" : "outline"}
-                onClick={() => setActiveTab(tab.id)}
-              >
-                <Icon className="mr-2 size-4" aria-hidden="true" />
-                {tab.label}
-              </Button>
-            );
-          })}
+      <TabsPrimitive.Root
+        className="space-y-5"
+        value={activeTab}
+        onValueChange={setActiveTab}
+      >
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <TabsPrimitive.List className="flex flex-wrap gap-2">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsPrimitive.Trigger asChild key={tab.id} value={tab.id}>
+                  <Button
+                    size="sm"
+                    type="button"
+                    variant={activeTab === tab.id ? "default" : "outline"}
+                  >
+                    <Icon className="mr-2 size-4" aria-hidden="true" />
+                    {tab.label}
+                  </Button>
+                </TabsPrimitive.Trigger>
+              );
+            })}
+          </TabsPrimitive.List>
+          <Button disabled={isReadOnly} onClick={() => setMode("create")}>
+            Create plan
+          </Button>
         </div>
-        <Button disabled={isReadOnly} onClick={() => setMode("create")}>
-          Create plan
-        </Button>
-      </div>
 
-      {activeTab === "plans" ? (
-        <Card>
+        <TabsPrimitive.Content value="plans">
+          <Card>
           <CardHeader>
             <CardTitle>Membership Plans</CardTitle>
           </CardHeader>
@@ -358,11 +365,11 @@ export function BusinessMembershipDashboard({
               </div>
             )}
           </CardContent>
-        </Card>
-      ) : null}
+          </Card>
+        </TabsPrimitive.Content>
 
-      {activeTab === "members" ? (
-        <Card>
+        <TabsPrimitive.Content value="members">
+          <Card>
           <CardHeader>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
               <CardTitle>Members List</CardTitle>
@@ -376,7 +383,7 @@ export function BusinessMembershipDashboard({
                     onChange={(event) => setSearch(event.target.value)}
                   />
                 </div>
-                <select
+                <Select
                   className="h-11 rounded-2xl border border-input bg-white px-4 text-sm"
                   value={status}
                   onChange={(event) => setStatus(event.target.value)}
@@ -386,7 +393,7 @@ export function BusinessMembershipDashboard({
                       {option === "ALL" ? "All statuses" : option.toLowerCase()}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
             </div>
           </CardHeader>
@@ -449,11 +456,11 @@ export function BusinessMembershipDashboard({
               </div>
             )}
           </CardContent>
-        </Card>
-      ) : null}
+          </Card>
+        </TabsPrimitive.Content>
 
-      {activeTab === "analytics" ? (
-        <Card>
+        <TabsPrimitive.Content value="analytics">
+          <Card>
           <CardHeader>
             <CardTitle>Membership Analytics</CardTitle>
           </CardHeader>
@@ -526,8 +533,9 @@ export function BusinessMembershipDashboard({
               </>
             ) : null}
           </CardContent>
-        </Card>
-      ) : null}
+          </Card>
+        </TabsPrimitive.Content>
+      </TabsPrimitive.Root>
     </div>
   );
 }

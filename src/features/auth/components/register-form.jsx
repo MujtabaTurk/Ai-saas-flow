@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
@@ -9,15 +10,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import {
+  getSafeNavigationUrl,
   getSafeCallbackUrl
 } from "@/features/auth/callback-url";
 import { registerSchema } from "@/features/auth/validation/register-schema";
 import { FieldError } from "./field-error";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 export function RegisterForm({
   accountType = "BUSINESS",
   defaultCallbackUrl = "/onboarding",
   googleEnabled = false,
+  googleClientId = null,
   invitationCallbackUrl = null,
   invitationEmail = null,
   invitationToken = null
@@ -25,6 +29,7 @@ export function RegisterForm({
   const { t } = useTranslation("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const callbackUrl =
     invitationCallbackUrl ||
     getSafeCallbackUrl(
@@ -75,12 +80,16 @@ export function RegisterForm({
         return;
       }
 
-      router.push(result?.url || callbackUrl);
+      router.push(getSafeNavigationUrl(result?.url, callbackUrl));
       router.refresh();
     }
   });
 
-  function signInWithGoogle() {
+  async function signInWithGoogle() {
+    if (formik.isSubmitting || isOAuthLoading) {
+      return null;
+    }
+
     const authorizationParams = {
       prompt: "select_account"
     };
@@ -89,11 +98,21 @@ export function RegisterForm({
       authorizationParams.login_hint = initialEmail;
     }
 
-    return signIn("google", { callbackUrl }, authorizationParams);
+    setIsOAuthLoading(true);
+    const result = await signIn("google", { callbackUrl }, authorizationParams);
+
+    if (result?.error) {
+      setIsOAuthLoading(false);
+    }
+
+    return result;
   }
 
   return (
-    <form className="space-y-4" onSubmit={formik.handleSubmit}>
+    <form
+      className="mx-auto w-full max-w-[400px] space-y-4"
+      onSubmit={formik.handleSubmit}
+    >
       {formik.status ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {formik.status}
@@ -106,6 +125,7 @@ export function RegisterForm({
           id="name"
           name="name"
           autoComplete="name"
+          disabled={formik.isSubmitting || isOAuthLoading}
           value={formik.values.name}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
@@ -120,7 +140,7 @@ export function RegisterForm({
           name="email"
           type="email"
           autoComplete="email"
-          disabled={Boolean(invitationToken)}
+          disabled={Boolean(invitationToken) || formik.isSubmitting || isOAuthLoading}
           value={formik.values.email}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
@@ -134,6 +154,7 @@ export function RegisterForm({
           id="password"
           name="password"
           autoComplete="new-password"
+          disabled={formik.isSubmitting || isOAuthLoading}
           value={formik.values.password}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
@@ -149,6 +170,7 @@ export function RegisterForm({
           id="confirmPassword"
           name="confirmPassword"
           autoComplete="new-password"
+          disabled={formik.isSubmitting || isOAuthLoading}
           value={formik.values.confirmPassword}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
@@ -156,21 +178,30 @@ export function RegisterForm({
         <FieldError>{formik.touched.confirmPassword && formik.errors.confirmPassword}</FieldError>
       </div>
 
-      <Button className="w-full" disabled={formik.isSubmitting} type="submit">
+      <Button
+        className="w-full"
+        disabled={formik.isSubmitting || isOAuthLoading}
+        type="submit"
+      >
         {formik.isSubmitting
           ? t("register.submitting")
           : t("register.submit")}
       </Button>
 
-      {googleEnabled ? (
-        <Button
-          className="w-full"
-          type="button"
-          variant="outline"
-          onClick={signInWithGoogle}
-        >
-          {t("login.google")}
-        </Button>
+      {googleEnabled && googleClientId ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <span className="h-px flex-1 bg-growth-border" />
+            {t("login.or")}
+            <span className="h-px flex-1 bg-growth-border" />
+          </div>
+          <GoogleSignInButton
+            clientId={googleClientId}
+            disabled={formik.isSubmitting || isOAuthLoading}
+            onClick={signInWithGoogle}
+            text="signup_with"
+          />
+        </div>
       ) : null}
     </form>
   );

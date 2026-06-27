@@ -10,6 +10,28 @@ export function getSafeCallbackUrl(value, fallback = null) {
   return fallback;
 }
 
+export function getSafeNavigationUrl(value, fallback = "/") {
+  const safeFallback = getSafeCallbackUrl(fallback, "/") || "/";
+  const safeRelativeValue = getSafeCallbackUrl(value);
+
+  if (safeRelativeValue) {
+    return safeRelativeValue;
+  }
+
+  if (typeof value !== "string") {
+    return safeFallback;
+  }
+
+  try {
+    const parsedUrl = new URL(value);
+    const relativeUrl = `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+
+    return getSafeCallbackUrl(relativeUrl, safeFallback);
+  } catch {
+    return safeFallback;
+  }
+}
+
 export function buildAuthUrl(
   path,
   {

@@ -7,15 +7,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import {
   buildPostLoginUrl,
+  getSafeNavigationUrl,
   getSafeCallbackUrl
 } from "@/features/auth/callback-url";
 import { loginSchema } from "@/features/auth/validation/login-schema";
 import { FieldError } from "./field-error";
+import { GoogleSignInButton } from "./google-sign-in-button";
 
 const REMEMBERED_EMAIL_KEY = "serviceflow_remembered_login_email";
 
@@ -33,6 +36,7 @@ function getAuthenticationError(error, t) {
 
 export function LoginForm({
   googleEnabled = false,
+  googleClientId = null,
   defaultCallbackUrl = null,
   forgotPasswordPath = "/forgot-password"
 }) {
@@ -85,7 +89,7 @@ export function LoginForm({
         window.localStorage.removeItem(REMEMBERED_EMAIL_KEY);
       }
 
-      router.push(result?.url || postLoginUrl);
+      router.push(getSafeNavigationUrl(result?.url, postLoginUrl));
       router.refresh();
     }
   });
@@ -131,6 +135,10 @@ export function LoginForm({
   }
 
   async function signInWithGoogle() {
+    if (formik.isSubmitting || isOAuthLoading) {
+      return null;
+    }
+
     const authorizationParams = {
       prompt: "select_account"
     };
@@ -165,7 +173,10 @@ export function LoginForm({
   }
 
   return (
-    <form className="space-y-4" onSubmit={formik.handleSubmit}>
+    <form
+      className="mx-auto w-full max-w-[400px] space-y-4"
+      onSubmit={formik.handleSubmit}
+    >
       {formik.status ? (
         <div
           className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
@@ -211,9 +222,8 @@ export function LoginForm({
       </div>
 
       <label className="flex cursor-pointer items-center gap-3 text-sm font-medium text-growth-sidebar">
-        <input
+        <Checkbox
           className="size-4 rounded border-growth-border text-primary accent-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          type="checkbox"
           checked={rememberMe}
           disabled={formik.isSubmitting || isOAuthLoading}
           onChange={handleRememberMeChange}
@@ -229,24 +239,18 @@ export function LoginForm({
         {formik.isSubmitting ? t("login.submitting") : t("login.submit")}
       </Button>
 
-      {googleEnabled ? (
+      {googleEnabled && googleClientId ? (
         <div className="space-y-4">
           <div className="flex items-center gap-3 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <span className="h-px flex-1 bg-growth-border" />
             {t("login.or")}
             <span className="h-px flex-1 bg-growth-border" />
           </div>
-          <Button
-            className="w-full"
+          <GoogleSignInButton
+            clientId={googleClientId}
             disabled={formik.isSubmitting || isOAuthLoading}
-            type="button"
-            variant="outline"
             onClick={signInWithGoogle}
-          >
-            {isOAuthLoading
-              ? t("login.googleSubmitting")
-              : t("login.google")}
-          </Button>
+          />
         </div>
       ) : null}
     </form>

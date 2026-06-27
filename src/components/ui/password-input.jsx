@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 function PasswordInput({
@@ -30,18 +31,19 @@ function PasswordInput({
         disabled={disabled}
         className={cn("pe-12", className)}
       />
-      <button
-        type="button"
-        className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-forest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
-        aria-controls={id}
-        aria-label={toggleLabel}
-        aria-pressed={isVisible}
-        disabled={disabled}
-        title={toggleLabel}
-        onClick={() => setIsVisible((visible) => !visible)}
-      >
-        <VisibilityIcon className="size-4" aria-hidden="true" />
-      </button>
+      <Tooltip content={toggleLabel}>
+        <button
+          type="button"
+          className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-forest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          aria-controls={id}
+          aria-label={toggleLabel}
+          aria-pressed={isVisible}
+          disabled={disabled}
+          onClick={() => setIsVisible((visible) => !visible)}
+        >
+          <VisibilityIcon className="size-4" aria-hidden="true" />
+        </button>
+      </Tooltip>
     </div>
   );
 }

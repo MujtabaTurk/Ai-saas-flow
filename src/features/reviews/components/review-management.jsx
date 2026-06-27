@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import {
   CardListSkeleton,
   MetricCardsSkeleton,
@@ -28,12 +29,12 @@ const STATUS_OPTIONS = ["ALL", "PENDING", "PUBLISHED", "HIDDEN"];
 
 function SelectField({ children, ...props }) {
   return (
-    <select
+    <Select
       className="h-11 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 

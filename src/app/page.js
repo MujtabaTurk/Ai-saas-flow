@@ -1,4 +1,5 @@
 import Link from "next/link";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import {
   ArrowRight,
   BarChart3,
@@ -1323,24 +1324,29 @@ function FaqSection() {
           description="Clear answers for the common concerns around bookings, teams, customers, and AI."
         />
 
-        <div className="mt-12 space-y-4">
+        <AccordionPrimitive.Root className="mt-12 space-y-4" type="multiple">
           {faqItems.map((item) => (
-            <details
+            <AccordionPrimitive.Item
               key={item.question}
+              value={item.question}
               className="group rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
             >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-bold text-growth-sidebar dark:text-white">
-                {item.question}
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-growth-forest transition-transform group-open:rotate-45 dark:bg-emerald-400/15 dark:text-emerald-200">
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </span>
-              </summary>
-              <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-zinc-300">
-                {item.answer}
-              </p>
-            </details>
+              <AccordionPrimitive.Header>
+                <AccordionPrimitive.Trigger className="flex w-full cursor-pointer list-none items-center justify-between gap-4 text-left text-base font-bold text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-white">
+                  {item.question}
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-growth-forest transition-transform group-data-[state=open]:rotate-45 dark:bg-emerald-400/15 dark:text-emerald-200">
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </AccordionPrimitive.Trigger>
+              </AccordionPrimitive.Header>
+              <AccordionPrimitive.Content asChild>
+                <p className="mt-4 text-sm leading-6 text-slate-600 dark:text-zinc-300">
+                  {item.answer}
+                </p>
+              </AccordionPrimitive.Content>
+            </AccordionPrimitive.Item>
           ))}
-        </div>
+        </AccordionPrimitive.Root>
       </div>
     </section>
   );

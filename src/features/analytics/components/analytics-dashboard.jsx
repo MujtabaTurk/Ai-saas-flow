@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Tooltip } from "@/components/ui/tooltip";
 import {
   ChartSkeleton,
   MetricCardsSkeleton,
@@ -146,26 +147,25 @@ function BookingTrend({ trend }) {
             point.bookings === 0
               ? 0
               : Math.round((point.completed / point.bookings) * height);
+          const pointSummary = `${point.startDate} to ${point.endDate}: ${point.bookings} bookings, ${point.completed} completed, ${point.canceled} canceled`;
 
           return (
-            <div
-              className="flex min-w-0 flex-1 flex-col items-center justify-end"
-              key={point.startDate}
-              title={`${point.startDate} to ${point.endDate}: ${point.bookings} bookings, ${point.completed} completed, ${point.canceled} canceled`}
-            >
-              <span className="mb-1 text-[10px] text-muted-foreground">
-                {point.bookings}
-              </span>
-              <div
-                className="relative w-full max-w-8 overflow-hidden rounded-t-lg bg-growth-mint"
-                style={{ height: `${height}px` }}
-              >
+            <Tooltip content={pointSummary} key={point.startDate}>
+              <div className="flex min-w-0 flex-1 flex-col items-center justify-end">
+                <span className="mb-1 text-[10px] text-muted-foreground">
+                  {point.bookings}
+                </span>
                 <div
-                  className="absolute inset-x-0 bottom-0 bg-primary"
-                  style={{ height: `${completedHeight}px` }}
-                />
+                  className="relative w-full max-w-8 overflow-hidden rounded-t-lg bg-growth-mint"
+                  style={{ height: `${height}px` }}
+                >
+                  <div
+                    className="absolute inset-x-0 bottom-0 bg-primary"
+                    style={{ height: `${completedHeight}px` }}
+                  />
+                </div>
               </div>
-            </div>
+            </Tooltip>
           );
         })}
       </div>

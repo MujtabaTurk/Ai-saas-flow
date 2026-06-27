@@ -3,8 +3,10 @@
 import { useMemo } from "react";
 import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/features/auth/components/field-error";
 import {
@@ -15,12 +17,12 @@ import { customerSchema } from "@/features/customers/validation/customer-schema"
 
 function SelectField({ children, ...props }) {
   return (
-    <select
+    <Select
       className="flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 
@@ -168,11 +170,10 @@ export function CustomerForm({
         </div>
 
         <label className="flex items-start gap-3 rounded-2xl border border-growth-border bg-white px-4 py-3 text-sm md:col-span-2">
-          <input
+          <Checkbox
             checked={formik.values.marketingOptIn}
             className="mt-0.5 h-4 w-4 rounded border-growth-border text-primary focus:ring-primary"
             name="marketingOptIn"
-            type="checkbox"
             onChange={formik.handleChange}
           />
           <span>

@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { AlertCircle, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Modal, ModalFooter } from "@/components/ui/modal";
 
@@ -39,14 +40,27 @@ function ErrorDialog({
           <AlertCircle aria-hidden="true" className="h-5 w-5" />
         </div>
         {details ? (
-          <details className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <summary className="cursor-pointer font-semibold">
-              Technical details
-            </summary>
-            <p className="mt-2 whitespace-pre-wrap break-words leading-6">
-              {details}
-            </p>
-          </details>
+          <AccordionPrimitive.Root collapsible type="single">
+            <AccordionPrimitive.Item
+              className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700"
+              value="details"
+            >
+              <AccordionPrimitive.Header>
+                <AccordionPrimitive.Trigger className="group flex w-full cursor-pointer items-center gap-2 text-left font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90"
+                  />
+                  Technical details
+                </AccordionPrimitive.Trigger>
+              </AccordionPrimitive.Header>
+              <AccordionPrimitive.Content asChild>
+                <p className="mt-2 whitespace-pre-wrap break-words leading-6">
+                  {details}
+                </p>
+              </AccordionPrimitive.Content>
+            </AccordionPrimitive.Item>
+          </AccordionPrimitive.Root>
         ) : null}
       </div>
     </Modal>

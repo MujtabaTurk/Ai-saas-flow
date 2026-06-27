@@ -13,6 +13,7 @@ import { AcceptTeamInvitationButton } from "./accept-team-invitation-button";
 export function TeamInvitationAcceptance({
   currentUser,
   googleEnabled = false,
+  googleClientId = null,
   invitation,
   token
 }) {
@@ -141,6 +142,7 @@ export function TeamInvitationAcceptance({
             </div>
             <RegisterForm
               googleEnabled={googleEnabled}
+              googleClientId={googleClientId}
               invitationCallbackUrl={callbackUrl}
               invitationEmail={invitedEmail}
               invitationToken={token}

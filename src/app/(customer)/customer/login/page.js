@@ -1,4 +1,7 @@
-import { isGoogleProviderEnabled } from "@/features/auth/auth-options";
+import {
+  googleIdentityClientId,
+  isGoogleProviderEnabled
+} from "@/features/auth/auth-options";
 import { LoginEntry } from "@/features/auth/components/login-entry";
 
 export const metadata = {
@@ -11,6 +14,7 @@ export default function CustomerLoginPage() {
       defaultCallbackUrl="/customer"
       forgotPasswordPath="/customer/forgot-password"
       googleEnabled={isGoogleProviderEnabled}
+      googleClientId={googleIdentityClientId}
       registerPath="/customer/register"
     />
   );

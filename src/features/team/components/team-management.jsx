@@ -5,11 +5,13 @@ import { useFormik } from "formik";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { Select } from "@/components/ui/select";
 import {
   CardListSkeleton,
   MetricCardsSkeleton,
@@ -113,7 +115,7 @@ function TeamMemberEditor({
         <section className="space-y-3">
           <Label htmlFor={`role-${member.id}`}>Business role</Label>
           <div className="flex flex-col gap-2 sm:flex-row">
-            <select
+            <Select
               className="h-11 flex-1 rounded-2xl border border-input bg-white px-4 text-sm"
               disabled={!canManage}
               id={`role-${member.id}`}
@@ -122,7 +124,7 @@ function TeamMemberEditor({
             >
               <option value="STAFF">Staff</option>
               <option value="ADMIN">Admin</option>
-            </select>
+            </Select>
             {canManage ? (
               <Button
                 disabled={roleMutation.isPending || role === member.role}
@@ -169,10 +171,9 @@ function TeamMemberEditor({
                   className="flex items-center gap-3 rounded-2xl border border-growth-border bg-growth-dashboard px-4 py-3 text-sm"
                   key={service.id}
                 >
-                  <input
+                  <Checkbox
                     checked={serviceIds.includes(service.id)}
                     disabled={!canManage}
-                    type="checkbox"
                     onChange={(event) =>
                       setServiceIds((current) =>
                         event.target.checked
@@ -233,7 +234,7 @@ function TeamMemberEditor({
                   className="grid gap-2 rounded-2xl border border-growth-border p-3 sm:grid-cols-[1fr_1fr_1fr_auto]"
                   key={`${member.id}-${index}`}
                 >
-                  <select
+                  <Select
                     className="h-11 rounded-2xl border border-input bg-white px-3 text-sm"
                     disabled={!canManage}
                     value={window.dayOfWeek}
@@ -246,7 +247,7 @@ function TeamMemberEditor({
                         {day.label}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                   <Input
                     disabled={!canManage}
                     type="time"
@@ -567,7 +568,7 @@ export function TeamManagement({ businessId }) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="team-role">Role</Label>
-            <select
+            <Select
               className="h-11 w-full rounded-2xl border border-input bg-white px-4 text-sm"
               disabled={!team.access.canInvite}
               id="team-role"
@@ -577,7 +578,7 @@ export function TeamManagement({ businessId }) {
             >
               <option value="STAFF">Staff</option>
               <option value="ADMIN">Admin</option>
-            </select>
+            </Select>
           </div>
           <div className="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
             <Button

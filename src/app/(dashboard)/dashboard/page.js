@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppShell } from "@/components/layout/app-shell";
-import { SignOutButton } from "@/features/auth/components/sign-out-button";
 import { getCurrentSession } from "@/lib/auth/session";
 
 export const metadata = {
@@ -19,7 +18,7 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <div>
           <div>
             <p className="text-sm font-semibold text-primary">Business workspace</p>
             <h1 className="text-3xl font-bold tracking-tight text-growth-sidebar">Dashboard</h1>
@@ -27,7 +26,6 @@ export default async function DashboardPage() {
               Signed in as {session.user.email}. Auth and tenant session context are active.
             </p>
           </div>
-          <SignOutButton />
         </div>
 
         <Card>
@@ -57,4 +55,3 @@ export default async function DashboardPage() {
     </AppShell>
   );
 }
-

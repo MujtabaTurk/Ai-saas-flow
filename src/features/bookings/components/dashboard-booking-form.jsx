@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { Skeleton, useDelayedVisibility } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { addDaysToDateValue, formatDateTimeInTimezone } from "@/features/availability/time";
@@ -17,12 +18,12 @@ import { publicBookingFormSchema } from "@/features/bookings/validation/booking-
 
 function SelectField({ children, ...props }) {
   return (
-    <select
+    <Select
       className="flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 

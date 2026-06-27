@@ -5,8 +5,10 @@ import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
+import { Select } from "@/components/ui/select";
 import {
   CardListSkeleton,
   MetricCardsSkeleton,
@@ -22,12 +24,12 @@ import {
 
 function SelectField({ children, ...props }) {
   return (
-    <select
+    <Select
       className="h-11 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 
@@ -256,13 +258,12 @@ export function NotificationManagement({ businessId, businessTimezone }) {
               <option value="SKIPPED">Skipped</option>
             </SelectField>
             <label className="flex h-11 items-center gap-3 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm">
-              <input
+              <Checkbox
                 checked={unreadOnly}
                 className="h-4 w-4 accent-emerald-500"
                 onChange={(event) =>
                   resetPage(() => setUnreadOnly(event.target.checked))
                 }
-                type="checkbox"
               />
               Unread business alerts
             </label>

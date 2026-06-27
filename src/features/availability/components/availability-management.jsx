@@ -1,5 +1,6 @@
 "use client";
 
+import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -291,42 +292,45 @@ export function AvailabilityManagement({
         </div>
       ) : null}
 
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div className="flex flex-wrap gap-2 rounded-2xl border border-growth-border bg-white p-1">
+      <TabsPrimitive.Root
+        className="space-y-5"
+        value={tab}
+        onValueChange={(nextTab) => {
+          setTab(nextTab);
+          closeForm();
+        }}
+      >
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <TabsPrimitive.List className="flex flex-wrap gap-2 rounded-2xl border border-growth-border bg-white p-1">
+            <TabsPrimitive.Trigger asChild value="weekly">
+              <Button
+                size="sm"
+                variant={tab === "weekly" ? "default" : "ghost"}
+              >
+                Weekly schedule
+              </Button>
+            </TabsPrimitive.Trigger>
+            <TabsPrimitive.Trigger asChild value="unavailable">
+              <Button
+                size="sm"
+                variant={tab === "unavailable" ? "default" : "ghost"}
+              >
+                Unavailable dates
+              </Button>
+            </TabsPrimitive.Trigger>
+          </TabsPrimitive.List>
           <Button
-            size="sm"
-            variant={tab === "weekly" ? "default" : "ghost"}
+            disabled={!canConfigure}
             onClick={() => {
-              setTab("weekly");
-              closeForm();
+              setMode("create");
+              setSelectedItem(null);
             }}
           >
-            Weekly schedule
-          </Button>
-          <Button
-            size="sm"
-            variant={tab === "unavailable" ? "default" : "ghost"}
-            onClick={() => {
-              setTab("unavailable");
-              closeForm();
-            }}
-          >
-            Unavailable dates
+            {tab === "weekly" ? "Add working hours" : "Add unavailable date"}
           </Button>
         </div>
-        <Button
-          disabled={!canConfigure}
-          onClick={() => {
-            setMode("create");
-            setSelectedItem(null);
-          }}
-        >
-          {tab === "weekly" ? "Add working hours" : "Add unavailable date"}
-        </Button>
-      </div>
 
-      {tab === "weekly" ? (
-        <div className="space-y-5">
+        <TabsPrimitive.Content className="space-y-5" value="weekly">
           {availabilityQuery.isLoading ? (
             showAvailabilitySkeleton ? (
               <MetricCardsSkeleton count={4} />
@@ -477,9 +481,9 @@ export function AvailabilityManagement({
               )}
             </CardContent>
           </Card>
-        </div>
-      ) : (
-        <div className="space-y-5">
+        </TabsPrimitive.Content>
+
+        <TabsPrimitive.Content className="space-y-5" value="unavailable">
           {unavailableDatesQuery.isLoading ? (
             showUnavailableSkeleton ? (
               <MetricCardsSkeleton count={4} />
@@ -601,8 +605,8 @@ export function AvailabilityManagement({
               )}
             </CardContent>
           </Card>
-        </div>
-      )}
+        </TabsPrimitive.Content>
+      </TabsPrimitive.Root>
     </div>
   );
 }

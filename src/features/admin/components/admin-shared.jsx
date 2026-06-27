@@ -1,14 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Select } from "@/components/ui/select";
 
 export function AdminSelect({ children, className = "", ...props }) {
   return (
-    <select
+    <Select
       className={`h-11 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 

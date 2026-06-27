@@ -76,6 +76,7 @@ export async function POST(request) {
         name: data.name.trim(),
         slug,
         industry: data.industry,
+        logoUrl: optionalText(data.logoUrl),
         email: optionalText(data.email),
         phone: optionalText(data.phone),
         website: normalizeWebsiteUrl(data.website),
@@ -87,7 +88,14 @@ export async function POST(request) {
         currency: data.currency,
         locale: data.locale,
         settings: {
-          create: DEFAULT_BUSINESS_SETTINGS
+          create: {
+            ...DEFAULT_BUSINESS_SETTINGS,
+            bookingLeadTimeMin: data.bookingLeadTimeMin,
+            bookingWindowDays: data.bookingWindowDays,
+            cancellationWindowMin: data.cancellationWindowMin,
+            allowGuestBookings: data.allowGuestBookings,
+            autoConfirmBookings: data.autoConfirmBookings
+          }
         },
         subscriptions: {
           create: buildTrialSubscription(now)

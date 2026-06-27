@@ -5,6 +5,7 @@ export const onboardingBusinessSelect = {
   industry: true,
   email: true,
   phone: true,
+  logoUrl: true,
   website: true,
   addressLine1: true,
   addressLine2: true,
@@ -63,6 +64,7 @@ export function mapOnboardingBusiness(business) {
     slug: business.slug,
     publicBookingPath: `/${business.slug}`,
     industry: business.industry,
+    logoUrl: business.logoUrl,
     contact: {
       email: business.email,
       phone: business.phone,

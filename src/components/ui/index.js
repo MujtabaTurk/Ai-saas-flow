@@ -1,6 +1,7 @@
 export * from "./badge";
 export * from "./button";
 export * from "./card";
+export * from "./checkbox";
 export * from "./confirmation-dialog";
 export * from "./empty-state";
 export * from "./error-dialog";
@@ -9,6 +10,8 @@ export * from "./input";
 export * from "./label";
 export * from "./loading-state";
 export * from "./modal";
+export * from "./select";
 export * from "./skeleton";
 export * from "./textarea";
+export * from "./tooltip";
 export * from "./toast";

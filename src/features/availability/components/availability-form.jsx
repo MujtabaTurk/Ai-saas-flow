@@ -5,18 +5,19 @@ import { useFormik } from "formik";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { FieldError } from "@/features/auth/components/field-error";
 import { DAYS_OF_WEEK, SLOT_DURATIONS } from "@/features/availability/constants";
 import { availabilitySchema } from "@/features/availability/validation/availability-schema";
 
 function SelectField({ children, ...props }) {
   return (
-    <select
+    <Select
       className="flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       {...props}
     >
       {children}
-    </select>
+    </Select>
   );
 }
 

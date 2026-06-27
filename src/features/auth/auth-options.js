@@ -7,11 +7,17 @@ import { verifyPassword } from "./password";
 import { resolveSessionContext } from "./session-context";
 import { loginSchema } from "./validation/login-schema";
 
+export const googleIdentityClientId = process.env.GOOGLE_CLIENT_ID || null;
+
 export const isGoogleProviderEnabled = Boolean(
-  process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+  googleIdentityClientId && process.env.GOOGLE_CLIENT_SECRET
 );
 
-function invalidateMissingUserToken(token) {
+function isObject(value) {
+  return Boolean(value && typeof value === "object");
+}
+
+function invalidateMissingUserToken(token = {}) {
   return {
     ...token,
     id: null,
@@ -71,7 +77,7 @@ const providers = [
 if (isGoogleProviderEnabled) {
   providers.push(
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientId: googleIdentityClientId,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       allowDangerousEmailAccountLinking: true,
       profile(profile) {
@@ -105,10 +111,11 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      const userId = user?.id || token.id;
+      const safeToken = isObject(token) ? token : {};
+      const userId = user?.id || safeToken.id;
 
       if (userId) {
-        token.id = userId;
+        safeToken.id = userId;
 
         const context = await resolveSessionContext(userId, {
           preferredBusinessId:
@@ -116,51 +123,54 @@ export const authOptions = {
         });
 
         if (!context) {
-          return invalidateMissingUserToken(token);
+          return invalidateMissingUserToken(safeToken);
         }
 
-        token.accountMissing = false;
-        token.platformRole = context.platformRole || user?.platformRole || token.platformRole || "USER";
-        token.emailVerified = context.emailVerified
+        safeToken.accountMissing = false;
+        safeToken.platformRole =
+          context.platformRole || user?.platformRole || safeToken.platformRole || "USER";
+        safeToken.emailVerified = context.emailVerified
           ? new Date(context.emailVerified).toISOString()
           : null;
-        token.activeBusinessId = context.activeBusinessId;
-        token.activeBusinessMembershipId = context.activeBusinessMembershipId;
-        token.activeBusinessSlug = context.activeBusinessSlug;
-        token.activeBusinessName = context.activeBusinessName;
-        token.activeBusinessStatus = context.activeBusinessStatus;
-        token.businessRole = context.businessRole;
-        token.customerRole = context.customerRole;
-        token.customerId = context.customerId;
-        token.customerBusinessId = context.customerBusinessId;
-        token.customerProfileCount = context.customerProfileCount || 0;
+        safeToken.activeBusinessId = context.activeBusinessId;
+        safeToken.activeBusinessMembershipId = context.activeBusinessMembershipId;
+        safeToken.activeBusinessSlug = context.activeBusinessSlug;
+        safeToken.activeBusinessName = context.activeBusinessName;
+        safeToken.activeBusinessStatus = context.activeBusinessStatus;
+        safeToken.businessRole = context.businessRole;
+        safeToken.customerRole = context.customerRole;
+        safeToken.customerId = context.customerId;
+        safeToken.customerBusinessId = context.customerBusinessId;
+        safeToken.customerProfileCount = context.customerProfileCount || 0;
       }
 
-      return token;
+      return safeToken;
     },
     async session({ session, token }) {
-      if (!token?.id || token.accountMissing) {
-        return null;
+      if (!isObject(token) || !token.id || token.accountMissing) {
+        return {};
       }
 
-      if (session.user) {
-        session.user.id = token.id;
-        session.user.platformRole = token.platformRole || "USER";
-        session.user.emailVerified = token.emailVerified || null;
-        session.user.activeBusinessId = token.activeBusinessId || null;
-        session.user.activeBusinessMembershipId =
+      const safeSession = isObject(session) ? session : {};
+      const safeUser = isObject(safeSession.user) ? safeSession.user : {};
+
+      safeSession.user = safeUser;
+      safeSession.user.id = token.id;
+      safeSession.user.platformRole = token.platformRole || "USER";
+      safeSession.user.emailVerified = token.emailVerified || null;
+      safeSession.user.activeBusinessId = token.activeBusinessId || null;
+      safeSession.user.activeBusinessMembershipId =
         token.activeBusinessMembershipId || null;
-        session.user.activeBusinessSlug = token.activeBusinessSlug || null;
-        session.user.activeBusinessName = token.activeBusinessName || null;
-        session.user.activeBusinessStatus = token.activeBusinessStatus || null;
-        session.user.businessRole = token.businessRole || null;
-        session.user.customerRole = token.customerRole || null;
-        session.user.customerId = token.customerId || null;
-        session.user.customerBusinessId = token.customerBusinessId || null;
-        session.user.customerProfileCount = token.customerProfileCount || 0;
-      }
+      safeSession.user.activeBusinessSlug = token.activeBusinessSlug || null;
+      safeSession.user.activeBusinessName = token.activeBusinessName || null;
+      safeSession.user.activeBusinessStatus = token.activeBusinessStatus || null;
+      safeSession.user.businessRole = token.businessRole || null;
+      safeSession.user.customerRole = token.customerRole || null;
+      safeSession.user.customerId = token.customerId || null;
+      safeSession.user.customerBusinessId = token.customerBusinessId || null;
+      safeSession.user.customerProfileCount = token.customerProfileCount || 0;
 
-      return session;
+      return safeSession;
     }
   },
   secret: process.env.NEXTAUTH_SECRET

@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { AuthLayout } from "@/features/auth/components/auth-layout";
 import { RegisterForm } from "@/features/auth/components/register-form";
-import { isGoogleProviderEnabled } from "@/features/auth/auth-options";
+import {
+  googleIdentityClientId,
+  isGoogleProviderEnabled
+} from "@/features/auth/auth-options";
 
 export const metadata = {
   title: "Customer Registration | ServiceFlow"
@@ -29,6 +32,7 @@ export default function CustomerRegisterPage() {
         accountType="CUSTOMER"
         defaultCallbackUrl="/customer"
         googleEnabled={isGoogleProviderEnabled}
+        googleClientId={googleIdentityClientId}
       />
     </AuthLayout>
   );
