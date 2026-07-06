@@ -1,5 +1,105 @@
 {
   "title": "Panel",
   "workspace": "Espacio de negocio",
-  "sessionContext": "Contexto de sesión"
+  "sessionContext": "Contexto de sesión",
+  "overview": {
+    "common": {
+      "never": "Nunca",
+      "shortMinutes": "{{count}} min"
+    },
+    "greeting": {
+      "morning": "Buenos d?as",
+      "afternoon": "Buenas tardes",
+      "evening": "Buenas noches"
+    },
+    "heading": "{{greeting}}, {{name}}",
+    "subheading": "Esto est? pasando hoy en {{business}}.",
+    "createBookingModal": {
+      "title": "Crear reserva",
+      "description": "Crea una reserva desde el panel eligiendo servicio, horario disponible y datos del cliente."
+    },
+    "actions": {
+      "addService": "Agregar servicio",
+      "createBooking": "Crear reserva"
+    },
+    "metrics": {
+      "todayBookings": "Reservas de hoy",
+      "pendingBookings": "Reservas pendientes",
+      "revenueThisMonth": "Ingresos este mes",
+      "newCustomers": "Clientes nuevos",
+      "attention": "Atenci?n"
+    },
+    "schedule": {
+      "title": "Agenda de hoy",
+      "loading": "Cargando agenda de hoy",
+      "empty": "No hay citas programadas para hoy.",
+      "viewCalendar": "Ver calendario completo"
+    },
+    "setup": {
+      "title": "Lista de configuraci?n",
+      "description": "Completa la configuraci?n para desbloquear anal?tica avanzada y funciones de IA.",
+      "items": {
+        "businessHours": "Agregar horario del negocio",
+        "firstService": "Crear primer servicio",
+        "inviteTeam": "Invitar miembro del equipo",
+        "connectPayments": "Conectar pagos",
+        "publishPage": "Publicar p?gina de reservas"
+      }
+    },
+    "chart": {
+      "bookingsTooltip": "{{count}} reservas"
+    },
+    "performance": {
+      "title": "Rendimiento de reservas",
+      "period": "?ltimos {{count}} d?as"
+    },
+    "usage": {
+      "title": "Uso del plan",
+      "services": "Servicios",
+      "teamMembers": "Miembros del equipo",
+      "bookings": "Reservas",
+      "upgradePlan": "Mejorar plan",
+      "usedOfLimit": "{{used}} / {{limit}}",
+      "usedUnlimited": "{{used}} / ilimitado"
+    },
+    "ai": {
+      "title": "Sugerencias de IA",
+      "items": {
+        "descriptions": "Generar mejores descripciones para servicios con bajo rendimiento",
+        "reminders": "Enviar recordatorios a reservas pendientes",
+        "cancellations": "Revisar tendencias de cancelaci?n de esta semana"
+      },
+      "open": "Abrir asistente de IA"
+    },
+    "customers": {
+      "title": "Clientes recientes",
+      "empty": "A?n no hay clientes.",
+      "fallbackName": "Cliente",
+      "view": "Ver",
+      "table": {
+        "customer": "Cliente",
+        "lastBooking": "?ltima reserva",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "status": {
+        "vip": "VIP",
+        "regular": "Habitual",
+        "new": "Nuevo"
+      }
+    },
+    "reviews": {
+      "title": "Rese?as recientes",
+      "loading": "Cargando rese?as recientes",
+      "empty": "A?n no hay rese?as publicadas.",
+      "noText": "No se proporcion? texto de rese?a."
+    },
+    "status": {
+      "CONFIRMED": "Confirmada",
+      "COMPLETED": "Completada",
+      "CANCELED": "Cancelada",
+      "NO_SHOW": "No asisti?",
+      "PENDING": "Pendiente"
+    }
+  }
 }

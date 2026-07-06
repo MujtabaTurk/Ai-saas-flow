@@ -2,6 +2,7 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const modalSizes = {
@@ -25,8 +26,11 @@ function Modal({
   size = "md",
   title
 }) {
+  const { i18n } = useTranslation();
+
   return (
     <DialogPrimitive.Root
+      dir={i18n.dir()}
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen && isDismissDisabled) {
@@ -40,7 +44,7 @@ function Modal({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-growth-sidebar/45 backdrop-blur-sm" />
         <DialogPrimitive.Content
           className={cn(
-            "fixed inset-x-4 bottom-4 z-50 flex max-h-[calc(100dvh-2rem)] w-auto flex-col overflow-hidden rounded-2xl border border-growth-border bg-white text-growth-sidebar shadow-2xl outline-none sm:bottom-auto sm:left-1/2 sm:right-auto sm:top-1/2 sm:w-[calc(100vw-2rem)] sm:-translate-x-1/2 sm:-translate-y-1/2",
+            "modal-content fixed z-50 flex max-h-[calc(100dvh-2rem)] w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-white text-growth-sidebar shadow-2xl outline-none",
             modalSizes[size] || modalSizes.md,
             className
           )}
@@ -50,7 +54,12 @@ function Modal({
             }
           }}
           onInteractOutside={(event) => {
-            if (!closeOnOverlayClick || isDismissDisabled) {
+            const originalEvent = event.detail?.originalEvent;
+            const isFocusOutsideEvent = originalEvent?.type === "focusin";
+
+            // Radix groups focus-outside with outside interactions; keep pointer
+            // dismissals intact while ignoring unrelated focus churn.
+            if (!closeOnOverlayClick || isDismissDisabled || isFocusOutsideEvent) {
               event.preventDefault();
             }
           }}
@@ -84,7 +93,7 @@ function Modal({
             <DialogPrimitive.Close asChild>
               <button
                 aria-label={closeLabel}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                 disabled={isDismissDisabled}
                 type="button"
               >
@@ -96,7 +105,7 @@ function Modal({
             {children}
           </div>
           {footer ? (
-            <div className="border-t border-growth-border bg-growth-dashboard/60 px-5 py-4 sm:px-6">
+            <div className="border-t border-growth-border bg-growth-dashboard/80 px-5 py-4 sm:px-6">
               {footer}
             </div>
           ) : null}
@@ -123,7 +132,7 @@ function ModalError({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700",
+        "rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700",
         className
       )}
       role="alert"

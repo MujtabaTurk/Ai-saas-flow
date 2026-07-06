@@ -1,13 +1,17 @@
 {
   "app": {
-    "name": "ServiceFlow SaaS"
+    "name": "ServiceFlow SaaS",
+    "shortName": "ServiceFlow",
+    "tagline": "????? ???????"
   },
   "language": {
-    "label": "اللغة"
+    "label": "اللغة",
+    "choose": "اختر لغة التطبيق",
+    "available": "اللغات المتاحة"
   },
   "navigation": {
     "analytics": "التحليلات",
-    "team": "Team",
+    "team": "الفريق",
     "reviews": "التقييمات",
     "aiAssistant": "مساعد الذكاء الاصطناعي",
     "activity": "النشاط",
@@ -24,7 +28,17 @@
     "users": "المستخدمون",
     "plans": "الباقات",
     "subscriptions": "الاشتراكات",
-    "memberships": "Memberships"
+    "memberships": "العضويات",
+    "primary": "التنقل الرئيسي",
+    "workspace": "تنقل {{workspace}}",
+    "openSidebar": "فتح تنقل الشريط الجانبي",
+    "closeSidebar": "إغلاق تنقل الشريط الجانبي",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "expandSidebar": "توسيع الشريط الجانبي",
+    "sidebarDescription": "افتح قسما من التطبيق بعد تسجيل الدخول.",
+    "dashboardSearch": "??? ???? ??????",
+    "dashboardSearchPlaceholder": "???? ?? ???????? ?? ???????...",
+    "quickBooking": "??? ????"
   },
   "actions": {
     "startBuilding": "ابدأ البناء",
@@ -55,6 +69,17 @@
     "description": "الصفحة التي تبحث عنها غير موجودة أو ربما تم نقلها."
   },
   "loading": {
-    "message": "جار تحميل ServiceFlow..."
+    "message": "جار تحميل ServiceFlow...",
+    "accountMenu": "جار تحميل قائمة الحساب",
+    "workspace": "جار تحميل مساحة العمل",
+    "navigation": "جار تحميل التنقل",
+    "dashboard": "جار تحميل لوحة التحكم"
+  },
+  "userMenu": {
+    "open": "فتح قائمة الحساب",
+    "profile": "الملف الشخصي",
+    "accountSettings": "إعدادات الحساب",
+    "businessSettings": "إعدادات النشاط التجاري",
+    "subscriptionBilling": "الاشتراك / الفوترة"
   }
 }

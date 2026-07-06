@@ -225,7 +225,7 @@ function ProgressIndicator({
               <button
                 type="button"
                 className={cn(
-                  "flex h-full w-full items-center justify-center gap-2 rounded-xl border px-2 py-2 text-left text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:justify-start lg:px-3",
+                  "flex h-full w-full items-center justify-center gap-2 rounded-xl border px-2 py-2 text-start text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:justify-start lg:px-3",
                   isActive
                     ? "border-primary bg-growth-mint text-growth-sidebar"
                     : "border-transparent bg-transparent text-muted-foreground",
@@ -293,12 +293,12 @@ function StepActions({
         disabled={!canGoBack || isSubmitting}
         onClick={onBack}
       >
-        <ArrowLeft className="mr-2 size-4 rtl:rotate-180" aria-hidden="true" />
+        <ArrowLeft className="me-2 size-4 rtl:rotate-180" aria-hidden="true" />
         Previous
       </Button>
       <Button type="button" disabled={isSubmitting} onClick={onNext}>
         {nextLabel}
-        <ArrowRight className="ml-2 size-4 rtl:rotate-180" aria-hidden="true" />
+        <ArrowRight className="ms-2 size-4 rtl:rotate-180" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -1341,7 +1341,7 @@ export function BusinessOnboardingForm() {
             the dashboard now or start by adding your first services.
           </p>
         </div>
-        <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4 text-left text-sm">
+        <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4 text-start text-sm">
           <p className="font-semibold text-growth-sidebar">
             Public booking page
           </p>
@@ -1352,11 +1352,11 @@ export function BusinessOnboardingForm() {
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button type="button" onClick={goToDashboard}>
             Go to Dashboard
-            <ArrowRight className="ml-2 size-4 rtl:rotate-180" aria-hidden="true" />
+            <ArrowRight className="ms-2 size-4 rtl:rotate-180" aria-hidden="true" />
           </Button>
           <Button type="button" variant="outline" onClick={startSetupWizard}>
             Start Setup Wizard
-            <ExternalLink className="ml-2 size-4" aria-hidden="true" />
+            <ExternalLink className="ms-2 size-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -1413,7 +1413,7 @@ export function BusinessOnboardingForm() {
                 disabled={formik.isSubmitting}
                 onClick={goBack}
               >
-                <ArrowLeft className="mr-2 size-4 rtl:rotate-180" aria-hidden="true" />
+                <ArrowLeft className="me-2 size-4 rtl:rotate-180" aria-hidden="true" />
                 Previous
               </Button>
               <Button

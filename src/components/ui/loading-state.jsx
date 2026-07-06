@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function LoadingState({
   title = "Loading",
@@ -8,12 +9,16 @@ function LoadingState({
   return (
     <div
       className={cn(
-        "flex min-h-40 flex-col items-center justify-center rounded-2xl border border-growth-border bg-white p-8 text-center",
+        "flex min-h-40 flex-col items-center justify-center rounded-xl border border-growth-border bg-white p-8 text-center",
         className
       )}
       role="status"
     >
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-growth-border border-t-primary" />
+      <div className="grid w-full max-w-sm gap-3" aria-hidden="true">
+        <Skeleton className="mx-auto h-10 w-10 rounded-lg" />
+        <Skeleton className="mx-auto h-5 w-32" />
+        <Skeleton className="mx-auto h-3 w-56 max-w-full" />
+      </div>
       <h3 className="mt-4 text-lg font-bold text-growth-sidebar">{title}</h3>
       {description ? (
         <p className="mt-2 max-w-md text-sm text-muted-foreground">

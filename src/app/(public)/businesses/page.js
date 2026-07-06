@@ -211,7 +211,7 @@ function BusinessCard({ business, language }) {
           </div>
           <Link
             className="mt-3 block text-xl font-bold text-growth-sidebar transition hover:text-primary"
-            href={`/businesses/${business.slug}`}
+            href={`/${business.slug}`}
           >
             {business.name}
           </Link>
@@ -271,18 +271,15 @@ function BusinessCard({ business, language }) {
         ))}
       </div>
 
-      <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row">
-        <Button asChild className="flex-1">
-          <Link href={`/businesses/${business.slug}${business.acceptingBookings ? "#book" : business.membershipPlans.length > 0 ? "#memberships-join" : ""}`}>
+      <div className="mt-auto pt-5">
+        <Button asChild className="w-full">
+          <Link href={`/${business.slug}`}>
             {business.acceptingBookings
               ? "Book now"
               : business.membershipPlans.length > 0
                 ? "View plans"
-                : "View details"}
+                : "View business"}
           </Link>
-        </Button>
-        <Button asChild className="flex-1" variant="outline">
-          <Link href={`/${business.slug}`}>Booking page</Link>
         </Button>
       </div>
     </article>

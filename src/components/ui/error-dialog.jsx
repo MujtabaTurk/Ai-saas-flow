@@ -16,7 +16,6 @@ function ErrorDialog({
 }) {
   return (
     <Modal
-      closeOnOverlayClick
       description={description}
       onOpenChange={onOpenChange}
       open={open}
@@ -46,7 +45,7 @@ function ErrorDialog({
               value="details"
             >
               <AccordionPrimitive.Header>
-                <AccordionPrimitive.Trigger className="group flex w-full cursor-pointer items-center gap-2 text-left font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <AccordionPrimitive.Trigger className="group flex w-full cursor-pointer items-center gap-2 text-start font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                   <ChevronRight
                     aria-hidden="true"
                     className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90"

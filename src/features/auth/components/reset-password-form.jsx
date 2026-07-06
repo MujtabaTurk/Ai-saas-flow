@@ -4,11 +4,15 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
+import { ArrowRight, LockKeyhole } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { resetPasswordSchema } from "@/features/auth/validation/reset-password-schema";
 import { FieldError } from "./field-error";
+
+const authInputClassName =
+  "h-11 rounded-[8px] border-[#c7c4d8] bg-white text-[#0b1c30] shadow-none placeholder:text-[#9aa3b2] focus-visible:ring-[#3525cd]/25";
 
 export function ResetPasswordForm({
   loginPath = "/login"
@@ -61,18 +65,20 @@ export function ResetPasswordForm({
   });
 
   return (
-    <form className="space-y-4" onSubmit={formik.handleSubmit}>
+    <form className="space-y-5" onSubmit={formik.handleSubmit}>
       {formik.status ? (
         <div
+          aria-live="polite"
           className={
             formik.status.type === "error"
-              ? "rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
-              : "rounded-2xl border border-growth-border bg-growth-mint/40 px-4 py-3 text-sm text-growth-sidebar"
+              ? "rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
+              : "rounded-[8px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800"
           }
+          role={formik.status.type === "error" ? "alert" : "status"}
         >
           <p>{formik.status.message}</p>
           {formik.status.type === "success" ? (
-            <Link className="mt-2 block font-semibold text-primary hover:underline" href={loginPath}>
+            <Link className="mt-2 block font-semibold text-[#3525cd] hover:underline" href={loginPath}>
               {t("resetPassword.goLogin")}
             </Link>
           ) : null}
@@ -80,45 +86,79 @@ export function ResetPasswordForm({
       ) : null}
 
       {!token ? (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div
+          className="rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800"
+          role="alert"
+        >
           {t("resetPassword.missingToken")}
         </div>
       ) : null}
 
-      <div className="space-y-2">
-        <Label htmlFor="password">
+      <div className="space-y-1">
+        <Label className="text-sm font-semibold text-[#0b1c30]" htmlFor="password">
           {t("resetPassword.newPassword")}
         </Label>
         <PasswordInput
-          id="password"
-          name="password"
+          aria-describedby={
+            formik.touched.password && formik.errors.password
+              ? "reset-password-error"
+              : undefined
+          }
+          aria-invalid={Boolean(formik.touched.password && formik.errors.password)}
           autoComplete="new-password"
+          className={authInputClassName}
+          id="password"
+          leadingIcon={LockKeyhole}
+          name="password"
+          placeholder="Create a password"
           value={formik.values.password}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
         />
-        <FieldError>{formik.touched.password && formik.errors.password}</FieldError>
+        <FieldError className="text-xs" id="reset-password-error">
+          {formik.touched.password && formik.errors.password}
+        </FieldError>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="confirmPassword">
+      <div className="space-y-1">
+        <Label className="text-sm font-semibold text-[#0b1c30]" htmlFor="confirmPassword">
           {t("resetPassword.confirmPassword")}
         </Label>
         <PasswordInput
-          id="confirmPassword"
-          name="confirmPassword"
+          aria-describedby={
+            formik.touched.confirmPassword && formik.errors.confirmPassword
+              ? "reset-confirm-password-error"
+              : undefined
+          }
+          aria-invalid={Boolean(
+            formik.touched.confirmPassword && formik.errors.confirmPassword
+          )}
           autoComplete="new-password"
+          className={authInputClassName}
+          id="confirmPassword"
+          leadingIcon={LockKeyhole}
+          name="confirmPassword"
+          placeholder="Confirm password"
           value={formik.values.confirmPassword}
           onBlur={formik.handleBlur}
           onChange={formik.handleChange}
         />
-        <FieldError>{formik.touched.confirmPassword && formik.errors.confirmPassword}</FieldError>
+        <FieldError className="text-xs" id="reset-confirm-password-error">
+          {formik.touched.confirmPassword && formik.errors.confirmPassword}
+        </FieldError>
       </div>
 
-      <Button className="w-full" disabled={formik.isSubmitting || !token} type="submit">
-        {formik.isSubmitting
-          ? t("resetPassword.submitting")
-          : t("resetPassword.submit")}
+      <Button
+        className="h-11 w-full rounded-[8px] bg-[#3525cd] text-sm font-semibold text-white shadow-none hover:bg-[#2f22b6] focus-visible:ring-[#3525cd]/35"
+        disabled={formik.isSubmitting || !token}
+        isLoading={formik.isSubmitting}
+        loadingLabel={t("resetPassword.submitting")}
+        type="submit"
+      >
+        {t("resetPassword.submit")}
+        {!formik.isSubmitting ? (
+          <ArrowRight className="ms-2 size-4" aria-hidden="true" />
+        ) : null}
       </Button>
     </form>
   );

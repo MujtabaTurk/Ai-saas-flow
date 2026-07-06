@@ -96,7 +96,7 @@ function MembershipCard({
               size="sm"
               onClick={() => onRenew(membership)}
             >
-              <RefreshCcw className="mr-2 size-4" aria-hidden="true" />
+              <RefreshCcw className="me-2 size-4" aria-hidden="true" />
               Renew
             </Button>
           ) : null}

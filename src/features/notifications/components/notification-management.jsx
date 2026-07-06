@@ -219,7 +219,7 @@ export function NotificationManagement({ businessId, businessTimezone }) {
               onClick={() => readAllMutation.mutate()}
               variant="outline"
             >
-              <CheckCheck className="mr-2 h-4 w-4" />
+              <CheckCheck className="me-2 h-4 w-4" />
               Mark all read
             </Button>
           </div>
@@ -391,7 +391,7 @@ export function NotificationManagement({ businessId, businessTimezone }) {
                             size="sm"
                             variant="outline"
                           >
-                            <RefreshCw className="mr-2 h-4 w-4" />
+                            <RefreshCw className="me-2 h-4 w-4" />
                             Retry
                           </Button>
                         ) : null}

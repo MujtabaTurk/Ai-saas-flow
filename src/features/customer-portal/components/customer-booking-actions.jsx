@@ -559,7 +559,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
           await loadDetails();
         }}
       >
-        <Eye className="mr-2 size-4" aria-hidden="true" />
+        <Eye className="me-2 size-4" aria-hidden="true" />
         Details
       </Button>
 
@@ -634,7 +634,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                   download
                   href={getCustomerBookingConfirmationUrl(booking.id)}
                 >
-                  <Download className="mr-2 size-4" aria-hidden="true" />
+                  <Download className="me-2 size-4" aria-hidden="true" />
                   Download confirmation
                 </a>
               </Button>
@@ -643,7 +643,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                 variant="outline"
                 onClick={openReschedulePanel}
               >
-                <RefreshCcw className="mr-2 size-4" aria-hidden="true" />
+                <RefreshCcw className="me-2 size-4" aria-hidden="true" />
                 Reschedule
               </Button>
               <Button
@@ -654,7 +654,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                   setActionError(null);
                 }}
               >
-                <XCircle className="mr-2 size-4" aria-hidden="true" />
+                <XCircle className="me-2 size-4" aria-hidden="true" />
                 Cancel
               </Button>
               {booking.status === "COMPLETED" ? (
@@ -665,7 +665,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                     setActionError(null);
                   }}
                 >
-                  <Star className="mr-2 size-4" aria-hidden="true" />
+                  <Star className="me-2 size-4" aria-hidden="true" />
                   {booking.review ? "View review" : "Leave review"}
                 </Button>
               ) : null}

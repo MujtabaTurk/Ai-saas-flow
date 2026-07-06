@@ -54,5 +54,379 @@
     "submit": "Enviar reseña",
     "submitting": "Enviando...",
     "immutable": "Las reseñas no se pueden cambiar después de enviarlas. Las reseñas pendientes solo se hacen públicas tras la moderación."
+  },
+  "metadata": {
+    "home": {
+      "title": "ServiceFlow | Plataforma premium de reservas y descubrimiento de negocios",
+      "description": "ServiceFlow ayuda a los clientes a descubrir negocios de servicios confiables y ofrece a los operadores una plataforma pulida para reservas, membres?as, clientes y pagos."
+    }
+  },
+  "featuredBusinesses": {
+    "ariaLabel": "Negocios destacados",
+    "coverAlt": "Portada de {{name}}",
+    "viewDetails": "Ver detalles de {{name}}",
+    "bookNow": "Reservar ahora",
+    "viewBusiness": "Ver negocio",
+    "emptyDescription": "Los negocios destacados aparecerán aquí cuando haya páginas públicas de reserva activas."
+  },
+  "demoBusinesses": {
+    "elite-fitness-gym": {
+      "category": "Gimnasio",
+      "serviceFocus": "Entrenamiento de fuerza, clases HIIT, coaching personal"
+    },
+    "glow-beauty-salon": {
+      "category": "Sal?n",
+      "serviceFocus": "Peinado, color, belleza nupcial"
+    },
+    "prime-dental-clinic": {
+      "category": "Cl?nica",
+      "serviceFocus": "Chequeos dentales, blanqueamiento, cuidado preventivo"
+    },
+    "smart-coaching-academy": {
+      "category": "Centro de coaching",
+      "serviceFocus": "Tutor?a acad?mica, preparaci?n de ex?menes, coaching profesional"
+    },
+    "wellness-therapy-center": {
+      "category": "Estudio wellness",
+      "serviceFocus": "Masaje terap?utico, recuperaci?n, mindfulness"
+    },
+    "clarity-growth-consultants": {
+      "category": "Consultores",
+      "serviceFocus": "Estrategia empresarial, planificaci?n financiera, talleres de crecimiento"
+    }
+  },
+  "landing": {
+    "nav": {
+      "ariaLabel": "Navegaci?n principal",
+      "home": "Inicio de ServiceFlow",
+      "cta": "Comenzar",
+      "links": {
+        "discover": "Descubrir",
+        "featured": "Destacados",
+        "features": "Funciones",
+        "pricing": "Precios",
+        "login": "Iniciar sesi?n"
+      }
+    },
+    "hero": {
+      "badge": "Experiencias premium de reserva para negocios de servicios",
+      "title": "Descubre servicios, reserva citas y crece desde una",
+      "titleAccent": "plataforma pulida.",
+      "description": "ServiceFlow ayuda a los clientes a encontrar negocios locales confiables mientras los equipos gestionan reservas, membres?as, pagos y relaciones con clientes en una capa operativa elegante.",
+      "primaryCta": "Iniciar prueba gratis",
+      "secondaryCta": "Explorar negocios",
+      "stats": [
+        {
+          "value": "5k+",
+          "label": "negocios apoyados"
+        },
+        {
+          "value": "11h",
+          "label": "ahorradas por semana"
+        },
+        {
+          "value": "4.9",
+          "label": "calificaci?n promedio"
+        }
+      ]
+    },
+    "discovery": {
+      "eyebrow": "Descubrimiento local",
+      "title": "Encuentra negocios y servicios cerca de ti",
+      "description": "Busca por nombre de negocio o tipo de servicio y previsualiza un flujo de descubrimiento con filtros, categor?as, calificaciones y ubicaciones.",
+      "businessLabel": "Buscar negocio",
+      "businessPlaceholder": "Elite Fitness Gym",
+      "serviceLabel": "Buscar servicio",
+      "servicePlaceholder": "Corte de pelo, dental, coaching",
+      "searchLabel": "Buscar negocios o servicios",
+      "searchPlaceholder": "Corte de pelo, dental, coaching o nombre de negocio",
+      "submit": "Buscar"
+    },
+    "featured": {
+      "eyebrow": "Negocios seleccionados",
+      "title": "Una galer?a en movimiento de servicios que vale la pena descubrir.",
+      "description": "Explora estudios, cl?nicas, consultores y equipos de servicio locales con una vitrina visual creada para descubrir.",
+      "cta": "Explorar directorio"
+    },
+    "categories": {
+      "eyebrow": "Categor?as",
+      "title": "Creado para los servicios que los clientes buscan cada d?a",
+      "description": "Una capa de reservas limpia para equipos que venden citas, experiencia, membres?as, cuidado y servicios sensibles al tiempo.",
+      "items": {
+        "salons": {
+          "title": "Salones",
+          "description": "Equipos de belleza"
+        },
+        "gyms": {
+          "title": "Gimnasios",
+          "description": "Estudios fitness"
+        },
+        "clinics": {
+          "title": "Cl?nicas",
+          "description": "Proveedores de salud"
+        },
+        "consultants": {
+          "title": "Consultores",
+          "description": "Firmas asesoras"
+        },
+        "coaching": {
+          "title": "Centros de coaching",
+          "description": "Equipos educativos"
+        },
+        "repair": {
+          "title": "Servicios de reparaci?n",
+          "description": "Equipos de campo"
+        },
+        "wellness": {
+          "title": "Estudios wellness",
+          "description": "Terapia y cuidado"
+        }
+      }
+    },
+    "features": {
+      "eyebrow": "Plataforma",
+      "title": "Todo detr?s de una experiencia premium de reserva",
+      "description": "Mant?n descubrimiento, agenda, clientes, pagos, membres?as y se?ales de rendimiento conectadas en un espacio dise?ado para operaciones repetidas.",
+      "items": {
+        "bookingPages": {
+          "title": "P?ginas de reserva premium",
+          "description": "Publica una p?gina para clientes donde los visitantes comparan servicios, eligen un horario y reservan con confianza."
+        },
+        "customerProfiles": {
+          "title": "Perfiles de cliente conectados",
+          "description": "Mant?n datos, historial, notas, membres?as y rese?as conectados sin frenar la recepci?n."
+        },
+        "payments": {
+          "title": "Pagos y dep?sitos",
+          "description": "Acepta tarjetas, suscripciones, dep?sitos y facturaci?n recurrente con una capa de pagos lista para crecer."
+        },
+        "memberships": {
+          "title": "Programas de membres?a",
+          "description": "Empaqueta beneficios, acceso, renovaciones e ingresos recurrentes para clientes leales."
+        },
+        "analytics": {
+          "title": "Anal?tica del negocio",
+          "description": "Consulta velocidad de reservas, ingresos, retenci?n, rese?as y tendencias antes de decidir a ciegas."
+        },
+        "mobile": {
+          "title": "Operaci?n m?vil primero",
+          "description": "Gestiona agenda diaria, actividad del equipo y actualizaciones de clientes desde cualquier dispositivo."
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "Ruta de reserva",
+      "title": "Un recorrido simple del inter?s a la confirmaci?n",
+      "description": "La ruta de reserva reduce fricci?n, mantiene la disponibilidad precisa y hace que cada confirmaci?n sea clara.",
+      "step": "Paso {{count}}",
+      "items": {
+        "visit": {
+          "title": "El cliente visita la p?gina de reservas",
+          "description": "Se abre una p?gina p?blica r?pida con servicios y disponibilidad."
+        },
+        "service": {
+          "title": "Selecciona servicio",
+          "description": "Elige la oferta que se ajusta a su necesidad."
+        },
+        "slot": {
+          "title": "Elige horario",
+          "description": "La disponibilidad en vivo mantiene el calendario preciso."
+        },
+        "confirm": {
+          "title": "Confirma reserva",
+          "description": "Los detalles se capturan y la cita queda bloqueada."
+        },
+        "confirmation": {
+          "title": "Recibe confirmaci?n",
+          "description": "Los clientes reciben una confirmaci?n clara para su tranquilidad."
+        }
+      }
+    },
+    "publish": {
+      "eyebrow": "Lanzamiento",
+      "title": "Publica una p?gina de reservas sin frenar operaciones",
+      "description": "Pasa de configurar el negocio a recibir reservas con una secuencia clara para equipos no t?cnicos.",
+      "items": {
+        "business": {
+          "title": "Crear negocio",
+          "description": "Define marca, contacto y datos b?sicos para clientes."
+        },
+        "services": {
+          "title": "Agregar servicios",
+          "description": "Agrega duraciones, precios, descripciones y reglas."
+        },
+        "availability": {
+          "title": "Configurar disponibilidad",
+          "description": "Define horarios, cobertura del equipo y ventanas de reserva."
+        },
+        "publish": {
+          "title": "Publicar p?gina de reservas",
+          "description": "Comparte una p?gina online pulida con tus clientes."
+        },
+        "bookings": {
+          "title": "Empezar a recibir reservas",
+          "description": "Las nuevas citas entran autom?ticamente al espacio de trabajo."
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Precios",
+      "title": "Precios simples para negocios listos para crecer",
+      "description": "Empieza con la base operativa y escala a m?s servicios, m?s reservas y relaciones m?s fuertes.",
+      "popular": "M?S POPULAR",
+      "trialPeriod": "/ 14 d?as",
+      "monthPeriod": "/ mes",
+      "choose": "Elegir {{plan}}",
+      "startTrial": "Iniciar prueba",
+      "plans": {
+        "TRIAL": {
+          "name": "Prueba",
+          "description": "Empieza a crear tu flujo de reservas antes de elegir un plan pago.",
+          "features": [
+            "Hasta 3 servicios",
+            "Hasta 25 reservas por per?odo",
+            "1 miembro del equipo",
+            "Anal?tica b?sica"
+          ]
+        },
+        "BASIC": {
+          "name": "Basic",
+          "description": "Para operadores individuales y equipos peque?os que necesitan reservas online.",
+          "features": [
+            "Hasta 10 servicios",
+            "Hasta 250 reservas por per?odo",
+            "Hasta 3 miembros del equipo",
+            "Anal?tica b?sica",
+            "50 cr?ditos de IA"
+          ]
+        },
+        "PRO": {
+          "name": "Pro",
+          "description": "Para negocios de servicios en crecimiento con mayor volumen de reservas.",
+          "features": [
+            "Servicios ilimitados",
+            "Reservas ilimitadas",
+            "Hasta 10 miembros del equipo",
+            "Anal?tica avanzada",
+            "500 cr?ditos de IA"
+          ]
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Rese?as de clientes",
+      "title": "Los equipos de servicio usan ServiceFlow para verse organizados desde el primer d?a",
+      "description": "Las experiencias premium convierten mejor cuando la operaci?n interna est? tranquila, conectada y genera confianza.",
+      "ratingAria": "Calificaci?n de cinco estrellas",
+      "reviewAria": "Rese?a de cinco estrellas",
+      "ratingDescription": "Calificaci?n promedio de operadores que gestionan reservas, clientes, pagos y membres?as.",
+      "items": {
+        "maya": {
+          "quote": "ServiceFlow dio a nuestra recepci?n un solo lugar para reservas, membres?as y seguimientos. La p?gina de reserva se siente premium.",
+          "name": "Maya Chen",
+          "role": "Fundadora, Salon Studio",
+          "avatar": "MC",
+          "result": "34% m?s reservas online"
+        },
+        "daniel": {
+          "quote": "El calendario del equipo y los datos de reservas nos ayudaron a detectar huecos m?s r?pido. Ahora planificamos la semana con mucho menos trabajo manual.",
+          "name": "Daniel Brooks",
+          "role": "L?der de operaciones, Wellness Clinic",
+          "avatar": "DB",
+          "result": "11 horas ahorradas por semana"
+        },
+        "aisha": {
+          "quote": "Lanzamos nuestra p?gina en una tarde. Los clientes eligen servicio, horario y reciben confirmaci?n sin llamarnos.",
+          "name": "Aisha Rahman",
+          "role": "Propietaria, Fitness Center",
+          "avatar": "AR",
+          "result": "4.9 de calificaci?n promedio"
+        },
+        "leo": {
+          "quote": "Las herramientas de membres?a cambiaron nuestro flujo de caja. ServiceFlow mantiene planes, facturas e historial conectados.",
+          "name": "Leo Martinez",
+          "role": "Socio gerente, Repair Service",
+          "avatar": "LM",
+          "result": "22% m?s retenci?n"
+        }
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Respuestas antes de cambiar tu flujo de reservas",
+      "description": "Preguntas comunes sobre reservas online, personal, membres?as, pagos y p?ginas de reserva para clientes.",
+      "items": {
+        "booking": {
+          "question": "?C?mo funciona la reserva?",
+          "answer": "Creas servicios, defines disponibilidad, publicas tu p?gina y los clientes eligen un horario libre. Las reservas confirmadas aparecen en el panel con datos del cliente."
+        },
+        "staff": {
+          "question": "?Puedo gestionar personal?",
+          "answer": "S?. Puedes invitar miembros, asignar servicios, gestionar disponibilidad y alinear reservas con quien puede prestar cada servicio."
+        },
+        "online": {
+          "question": "?Los clientes pueden reservar online?",
+          "answer": "S?. Cada negocio puede publicar una p?gina donde los visitantes seleccionan servicios, horarios y env?an reservas desde desktop o m?vil."
+        },
+        "memberships": {
+          "question": "?Soportan membres?as?",
+          "answer": "S?. ServiceFlow soporta planes de membres?a para ingresos recurrentes, beneficios y relaciones continuas."
+        },
+        "payments": {
+          "question": "?Hay integraci?n de pagos?",
+          "answer": "S?. La plataforma incluye flujos de facturaci?n con Stripe para planes, membres?as y gesti?n de suscripciones."
+        },
+        "analytics": {
+          "question": "?ServiceFlow ayuda a decidir mejor la agenda?",
+          "answer": "S?. Ayuda a entender demanda, detectar huecos y tomar decisiones r?pidas desde datos de reserva conectados."
+        }
+      }
+    },
+    "cta": {
+      "badge": "Creado para operaciones reales",
+      "title": "Une descubrimiento, reservas, clientes, membres?as y pagos en un solo espacio",
+      "description": "Empieza con una prueba, configura servicios y publica una experiencia de reserva en la que tus clientes puedan confiar.",
+      "primary": "Comenzar ahora",
+      "secondary": "Explorar negocios"
+    },
+    "footer": {
+      "description": "Software premium de reservas y descubrimiento para negocios de servicios que quieren una forma m?s tranquila de gestionar reservas, clientes, equipos e ingresos.",
+      "copyright": "Copyright {{year}} ServiceFlow. Todos los derechos reservados.",
+      "groups": {
+        "product": {
+          "title": "Producto"
+        },
+        "company": {
+          "title": "Compa??a"
+        },
+        "resources": {
+          "title": "Recursos"
+        },
+        "legal": {
+          "title": "Aviso legal"
+        }
+      },
+      "links": {
+        "discover": "Descubrir",
+        "featured": "Destacados",
+        "features": "Funciones",
+        "pricing": "Precios",
+        "memberships": "Membres?as",
+        "about": "Acerca de",
+        "contact": "Contacto",
+        "careers": "Carreras",
+        "help": "Centro de ayuda",
+        "docs": "Documentaci?n",
+        "faqs": "FAQs",
+        "privacy": "Pol?tica de privacidad",
+        "terms": "T?rminos de servicio"
+      },
+      "social": {
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "instagram": "Instagram",
+        "youtube": "YouTube"
+      }
+    }
   }
 }

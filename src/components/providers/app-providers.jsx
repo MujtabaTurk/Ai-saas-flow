@@ -1,7 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
-import { LanguageSwitcher } from "@/components/i18n/language-switcher";
+import { LegacyTextTranslator } from "@/components/i18n/legacy-text-translator";
 import { ToastProvider } from "@/components/ui/toast";
 import { I18nProvider } from "./i18n-provider";
 import { QueryProvider } from "./query-provider";
@@ -12,8 +12,8 @@ export function AppProviders({ children, initialLanguage }) {
       <I18nProvider initialLanguage={initialLanguage}>
         <QueryProvider>
           <ToastProvider>
-            <LanguageSwitcher />
             {children}
+            <LegacyTextTranslator />
           </ToastProvider>
         </QueryProvider>
       </I18nProvider>

@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
+import { ANALYTICS_PERIOD_OPTIONS } from "@/features/analytics/constants";
 import { AnalyticsDashboard } from "@/features/analytics/components/analytics-dashboard";
 import { isSuperAdmin } from "@/features/auth/permissions";
+import { getSubscriptionEntitlement } from "@/features/billing/status";
+import { PLAN_LIMITS } from "@/features/businesses/plan-limits";
 import { getCurrentSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -9,7 +12,40 @@ export const metadata = {
   title: "Analytics | ServiceFlow"
 };
 
-export default async function AnalyticsPage() {
+function formatPlanLabel(entitlement) {
+  if (!entitlement.planCode) {
+    return "No active plan";
+  }
+
+  const planName = entitlement.planCode
+    .toLowerCase()
+    .replace(/^\w/, (character) => character.toUpperCase());
+
+  return entitlement.status ? `${planName} ${entitlement.status.toLowerCase()}` : planName;
+}
+
+function getInitialDays(rawDays, sessionUser, entitlement) {
+  const requestedDays = Number(rawDays);
+
+  if (
+    !Number.isInteger(requestedDays) ||
+    !ANALYTICS_PERIOD_OPTIONS.includes(requestedDays)
+  ) {
+    return 30;
+  }
+
+  const analyticsLevel =
+    PLAN_LIMITS[entitlement.planCode]?.analytics || "basic";
+  const allowedPeriods =
+    isSuperAdmin(sessionUser) || analyticsLevel === "advanced"
+      ? ANALYTICS_PERIOD_OPTIONS
+      : [30];
+
+  return allowedPeriods.includes(requestedDays) ? requestedDays : 30;
+}
+
+export default async function AnalyticsPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
   const session = await getCurrentSession();
 
   if (!session?.user) {
@@ -35,7 +71,20 @@ export default async function AnalyticsPage() {
       id: true,
       name: true,
       timezone: true,
-      currency: true
+      currency: true,
+      subscriptions: {
+        orderBy: {
+          createdAt: "desc"
+        },
+        take: 1,
+        select: {
+          planCode: true,
+          status: true,
+          currentPeriodStart: true,
+          currentPeriodEnd: true,
+          trialEndsAt: true
+        }
+      }
     }
   });
 
@@ -43,25 +92,24 @@ export default async function AnalyticsPage() {
     redirect("/onboarding");
   }
 
+  const entitlement = getSubscriptionEntitlement(
+    business.subscriptions[0] || null
+  );
+
   return (
-    <AppShell>
-      <div className="space-y-6">
-        <div>
-          <p className="text-sm font-semibold text-primary">{business.name}</p>
-          <h1 className="text-3xl font-bold tracking-tight text-growth-sidebar">
-            Business Analytics
-          </h1>
-          <p className="text-muted-foreground">
-            Understand booking outcomes, customer activity, service demand, and
-            estimated booked value.
-          </p>
-        </div>
-        <AnalyticsDashboard
-          businessCurrency={business.currency}
-          businessId={business.id}
-          businessTimezone={business.timezone}
-        />
-      </div>
+    <AppShell planLabel={formatPlanLabel(entitlement)}>
+      <AnalyticsDashboard
+        businessCurrency={business.currency}
+        businessId={business.id}
+        businessName={business.name}
+        businessTimezone={business.timezone}
+        currentPlan={formatPlanLabel(entitlement)}
+        initialDays={getInitialDays(
+          resolvedSearchParams?.days,
+          session.user,
+          entitlement
+        )}
+      />
     </AppShell>
   );
 }

@@ -1,0 +1,17 @@
+
+> serviceflow-saas@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.8:3000
+- Environments: .env
+✓ Ready in 1491ms
+Creating turbopack project {
+  dir: 'C:\\Users\\WAJAHAT TRADERS\\Desktop\\Ai-saas-flow',
+  testMode: true
+}
+
+○ Compiling / ...
+ GET / 200 in 376ms (next.js: 20ms, application-code: 355ms)
+[?25h

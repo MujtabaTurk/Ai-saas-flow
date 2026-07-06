@@ -1,9 +1,13 @@
 {
   "app": {
-    "name": "ServiceFlow SaaS"
+    "name": "ServiceFlow SaaS",
+    "shortName": "ServiceFlow",
+    "tagline": "Gesch?ftsverwaltung"
   },
   "language": {
-    "label": "Sprache"
+    "label": "Sprache",
+    "choose": "App-Sprache auswählen",
+    "available": "Verfügbare Sprachen"
   },
   "navigation": {
     "analytics": "Analysen",
@@ -13,7 +17,7 @@
     "activity": "Aktivität",
     "notifications": "Benachrichtigungen",
     "dashboard": "Dashboard",
-    "services": "Services",
+    "services": "Dienstleistungen",
     "bookings": "Buchungen",
     "customers": "Kunden",
     "availability": "Verfügbarkeit",
@@ -24,7 +28,17 @@
     "users": "Benutzer",
     "plans": "Pläne",
     "subscriptions": "Abonnements",
-    "memberships": "Memberships"
+    "memberships": "Mitgliedschaften",
+    "primary": "Hauptnavigation",
+    "workspace": "{{workspace}}-Navigation",
+    "openSidebar": "Seitennavigation öffnen",
+    "closeSidebar": "Seitennavigation schließen",
+    "collapseSidebar": "Seitennavigation einklappen",
+    "expandSidebar": "Seitennavigation ausklappen",
+    "sidebarDescription": "Öffnet einen Bereich der authentifizierten Anwendung.",
+    "dashboardSearch": "Dashboard-Suche",
+    "dashboardSearchPlaceholder": "Termine oder Kunden suchen...",
+    "quickBooking": "Schnellbuchung"
   },
   "actions": {
     "startBuilding": "Loslegen",
@@ -55,6 +69,17 @@
     "description": "Die gesuchte Seite existiert nicht oder wurde verschoben."
   },
   "loading": {
-    "message": "ServiceFlow wird geladen..."
+    "message": "ServiceFlow wird geladen...",
+    "accountMenu": "Kontomenü wird geladen",
+    "workspace": "Arbeitsbereich wird geladen",
+    "navigation": "Navigation wird geladen",
+    "dashboard": "Dashboard wird geladen"
+  },
+  "userMenu": {
+    "open": "Kontomenü öffnen",
+    "profile": "Profil",
+    "accountSettings": "Kontoeinstellungen",
+    "businessSettings": "Unternehmenseinstellungen",
+    "subscriptionBilling": "Abonnement / Abrechnung"
   }
 }

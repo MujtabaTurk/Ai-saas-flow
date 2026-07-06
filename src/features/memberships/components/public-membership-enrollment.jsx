@@ -319,7 +319,7 @@ export function PublicMembershipEnrollment({
                 loadingLabel="Opening Stripe..."
                 type="submit"
               >
-                <CheckCircle2 className="mr-2 size-4" aria-hidden="true" />
+                <CheckCircle2 className="me-2 size-4" aria-hidden="true" />
                 Pay with Stripe
               </Button>
             </div>

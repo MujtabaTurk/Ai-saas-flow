@@ -755,21 +755,21 @@ export function AiAssistantManagement({
               description="Your first generated draft will appear here."
             />
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-growth-border">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-                <thead className="bg-growth-mint/50 text-growth-sidebar">
+            <div className="sf-dashboard-table-wrap">
+              <table className="sf-dashboard-table min-w-[900px]">
+                <thead>
                   <tr>
                     <th className="px-4 py-3 font-semibold">Task</th>
                     <th className="px-4 py-3 font-semibold">Requested by</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
                     <th className="px-4 py-3 font-semibold">Usage</th>
                     <th className="px-4 py-3 font-semibold">Created</th>
-                    <th className="px-4 py-3 text-right font-semibold">
+                    <th className="px-4 py-3 text-end font-semibold">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-growth-border bg-white">
+                <tbody>
                   {generations.map((generation) => (
                     <tr
                       className="hover:bg-growth-mint/20"
@@ -812,7 +812,7 @@ export function AiAssistantManagement({
                           businessTimezone
                         )}
                       </td>
-                      <td className="px-4 py-4 text-right">
+                      <td className="px-4 py-4 text-end">
                         <Button
                           size="sm"
                           type="button"

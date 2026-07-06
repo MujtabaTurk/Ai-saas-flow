@@ -1,0 +1,37 @@
+
+> serviceflow-saas@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.8:3000
+- Environments: .env
+✓ Ready in 1350ms
+Creating turbopack project {
+  dir: 'C:\\Users\\WAJAHAT TRADERS\\Desktop\\Ai-saas-flow',
+  testMode: true
+}
+
+○ Compiling /login ...
+ GET /login 200 in 14.1s (next.js: 12.6s, application-code: 1479ms)
+○ Compiling /register ...
+ GET /login 200 in 373ms (next.js: 16ms, application-code: 357ms)
+ GET /register 200 in 581ms (next.js: 26ms, application-code: 555ms)
+ GET /login 200 in 2.5s (next.js: 2.2s, application-code: 228ms)
+ GET /register 200 in 599ms (next.js: 16ms, application-code: 582ms)
+✓ Finished filesystem cache database compaction in 30.6s
+ GET /login 200 in 267ms (next.js: 13ms, application-code: 254ms)
+ GET /register 200 in 394ms (next.js: 16ms, application-code: 378ms)
+ GET /favicon.ico 200 in 301ms
+ GET /login 200 in 228ms (next.js: 10ms, application-code: 218ms)
+ GET /register 200 in 528ms (next.js: 9ms, application-code: 518ms)
+ GET /login 200 in 219ms (next.js: 9ms, application-code: 209ms)
+ GET /favicon.ico 200 in 1769ms
+ GET /favicon.ico 200 in 918ms (next.js: 363ms, application-code: 555ms)
+ GET /register 200 in 1154ms (next.js: 12ms, application-code: 1142ms)
+ GET /favicon.ico 200 in 625ms (next.js: 22ms, application-code: 603ms)
+prisma:query db.Business.aggregate([ { $match: { $expr: { $and: [ { $or: [ { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, ], }, { $ne: [ "$slug", "$$REMOVE", ], }, ], }, }, }, { $project: { _id: 1, slug: 1, name: 1, description: 1, logoUrl: 1, email: 1, phone: 1, status: 1, timezone: 1, currency: 1, locale: 1, }, }, ])
+prisma:query db.Business.aggregate([ { $match: { $expr: { $and: [ { $and: [ { $and: [ { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, { $ne: [ "$slug", "$$REMOVE", ], }, ], }, ], }, { }, ], }, }, }, { $project: { _id: 1, slug: 1, name: 1, description: 1, logoUrl: 1, email: 1, phone: 1, status: 1, timezone: 1, currency: 1, locale: 1, }, }, ])
+ GET /login 200 in 192ms (next.js: 11ms, application-code: 181ms)
+ GET /register 200 in 147ms (next.js: 7ms, application-code: 141ms)
+[?25h

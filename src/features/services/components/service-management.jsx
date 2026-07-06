@@ -240,19 +240,19 @@ export function ServiceManagement({
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-growth-border">
-              <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-                <thead className="bg-growth-mint/50 text-growth-sidebar">
+            <div className="sf-dashboard-table-wrap">
+              <table className="sf-dashboard-table min-w-[760px]">
+                <thead>
                   <tr>
                     <th className="px-4 py-3 font-semibold">Service</th>
                     <th className="px-4 py-3 font-semibold">Duration</th>
                     <th className="px-4 py-3 font-semibold">Price</th>
                     <th className="px-4 py-3 font-semibold">Payment</th>
                     <th className="px-4 py-3 font-semibold">Status</th>
-                    <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                    <th className="px-4 py-3 text-end font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-growth-border bg-white">
+                <tbody>
                   {services.map((service) => (
                     <tr key={service.id} className="hover:bg-growth-mint/20">
                       <td className="px-4 py-4">
@@ -271,7 +271,7 @@ export function ServiceManagement({
                           {service.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 text-end">
                         <div className="flex flex-wrap justify-end gap-2">
                           <Button
                             disabled={effectiveReadOnly}

@@ -7,6 +7,7 @@ import {
 import { getBookingCreationAccess } from "@/features/bookings/access";
 import { getBookingSettings } from "@/features/bookings/lifecycle";
 import { getAvailableSlotsForBusiness } from "@/features/bookings/slot-service";
+import { BUSINESS_INDUSTRIES } from "@/features/businesses/constants";
 import {
   getPublicReviewSummary,
   mapPublicReview,
@@ -15,6 +16,7 @@ import {
 import { prisma } from "@/lib/prisma";
 
 export const BUSINESS_DIRECTORY_PAGE_SIZE = 12;
+export const LANDING_FEATURED_BUSINESSES_LIMIT = 6;
 
 const SORT_VALUES = new Set(["recommended", "newest", "name"]);
 const FACET_LIMIT = 24;
@@ -99,6 +101,9 @@ const membershipPlanPreviewSelect = {
     isActive: true
   }
 };
+const industryLabelByValue = new Map(
+  BUSINESS_INDUSTRIES.map((industry) => [industry.value, industry.label])
+);
 
 function getSearchParam(searchParams, key) {
   const value = searchParams?.[key];
@@ -223,6 +228,10 @@ function formatBusinessLocation(business) {
   return [business.city, business.country].filter(Boolean).join(", ");
 }
 
+function formatBusinessCategory(industry) {
+  return industryLabelByValue.get(industry) || industry || "Service business";
+}
+
 function formatBusinessAddress(business) {
   return [
     business.addressLine1,
@@ -328,6 +337,79 @@ async function mapDirectoryBusiness(business, reviewSummaryMap) {
     })),
     reviewSummary
   };
+}
+
+async function mapLandingBusiness(business, reviewSummaryMap) {
+  const settings = getBookingSettings(business.settings);
+  const access = await getBookingCreationAccess({ business });
+  const reviewSummary = reviewSummaryMap.get(business.id) || {
+    total: 0,
+    averageRating: null
+  };
+  const serviceNames = business.services.map((service) => service.name);
+  const planNames = business.membershipPlans.map((plan) => plan.name);
+  const focus = [...serviceNames, ...planNames].slice(0, 3).join(", ");
+
+  return {
+    id: business.id,
+    slug: business.slug,
+    name: business.name,
+    category: formatBusinessCategory(business.industry),
+    description:
+      business.description ||
+      (focus ? `Offering ${focus}.` : "Service business accepting online discovery through ServiceFlow."),
+    imageUrl: business.logoUrl,
+    location: formatBusinessLocation(business),
+    rating: reviewSummary.averageRating,
+    reviewCount: reviewSummary.total,
+    acceptingBookings:
+      access.canCreate &&
+      settings.allowGuestBookings &&
+      business.services.length > 0,
+    services: serviceNames,
+    membershipPlans: planNames
+  };
+}
+
+export async function getLandingFeaturedBusinesses({
+  limit = LANDING_FEATURED_BUSINESSES_LIMIT
+} = {}) {
+  const take = Math.max(1, Math.min(Number(limit) || LANDING_FEATURED_BUSINESSES_LIMIT, 12));
+  const businesses = await prisma.business.findMany({
+    where: activeDiscoverableBusinessWhere,
+    orderBy: [{ createdAt: "desc" }],
+    take,
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      industry: true,
+      city: true,
+      country: true,
+      logoUrl: true,
+      status: true,
+      settings: true,
+      subscriptions: latestSubscriptionSelect,
+      services: {
+        ...servicePreviewSelect,
+        take: 3
+      },
+      membershipPlans: {
+        ...membershipPlanPreviewSelect,
+        take: 3
+      }
+    }
+  });
+  const reviewSummaryMap = await getReviewSummaryMap(
+    businesses.map((business) => business.id)
+  );
+
+  return Promise.all(
+    businesses.map((business) =>
+      mapLandingBusiness(business, reviewSummaryMap)
+    )
+  );
 }
 
 export async function getBusinessDirectory(searchParams = {}) {

@@ -3,6 +3,7 @@
 import { Children, isValidElement, useMemo, useState } from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 const EMPTY_VALUE = "__serviceflow_empty_select_value__";
@@ -33,9 +34,12 @@ function normalizeOptions(children) {
 function Select({
   children,
   className,
+  contentClassName,
   defaultValue,
   disabled,
   id,
+  itemClassName,
+  itemIndicatorClassName,
   name,
   onChange,
   onValueChange,
@@ -43,6 +47,7 @@ function Select({
   value,
   ...props
 }) {
+  const { i18n } = useTranslation();
   const options = useMemo(() => normalizeOptions(children), [children]);
   const isControlled = value !== undefined;
   const [internalValue, setInternalValue] = useState(defaultValue ?? "");
@@ -80,6 +85,7 @@ function Select({
         />
       ) : null}
       <SelectPrimitive.Root
+        dir={i18n.dir()}
         disabled={disabled}
         required={required}
         value={toRadixValue(selectedValue)}
@@ -87,7 +93,7 @@ function Select({
       >
         <SelectPrimitive.Trigger
           className={cn(
-            "flex h-11 w-full items-center justify-between gap-2 rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
             className
           )}
           id={id}
@@ -103,20 +109,31 @@ function Select({
         </SelectPrimitive.Trigger>
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
-            className="z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-2xl border border-growth-border bg-white text-growth-sidebar shadow-2xl shadow-emerald-950/15 outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1"
+            className={cn(
+              "z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-growth-border bg-white text-growth-sidebar shadow-2xl shadow-slate-950/10 outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1",
+              contentClassName
+            )}
             position="popper"
             sideOffset={6}
           >
             <SelectPrimitive.Viewport className="p-1">
               {options.map((option) => (
                 <SelectPrimitive.Item
-                  className="relative flex cursor-pointer select-none items-center rounded-xl py-2 pl-3 pr-9 text-sm font-medium outline-none transition-colors data-[disabled]:pointer-events-none data-[highlighted]:bg-growth-mint/45 data-[highlighted]:text-growth-sidebar data-[disabled]:opacity-50"
+                  className={cn(
+                    "relative flex cursor-pointer select-none items-center rounded-lg py-2 pe-9 ps-3 text-start text-sm font-medium outline-none transition-colors data-[disabled]:pointer-events-none data-[highlighted]:bg-growth-mint/45 data-[highlighted]:text-growth-sidebar data-[disabled]:opacity-50",
+                    itemClassName
+                  )}
                   disabled={option.disabled}
                   key={`${option.value}-${String(option.label)}`}
                   value={toRadixValue(option.value)}
                 >
                   <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
-                  <SelectPrimitive.ItemIndicator className="absolute right-3 inline-flex items-center justify-center text-primary">
+                  <SelectPrimitive.ItemIndicator
+                    className={cn(
+                      "absolute end-3 inline-flex items-center justify-center text-primary",
+                      itemIndicatorClassName
+                    )}
+                  >
                     <Check className="size-4" aria-hidden="true" />
                   </SelectPrimitive.ItemIndicator>
                 </SelectPrimitive.Item>

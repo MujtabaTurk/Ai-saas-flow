@@ -12,6 +12,7 @@ function PasswordInput({
   disabled,
   hidePasswordLabel,
   id,
+  leadingIcon: LeadingIcon,
   showPasswordLabel,
   ...props
 }) {
@@ -24,17 +25,23 @@ function PasswordInput({
 
   return (
     <div className="relative">
+      {LeadingIcon ? (
+        <LeadingIcon
+          className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+      ) : null}
       <Input
         {...props}
         id={id}
         type={isVisible ? "text" : "password"}
         disabled={disabled}
-        className={cn("pe-12", className)}
+        className={cn(LeadingIcon ? "ps-10" : null, "pe-12", className)}
       />
       <Tooltip content={toggleLabel}>
         <button
           type="button"
-          className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-forest focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-[#eef4ff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           aria-controls={id}
           aria-label={toggleLabel}
           aria-pressed={isVisible}

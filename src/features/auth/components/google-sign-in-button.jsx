@@ -1,220 +1,78 @@
 "use client";
 
-import Script from "next/script";
-import {
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore
-} from "react";
+import { Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
-const GIS_SCRIPT_SRC = "https://accounts.google.com/gsi/client";
-const MAX_BUTTON_WIDTH = 400;
-const DEFAULT_BUTTON_WIDTH = 400;
-
-function getGoogleTheme() {
-  if (typeof document === "undefined") {
-    return "outline";
-  }
-
-  return document.documentElement.classList.contains("dark")
-    ? "filled_black"
-    : "outline";
-}
-
-function normalizeLocale(locale) {
-  if (!locale || typeof locale !== "string") {
-    return undefined;
-  }
-
-  return locale.replace("-", "_");
-}
-
-function getButtonWidth(element) {
-  if (!element) {
-    return DEFAULT_BUTTON_WIDTH;
-  }
-
-  const width = Math.floor(element.getBoundingClientRect().width);
-
-  if (!width || width < 1) {
-    return DEFAULT_BUTTON_WIDTH;
-  }
-
-  return Math.min(width, MAX_BUTTON_WIDTH);
-}
-
-function subscribeToThemeChanges(onStoreChange) {
-  if (
-    typeof document === "undefined" ||
-    typeof MutationObserver === "undefined"
-  ) {
-    return () => {};
-  }
-
-  const observer = new MutationObserver(onStoreChange);
-
-  observer.observe(document.documentElement, {
-    attributeFilter: ["class"],
-    attributes: true
-  });
-
-  return () => observer.disconnect();
+function GoogleLogo() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="size-4 shrink-0"
+      viewBox="0 0 18 18"
+    >
+      <path
+        d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62Z"
+        fill="#4285F4"
+      />
+      <path
+        d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18Z"
+        fill="#34A853"
+      />
+      <path
+        d="M3.97 10.72A5.41 5.41 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.82.96 4.05l3.01-2.33Z"
+        fill="#FBBC05"
+      />
+      <path
+        d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58A8.64 8.64 0 0 0 9 0 9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58Z"
+        fill="#EA4335"
+      />
+    </svg>
+  );
 }
 
 export function GoogleSignInButton({
   className,
   clientId,
   disabled = false,
+  isLoading = false,
   onClick,
-  text = "continue_with"
 }) {
-  const { i18n, t } = useTranslation("auth");
-  const containerRef = useRef(null);
-  const buttonRef = useRef(null);
-  const disabledRef = useRef(disabled);
-  const onClickRef = useRef(onClick);
-  const [buttonWidth, setButtonWidth] = useState(DEFAULT_BUTTON_WIDTH);
-  const buttonTheme = useSyncExternalStore(
-    subscribeToThemeChanges,
-    getGoogleTheme,
-    () => "outline"
-  );
-  const [scriptReady, setScriptReady] = useState(false);
-  const [scriptFailed, setScriptFailed] = useState(false);
-  const locale = normalizeLocale(i18n.resolvedLanguage || i18n.language);
-
-  useEffect(() => {
-    onClickRef.current = onClick;
-  }, [onClick]);
-
-  useEffect(() => {
-    disabledRef.current = disabled;
-  }, [disabled]);
-
-  useEffect(() => {
-    const element = containerRef.current;
-
-    if (!element) {
-      return undefined;
-    }
-
-    const updateWidth = () => {
-      const nextWidth = getButtonWidth(element);
-
-      setButtonWidth((currentWidth) => (
-        currentWidth === nextWidth ? currentWidth : nextWidth
-      ));
-    };
-
-    updateWidth();
-
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", updateWidth);
-
-      return () => window.removeEventListener("resize", updateWidth);
-    }
-
-    const resizeObserver = new ResizeObserver(updateWidth);
-    resizeObserver.observe(element);
-
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const target = buttonRef.current;
-    const googleAccounts = window.google?.accounts?.id;
-
-    if (
-      !clientId ||
-      !scriptReady ||
-      !target ||
-      !googleAccounts
-    ) {
-      if (target) {
-        target.replaceChildren();
-      }
-
-      return undefined;
-    }
-
-    target.replaceChildren();
-
-    try {
-      googleAccounts.initialize({
-        auto_select: false,
-        callback: () => {
-          // Authentication remains delegated to the existing NextAuth OAuth flow.
-        },
-        client_id: clientId
-      });
-
-      googleAccounts.renderButton(target, {
-        click_listener: () => {
-          if (!disabledRef.current) {
-            void onClickRef.current?.();
-          }
-        },
-        locale,
-        logo_alignment: "center",
-        shape: "pill",
-        size: "large",
-        text,
-        theme: buttonTheme,
-        type: "standard",
-        width: String(buttonWidth)
-      });
-    } catch {
-      window.setTimeout(() => setScriptFailed(true), 0);
-    }
-
-    return () => target.replaceChildren();
-  }, [
-    buttonTheme,
-    buttonWidth,
-    clientId,
-    locale,
-    scriptReady,
-    text
-  ]);
+  const { t } = useTranslation("auth");
+  const isDisabled = disabled || isLoading;
+  const label = isLoading ? t("login.googleSubmitting") : t("login.google");
 
   if (!clientId) {
     return null;
   }
 
   return (
-    <div className={cn("mx-auto w-full max-w-[400px] space-y-2", className)}>
-      <Script
-        id="google-identity-services"
-        src={GIS_SCRIPT_SRC}
-        strategy="afterInteractive"
-        onError={() => setScriptFailed(true)}
-        onLoad={() => setScriptReady(true)}
-        onReady={() => setScriptReady(true)}
-      />
-
-      <div
-        ref={containerRef}
-        aria-disabled={disabled || undefined}
+    <div className={cn("w-full", className)}>
+      <button
+        type="button"
+        aria-busy={isLoading || undefined}
+        aria-label={label}
+        disabled={isDisabled}
         className={cn(
-          "grid h-11 w-full place-items-center",
-          disabled ? "pointer-events-none opacity-60" : null
+          "grid h-11 w-full grid-cols-[1fr_auto_1fr] items-center rounded-[8px] border border-[#d7dce7] bg-white px-4 text-sm font-semibold text-[#1f2937] shadow-none transition-colors",
+          "hover:border-[#b8c0cf] hover:bg-[#f8fafc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/25",
+          "disabled:cursor-not-allowed disabled:opacity-60"
         )}
+        onClick={() => {
+          if (!isDisabled) {
+            void onClick?.();
+          }
+        }}
       >
-        <div
-          ref={buttonRef}
-          className="grid min-h-10 w-full place-items-center overflow-hidden"
-          aria-busy={!scriptReady || undefined}
-        />
-      </div>
-
-      {scriptFailed ? (
-        <p className="text-center text-xs text-muted-foreground" role="alert">
-          {t("login.authenticationError")}
-        </p>
-      ) : null}
+        <span className="col-start-2 inline-flex min-w-0 items-center justify-center gap-3">
+          {isLoading ? (
+            <Loader2 className="size-4 shrink-0 animate-spin text-[#586377]" aria-hidden="true" />
+          ) : (
+            <GoogleLogo />
+          )}
+          <span className="truncate">{label}</span>
+        </span>
+      </button>
     </div>
   );
 }

@@ -53,7 +53,7 @@ export function CustomerPortalShell({
 }) {
   return (
     <main className="min-h-screen bg-growth-dashboard text-growth-sidebar dark:bg-background dark:text-foreground">
-      <aside className="fixed inset-y-0 left-0 hidden w-72 border-r border-growth-border bg-white/95 p-6 shadow-sm dark:border-white/10 dark:bg-card/95 lg:block">
+      <aside className="customer-portal-sidebar fixed inset-y-0 hidden w-72 bg-white/95 p-6 shadow-sm dark:bg-card/95 lg:block">
         <Link className="text-lg font-bold" href="/customer">
           ServiceFlow
         </Link>
@@ -83,7 +83,7 @@ export function CustomerPortalShell({
         </nav>
       </aside>
 
-      <div className="lg:pl-72">
+      <div className="customer-portal-main">
         <header className="sticky top-0 z-20 border-b border-growth-border bg-white/90 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/90 sm:px-6">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">

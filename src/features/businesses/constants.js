@@ -81,9 +81,6 @@ export const COUNTRY_DEFAULTS = {
 
 export const SUPPORTED_LOCALES = [
   { value: "en", label: "English" },
-  { value: "de", label: "German" },
-  { value: "ar", label: "Arabic" },
-  { value: "es", label: "Spanish" },
   { value: "ur", label: "Urdu" }
 ];
 

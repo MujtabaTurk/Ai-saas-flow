@@ -1,9 +1,13 @@
 {
   "app": {
-    "name": "ServiceFlow SaaS"
+    "name": "ServiceFlow SaaS",
+    "shortName": "ServiceFlow",
+    "tagline": "Gesti?n del negocio"
   },
   "language": {
-    "label": "Idioma"
+    "label": "Idioma",
+    "choose": "Elegir idioma de la aplicación",
+    "available": "Idiomas disponibles"
   },
   "navigation": {
     "analytics": "Analítica",
@@ -24,7 +28,17 @@
     "users": "Usuarios",
     "plans": "Planes",
     "subscriptions": "Suscripciones",
-    "memberships": "Memberships"
+    "memberships": "Membresías",
+    "primary": "Navegación principal",
+    "workspace": "Navegación de {{workspace}}",
+    "openSidebar": "Abrir navegación lateral",
+    "closeSidebar": "Cerrar navegación lateral",
+    "collapseSidebar": "Contraer navegación lateral",
+    "expandSidebar": "Expandir navegación lateral",
+    "sidebarDescription": "Abre una sección de la aplicación autenticada.",
+    "dashboardSearch": "B?squeda del panel",
+    "dashboardSearchPlaceholder": "Buscar citas o clientes...",
+    "quickBooking": "Reserva r?pida"
   },
   "actions": {
     "startBuilding": "Empezar",
@@ -55,6 +69,17 @@
     "description": "La página que buscas no existe o pudo haber sido movida."
   },
   "loading": {
-    "message": "Cargando ServiceFlow..."
+    "message": "Cargando ServiceFlow...",
+    "accountMenu": "Cargando menú de cuenta",
+    "workspace": "Cargando espacio de trabajo",
+    "navigation": "Cargando navegación",
+    "dashboard": "Cargando panel"
+  },
+  "userMenu": {
+    "open": "Abrir menú de cuenta",
+    "profile": "Perfil",
+    "accountSettings": "Configuración de la cuenta",
+    "businessSettings": "Configuración del negocio",
+    "subscriptionBilling": "Suscripción / Facturación"
   }
 }

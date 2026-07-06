@@ -55,7 +55,6 @@ function ConfirmationDialog({
 
   return (
     <Modal
-      closeOnOverlayClick={!isLoading}
       description={description}
       isDismissDisabled={isLoading}
       onOpenChange={onOpenChange}
@@ -89,7 +88,7 @@ function ConfirmationDialog({
         {showIcon ? (
           <div
             className={cn(
-              "flex h-11 w-11 items-center justify-center rounded-2xl ring-1",
+              "flex h-11 w-11 items-center justify-center rounded-lg ring-1",
               iconConfig.className
             )}
           >

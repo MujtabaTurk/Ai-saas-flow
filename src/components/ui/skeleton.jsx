@@ -29,7 +29,7 @@ function Skeleton({ className, ...props }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-gradient-to-r from-growth-border via-growth-dashboard to-growth-border bg-[length:240%_100%]",
+        "animate-pulse rounded-lg bg-gradient-to-r from-[#d8d5e8] via-[#eef3ff] to-[#d8d5e8] bg-[length:240%_100%]",
         className
       )}
       aria-hidden="true"
@@ -47,7 +47,7 @@ function MetricCardsSkeleton({ count = 4, className }) {
     >
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-2xl border border-growth-border bg-white p-4 shadow-sm"
+          className="rounded-xl border border-growth-border bg-white p-4 shadow-sm"
           key={index}
         >
           <Skeleton className="h-3 w-24" />
@@ -68,14 +68,14 @@ function TableSkeleton({
   return (
     <div
       className={cn(
-        "overflow-x-auto rounded-2xl border border-growth-border bg-white",
+        "overflow-x-auto rounded-xl border border-growth-border bg-white",
         className
       )}
       role="status"
       aria-label="Loading table rows"
     >
-      <table className="w-full border-collapse text-left text-sm" style={{ minWidth }}>
-        <thead className="bg-growth-mint/50">
+      <table className="w-full border-collapse text-start text-sm" style={{ minWidth }}>
+        <thead className="bg-growth-dashboard">
           <tr>
             {Array.from({ length: columns }).map((_, index) => (
               <th className="px-4 py-3" key={index}>
@@ -93,7 +93,7 @@ function TableSkeleton({
                     className={cn(
                       "h-4",
                       columnIndex === 0 ? "w-36" : "w-24",
-                      columnIndex === columns - 1 && "ml-auto"
+                      columnIndex === columns - 1 && "ms-auto"
                     )}
                   />
                   {columnIndex === 0 ? (
@@ -114,7 +114,7 @@ function CardListSkeleton({ count = 4, className }) {
     <div className={cn("space-y-3", className)} role="status" aria-label="Loading records">
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-2xl border border-growth-border bg-white p-4 shadow-sm"
+          className="rounded-xl border border-growth-border bg-white p-4 shadow-sm"
           key={index}
         >
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -141,7 +141,7 @@ function ChartSkeleton({ className, bars = 18 }) {
   return (
     <div
       className={cn(
-        "rounded-2xl border border-growth-border bg-white p-5",
+        "rounded-xl border border-growth-border bg-white p-5",
         className
       )}
       role="status"
@@ -179,12 +179,12 @@ function FormSkeleton({ fields = 5, className }) {
       {Array.from({ length: fields }).map((_, index) => (
         <div className="space-y-2" key={index}>
           <Skeleton className="h-3 w-28" />
-          <Skeleton className="h-11 w-full rounded-2xl" />
+          <Skeleton className="h-11 w-full rounded-lg" />
         </div>
       ))}
       <div className="flex justify-end gap-2 pt-2">
-        <Skeleton className="h-10 w-24 rounded-2xl" />
-        <Skeleton className="h-10 w-28 rounded-2xl" />
+        <Skeleton className="h-10 w-24 rounded-lg" />
+        <Skeleton className="h-10 w-28 rounded-lg" />
       </div>
     </div>
   );

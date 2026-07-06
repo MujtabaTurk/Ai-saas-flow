@@ -265,7 +265,7 @@ export function BusinessMembershipDashboard({
                     type="button"
                     variant={activeTab === tab.id ? "default" : "outline"}
                   >
-                    <Icon className="mr-2 size-4" aria-hidden="true" />
+                    <Icon className="me-2 size-4" aria-hidden="true" />
                     {tab.label}
                   </Button>
                 </TabsPrimitive.Trigger>
@@ -301,19 +301,19 @@ export function BusinessMembershipDashboard({
                 </Button>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-growth-border">
-                <table className="w-full min-w-[840px] border-collapse text-left text-sm">
-                  <thead className="bg-growth-mint/50 text-growth-sidebar">
+                <div className="sf-dashboard-table-wrap">
+                  <table className="sf-dashboard-table min-w-[840px]">
+                    <thead>
                     <tr>
                       <th className="px-4 py-3 font-semibold">Plan</th>
                       <th className="px-4 py-3 font-semibold">Price</th>
                       <th className="px-4 py-3 font-semibold">Duration</th>
                       <th className="px-4 py-3 font-semibold">Members</th>
                       <th className="px-4 py-3 font-semibold">Status</th>
-                      <th className="px-4 py-3 text-right font-semibold">Actions</th>
+                      <th className="px-4 py-3 text-end font-semibold">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-growth-border bg-white">
+                  <tbody>
                     {plans.map((plan) => (
                       <tr key={plan.id} className="hover:bg-growth-mint/20">
                         <td className="px-4 py-4">
@@ -335,7 +335,7 @@ export function BusinessMembershipDashboard({
                             {plan.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>
-                        <td className="px-4 py-4">
+                        <td className="px-4 py-4 text-end">
                           <div className="flex flex-wrap justify-end gap-2">
                             <Button
                               disabled={isReadOnly}
@@ -375,9 +375,9 @@ export function BusinessMembershipDashboard({
               <CardTitle>Members List</CardTitle>
               <div className="flex flex-col gap-2 sm:flex-row">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" aria-hidden="true" />
+                  <Search className="pointer-events-none absolute start-3 top-3 size-4 text-muted-foreground" aria-hidden="true" />
                   <Input
-                    className="pl-9"
+                    className="ps-9"
                     placeholder="Search members"
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
@@ -409,9 +409,9 @@ export function BusinessMembershipDashboard({
                 <h3 className="text-lg font-bold text-growth-sidebar">No members found</h3>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-2xl border border-growth-border">
-                <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-                  <thead className="bg-growth-mint/50 text-growth-sidebar">
+              <div className="sf-dashboard-table-wrap">
+                <table className="sf-dashboard-table min-w-[900px]">
+                  <thead>
                     <tr>
                       <th className="px-4 py-3 font-semibold">Member</th>
                       <th className="px-4 py-3 font-semibold">Plan</th>
@@ -421,7 +421,7 @@ export function BusinessMembershipDashboard({
                       <th className="px-4 py-3 font-semibold">Renewals</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-growth-border bg-white">
+                  <tbody>
                     {memberships.map((membership) => (
                       <tr key={membership.id} className="hover:bg-growth-mint/20">
                         <td className="px-4 py-4">
@@ -490,9 +490,9 @@ export function BusinessMembershipDashboard({
                   </div>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-growth-border">
-                  <table className="w-full min-w-[700px] border-collapse text-left text-sm">
-                    <thead className="bg-growth-mint/50 text-growth-sidebar">
+                <div className="sf-dashboard-table-wrap">
+                  <table className="sf-dashboard-table min-w-[700px]">
+                    <thead>
                       <tr>
                         <th className="px-4 py-3 font-semibold">Plan</th>
                         <th className="px-4 py-3 font-semibold">Members</th>
@@ -501,7 +501,7 @@ export function BusinessMembershipDashboard({
                         <th className="px-4 py-3 font-semibold">Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-growth-border bg-white">
+                    <tbody>
                       {analytics.plans.map((plan) => (
                         <tr key={plan.id}>
                           <td className="px-4 py-4 font-semibold text-growth-sidebar">

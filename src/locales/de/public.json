@@ -54,5 +54,379 @@
     "submit": "Bewertung senden",
     "submitting": "Wird gesendet...",
     "immutable": "Bewertungen können nach dem Absenden nicht geändert werden. Ausstehende Bewertungen werden erst nach der Moderation veröffentlicht."
+  },
+  "metadata": {
+    "home": {
+      "title": "ServiceFlow | Premium-Plattform f?r Buchungen und Gesch?ftsentdeckung",
+      "description": "ServiceFlow hilft Kunden, vertrauensw?rdige Dienstleister zu entdecken, und bietet Betreibern eine hochwertige Plattform f?r Buchungen, Mitgliedschaften, Kunden und Zahlungen."
+    }
+  },
+  "featuredBusinesses": {
+    "ariaLabel": "Empfohlene Unternehmen",
+    "coverAlt": "Titelbild von {{name}}",
+    "viewDetails": "Details zu {{name}} anzeigen",
+    "bookNow": "Jetzt buchen",
+    "viewBusiness": "Unternehmen ansehen",
+    "emptyDescription": "Empfohlene Unternehmen erscheinen hier, sobald aktive öffentliche Buchungsseiten verfügbar sind."
+  },
+  "demoBusinesses": {
+    "elite-fitness-gym": {
+      "category": "Fitnessstudio",
+      "serviceFocus": "Krafttraining, HIIT-Kurse, pers?nliches Coaching"
+    },
+    "glow-beauty-salon": {
+      "category": "Friseursalon",
+      "serviceFocus": "Haarstyling, Farbe, Braut-Beauty"
+    },
+    "prime-dental-clinic": {
+      "category": "Klinik",
+      "serviceFocus": "Zahnkontrollen, Bleaching, Vorsorge"
+    },
+    "smart-coaching-academy": {
+      "category": "Coaching-Zentrum",
+      "serviceFocus": "Nachhilfe, Pr?fungsvorbereitung, Karriere-Coaching"
+    },
+    "wellness-therapy-center": {
+      "category": "Wellness-Studio",
+      "serviceFocus": "Massagetherapie, Regeneration, Achtsamkeit"
+    },
+    "clarity-growth-consultants": {
+      "category": "Beratung",
+      "serviceFocus": "Gesch?ftsstrategie, Finanzplanung, Wachstumsworkshops"
+    }
+  },
+  "landing": {
+    "nav": {
+      "ariaLabel": "Hauptnavigation",
+      "home": "ServiceFlow Startseite",
+      "cta": "Loslegen",
+      "links": {
+        "discover": "Entdecken",
+        "featured": "Empfohlen",
+        "features": "Funktionen",
+        "pricing": "Preise",
+        "login": "Anmelden"
+      }
+    },
+    "hero": {
+      "badge": "Premium-Buchungserlebnisse f?r Dienstleister",
+      "title": "Dienste entdecken, Termine buchen und wachsen mit einer",
+      "titleAccent": "polierten Plattform.",
+      "description": "ServiceFlow hilft Kunden, vertrauensw?rdige lokale Unternehmen zu finden, w?hrend Teams Buchungen, Mitgliedschaften, Zahlungen und Kundenbeziehungen in einer eleganten Betriebsebene verwalten.",
+      "primaryCta": "Kostenlose Testphase starten",
+      "secondaryCta": "Unternehmen entdecken",
+      "stats": [
+        {
+          "value": "5k+",
+          "label": "unterst?tzte Unternehmen"
+        },
+        {
+          "value": "11h",
+          "label": "w?chentlich gespart"
+        },
+        {
+          "value": "4,9",
+          "label": "durchschnittliche Bewertung"
+        }
+      ]
+    },
+    "discovery": {
+      "eyebrow": "Lokale Suche",
+      "title": "Unternehmen und Services in deiner N?he finden",
+      "description": "Suche nach Unternehmensname oder Serviceart und sieh dir einen produktionsreifen Discovery-Flow mit Filtern, Kategorien, Bewertungen und Standorten an.",
+      "businessLabel": "Unternehmen suchen",
+      "businessPlaceholder": "Elite Fitness Gym",
+      "serviceLabel": "Service suchen",
+      "servicePlaceholder": "Haarschnitt, Zahnarzt, Coaching",
+      "searchLabel": "Unternehmen oder Services suchen",
+      "searchPlaceholder": "Haarschnitt, Zahnarzt, Coaching oder Unternehmensname",
+      "submit": "Suchen"
+    },
+    "featured": {
+      "eyebrow": "Kuratierte Unternehmen",
+      "title": "Eine bewegte Galerie entdeckenswerter Services.",
+      "description": "Durchst?bere hochwertige lokale Studios, Kliniken, Beratungen und Serviceteams in einer visuellen Showcase-Erfahrung.",
+      "cta": "Verzeichnis ?ffnen"
+    },
+    "categories": {
+      "eyebrow": "Kategorien",
+      "title": "Gebaut f?r Services, nach denen Kunden t?glich suchen",
+      "description": "Eine klare Buchungsebene f?r Teams, die Termine, Expertise, Mitgliedschaften, Betreuung und zeitkritische Services verkaufen.",
+      "items": {
+        "salons": {
+          "title": "Friseursalons",
+          "description": "Beauty-Teams"
+        },
+        "gyms": {
+          "title": "Fitnessstudios",
+          "description": "Trainingsstudios"
+        },
+        "clinics": {
+          "title": "Kliniken",
+          "description": "Gesundheitsanbieter"
+        },
+        "consultants": {
+          "title": "Berater",
+          "description": "Beratungsfirmen"
+        },
+        "coaching": {
+          "title": "Coaching-Zentren",
+          "description": "Bildungsteams"
+        },
+        "repair": {
+          "title": "Reparaturdienste",
+          "description": "Au?endienstteams"
+        },
+        "wellness": {
+          "title": "Wellness-Studios",
+          "description": "Therapie und Betreuung"
+        }
+      }
+    },
+    "features": {
+      "eyebrow": "Plattform",
+      "title": "Alles hinter einem Premium-Buchungserlebnis",
+      "description": "Halte Entdeckung, Planung, Kunden, Zahlungen, Mitgliedschaften und Leistungssignale in einem Workspace f?r wiederholbare Abl?ufe verbunden.",
+      "items": {
+        "bookingPages": {
+          "title": "Premium-Buchungsseiten",
+          "description": "Ver?ffentliche eine hochwertige Kundenseite, auf der Besucher Services vergleichen, Zeiten w?hlen und sicher buchen k?nnen."
+        },
+        "customerProfiles": {
+          "title": "Verbundene Kundenprofile",
+          "description": "Halte Kundendaten, Buchungsverlauf, Notizen, Mitgliedschaften und Bewertungen verbunden, ohne den Empfang zu bremsen."
+        },
+        "payments": {
+          "title": "Zahlungen und Anzahlungen",
+          "description": "Akzeptiere Karten, Abos, Anzahlungen und wiederkehrende Abrechnung ?ber eine wachstumsf?hige Zahlungsebene."
+        },
+        "memberships": {
+          "title": "Mitgliedschaftsprogramme",
+          "description": "Paketieren Vorteile, Zugang, Verl?ngerungen und wiederkehrende Ums?tze f?r treue Kunden."
+        },
+        "analytics": {
+          "title": "Gesch?ftsanalysen",
+          "description": "Sieh Buchungsdynamik, Umsatz, Bindung, Bewertungen und Kundentrends, bevor Entscheidungen zum R?tselraten werden."
+        },
+        "mobile": {
+          "title": "Mobile-first Betrieb",
+          "description": "Steuere Tagesplan, Teamaktivit?t und Kundenupdates von jedem Ger?t aus."
+        }
+      }
+    },
+    "workflow": {
+      "eyebrow": "Buchungsroute",
+      "title": "Eine einfache Kundenreise vom Interesse zur Best?tigung",
+      "description": "Die Buchungsroute reduziert Reibung, h?lt Verf?gbarkeit korrekt und macht jede Best?tigung klar.",
+      "step": "Schritt {{count}}",
+      "items": {
+        "visit": {
+          "title": "Kunde besucht Buchungsseite",
+          "description": "Eine schnelle ?ffentliche Seite ?ffnet Services und Verf?gbarkeit."
+        },
+        "service": {
+          "title": "W?hlt Service aus",
+          "description": "Kunden w?hlen das Angebot, das zu ihrem Bedarf passt."
+        },
+        "slot": {
+          "title": "W?hlt Zeitfenster",
+          "description": "Live-Verf?gbarkeit h?lt den Kalender korrekt."
+        },
+        "confirm": {
+          "title": "Best?tigt Buchung",
+          "description": "Details werden erfasst und der Termin wird reserviert."
+        },
+        "confirmation": {
+          "title": "Erh?lt Best?tigung",
+          "description": "Kunden erhalten eine klare Best?tigung zur Sicherheit."
+        }
+      }
+    },
+    "publish": {
+      "eyebrow": "Einf?hrung",
+      "title": "Eine Buchungsseite ver?ffentlichen, ohne Abl?ufe zu bremsen",
+      "description": "Vom Business-Setup zu Live-Buchungen mit einer klaren Launch-Sequenz f?r nicht technische Teams.",
+      "items": {
+        "business": {
+          "title": "Unternehmen erstellen",
+          "description": "Markendetails, Kontaktinfos und Kundengrundlagen festlegen."
+        },
+        "services": {
+          "title": "Services hinzuf?gen",
+          "description": "Dauer, Preise, Beschreibungen und Serviceregeln hinzuf?gen."
+        },
+        "availability": {
+          "title": "Verf?gbarkeit setzen",
+          "description": "Arbeitszeiten, Teamabdeckung und Buchungsfenster definieren."
+        },
+        "publish": {
+          "title": "Buchungsseite ver?ffentlichen",
+          "description": "Eine hochwertige Online-Buchungsseite mit Kunden teilen."
+        },
+        "bookings": {
+          "title": "Buchungen empfangen",
+          "description": "Neue Termine flie?en automatisch in den Workspace."
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Preise",
+      "title": "Einfache Preise f?r Unternehmen, die wachsen wollen",
+      "description": "Starte mit der operativen Grundlage und skaliere zu mehr Services, Buchungen und st?rkeren Kundenbeziehungen.",
+      "popular": "AM BELIEBTESTEN",
+      "trialPeriod": "/ 14 Tage",
+      "monthPeriod": "/ Monat",
+      "choose": "{{plan}} w?hlen",
+      "startTrial": "Testphase starten",
+      "plans": {
+        "TRIAL": {
+          "name": "Testphase",
+          "description": "Baue deinen Buchungsworkflow auf, bevor du einen bezahlten Plan w?hlst.",
+          "features": [
+            "Bis zu 3 Services",
+            "Bis zu 25 Buchungen pro Zeitraum",
+            "1 Teammitglied",
+            "Basisanalysen"
+          ]
+        },
+        "BASIC": {
+          "name": "Basic",
+          "description": "F?r Solo-Anbieter und kleine Teams, die Online-Buchung ben?tigen.",
+          "features": [
+            "Bis zu 10 Services",
+            "Bis zu 250 Buchungen pro Zeitraum",
+            "Bis zu 3 Teammitglieder",
+            "Basisanalysen",
+            "50 KI-Credits"
+          ]
+        },
+        "PRO": {
+          "name": "Pro",
+          "description": "F?r wachsende Dienstleister mit h?herem Buchungsvolumen.",
+          "features": [
+            "Unbegrenzte Services",
+            "Unbegrenzte Buchungen",
+            "Bis zu 10 Teammitglieder",
+            "Erweiterte Analysen",
+            "500 KI-Credits"
+          ]
+        }
+      }
+    },
+    "testimonials": {
+      "eyebrow": "Kundenstimmen",
+      "title": "Serviceteams wirken mit ServiceFlow ab Tag eins organisierter",
+      "description": "Premium-Buchungserlebnisse konvertieren besser, wenn das Backoffice ruhig, verbunden und vertrauensw?rdig ist.",
+      "ratingAria": "F?nf-Sterne-Kundenbewertung",
+      "reviewAria": "F?nf-Sterne-Bewertung",
+      "ratingDescription": "Durchschnittliche Bewertung von Servicebetreibern, die Buchungen, Kunden, Zahlungen und Mitgliedschaften verwalten.",
+      "items": {
+        "maya": {
+          "quote": "ServiceFlow gab unserem Empfang einen Ort f?r Buchungen, Mitgliedschaften und Follow-ups. Die Kundenseite f?hlt sich hochwertig an.",
+          "name": "Maya Chen",
+          "role": "Gr?nderin, Salon Studio",
+          "avatar": "MC",
+          "result": "34% mehr Online-Buchungen"
+        },
+        "daniel": {
+          "quote": "Teamkalender und Buchungsdaten halfen uns, freie Zeiten schneller zu erkennen. Wir planen die Woche mit viel weniger manueller Arbeit.",
+          "name": "Daniel Brooks",
+          "role": "Operations Lead, Wellness-Klinik",
+          "avatar": "DB",
+          "result": "11 Stunden pro Woche gespart"
+        },
+        "aisha": {
+          "quote": "Wir starteten unsere Buchungsseite an einem Nachmittag. Kunden w?hlen Service und Zeit und erhalten Best?tigung ohne Anruf.",
+          "name": "Aisha Rahman",
+          "role": "Inhaberin, Fitness Center",
+          "avatar": "AR",
+          "result": "4,9 Durchschnittsbewertung"
+        },
+        "leo": {
+          "quote": "Die Mitgliedschaftstools haben unseren Cashflow ver?ndert. ServiceFlow verbindet laufende Pl?ne, Rechnungen und Kundenhistorie.",
+          "name": "Leo Martinez",
+          "role": "Gesch?ftspartner, Reparaturservice",
+          "avatar": "LM",
+          "result": "22% h?here Bindung"
+        }
+      }
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Antworten vor dem Wechsel deines Buchungsworkflows",
+      "description": "H?ufige Fragen zu Online-Buchung, Teamverwaltung, Mitgliedschaften, Zahlungen und Kundenseiten.",
+      "items": {
+        "booking": {
+          "question": "Wie funktioniert die Buchung?",
+          "answer": "Du erstellst Services, setzt Verf?gbarkeit, ver?ffentlichst die Buchungsseite und Kunden w?hlen einen freien Slot. Best?tigte Buchungen erscheinen mit Kundendaten im Dashboard."
+        },
+        "staff": {
+          "question": "Kann ich Mitarbeitende verwalten?",
+          "answer": "Ja. Du kannst Teammitglieder einladen, Services zuweisen, Verf?gbarkeit verwalten und Buchungen mit verf?gbaren Personen abstimmen."
+        },
+        "online": {
+          "question": "K?nnen Kunden online buchen?",
+          "answer": "Ja. Jedes Unternehmen kann eine Kundenseite ver?ffentlichen, auf der Besucher Services w?hlen, Zeiten ausw?hlen und Buchungen mobil oder am Desktop senden."
+        },
+        "memberships": {
+          "question": "Unterst?tzt ihr Mitgliedschaften?",
+          "answer": "Ja. ServiceFlow unterst?tzt Mitgliedschaftspl?ne f?r wiederkehrende Ums?tze, Kundenvorteile und langfristige Beziehungen."
+        },
+        "payments": {
+          "question": "Ist Zahlungsintegration verf?gbar?",
+          "answer": "Ja. Die Plattform enth?lt Stripe-gest?tzte Abrechnungsflows f?r Pl?ne, Mitgliedschaften und Abonnementverwaltung."
+        },
+        "analytics": {
+          "question": "Hilft ServiceFlow bei besseren Planungsentscheidungen?",
+          "answer": "Ja. ServiceFlow hilft Teams, Nachfrage zu verstehen, L?cken zu erkennen und schneller aus verbundenen Buchungsdaten zu entscheiden."
+        }
+      }
+    },
+    "cta": {
+      "badge": "F?r echte Serviceabl?ufe gebaut",
+      "title": "Bringe Entdeckung, Buchungen, Kunden, Mitgliedschaften und Zahlungen in einen Workspace",
+      "description": "Starte mit einer Testphase, konfiguriere Services und ver?ffentliche ein Buchungserlebnis, dem Kunden vertrauen k?nnen.",
+      "primary": "Jetzt loslegen",
+      "secondary": "Unternehmen entdecken"
+    },
+    "footer": {
+      "description": "Premium-Buchungs- und Discovery-Software f?r Dienstleister, die Buchungen, Kunden, Teams und Umsatz ruhiger verwalten m?chten.",
+      "copyright": "Copyright {{year}} ServiceFlow. Alle Rechte vorbehalten.",
+      "groups": {
+        "product": {
+          "title": "Produkt"
+        },
+        "company": {
+          "title": "Unternehmen"
+        },
+        "resources": {
+          "title": "Ressourcen"
+        },
+        "legal": {
+          "title": "Rechtliches"
+        }
+      },
+      "links": {
+        "discover": "Entdecken",
+        "featured": "Empfohlen",
+        "features": "Funktionen",
+        "pricing": "Preise",
+        "memberships": "Mitgliedschaften",
+        "about": "?ber uns",
+        "contact": "Kontakt",
+        "careers": "Karriere",
+        "help": "Hilfe-Center",
+        "docs": "Dokumentation",
+        "faqs": "FAQs",
+        "privacy": "Datenschutz",
+        "terms": "Nutzungsbedingungen"
+      },
+      "social": {
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn",
+        "instagram": "Instagram",
+        "youtube": "YouTube"
+      }
+    }
   }
 }

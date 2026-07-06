@@ -1,14 +1,14 @@
 import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const badgeVariants = cva("inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold transition-colors", {
+const badgeVariants = cva("inline-flex items-center rounded px-2.5 py-1 text-xs font-bold transition-colors", {
   variants: {
     variant: {
-      default: "bg-growth-mint text-growth-sidebar",
+      default: "bg-growth-mint text-[#586377]",
       success: "bg-emerald-100 text-emerald-800",
       warning: "bg-amber-100 text-amber-800",
       destructive: "bg-red-100 text-red-800",
-      outline: "border border-growth-border bg-white text-growth-forest"
+      outline: "border border-growth-border bg-white text-growth-sidebar"
     }
   },
   defaultVariants: {
@@ -21,4 +21,3 @@ function Badge({ className, variant, ...props }) {
 }
 
 export { Badge, badgeVariants };
-

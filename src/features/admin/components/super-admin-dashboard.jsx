@@ -231,7 +231,7 @@ export function SuperAdminDashboard({ metrics }) {
               </p>
             ) : (
               <div className="overflow-hidden rounded-2xl border border-growth-border">
-                <table className="w-full border-collapse text-left text-sm">
+                <table className="w-full border-collapse text-start text-sm">
                   <thead className="bg-growth-mint/50 text-growth-sidebar">
                     <tr>
                       <th className="px-4 py-3 font-semibold">Business</th>

@@ -1,0 +1,21 @@
+
+> serviceflow-saas@0.1.0 dev
+> next dev -p 3000
+
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.100.8:3000
+- Environments: .env
+✓ Ready in 2.4s
+Creating turbopack project {
+  dir: 'C:\\Users\\WAJAHAT TRADERS\\Desktop\\Ai-saas-flow',
+  testMode: true
+}
+
+○ Compiling /dashboard ...
+ GET /dashboard 200 in 519ms (next.js: 125ms, application-code: 394ms)
+ GET / 200 in 8.5s (next.js: 4.0s, application-code: 4.5s)
+ GET /api/auth/session 200 in 6.0s (next.js: 5.7s, application-code: 355ms)
+prisma:query db.Business.aggregate([ { $match: { $expr: { $and: [ { $and: [ { $and: [ { $eq: [ "$slug", { $literal: "favicon.ico", }, ], }, { $ne: [ "$slug", "$$REMOVE", ], }, ], }, ], }, { }, ], }, }, }, { $project: { _id: 1, slug: 1, name: 1, description: 1, logoUrl: 1, email: 1, phone: 1, status: 1, timezone: 1, currency: 1, locale: 1, }, }, ])
+ GET /favicon.ico 200 in 8.2s (next.js: 4.5s, application-code: 3.7s)
+[?25h

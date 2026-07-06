@@ -1,0 +1,19 @@
+
+> serviceflow-saas@0.1.0 dev
+> next dev -p 3002
+
+▲ Next.js 16.2.7 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://192.168.100.8:3002
+- Environments: .env
+✓ Ready in 2.7s
+Creating turbopack project {
+  dir: 'C:\\Users\\WAJAHAT TRADERS\\Desktop\\Ai-saas-flow',
+  testMode: true
+}
+
+○ Compiling /login ...
+ GET /register 200 in 19.0s (next.js: 15.1s, application-code: 3.9s)
+ GET /login 200 in 682ms (next.js: 93ms, application-code: 589ms)
+ GET /register 200 in 679ms (next.js: 253ms, application-code: 426ms)
+[?25h

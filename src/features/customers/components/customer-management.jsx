@@ -22,7 +22,7 @@ import { CustomerForm } from "./customer-form";
 function SelectField({ children, ...props }) {
   return (
     <Select
-      className="h-11 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="h-11 rounded-lg border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       {...props}
     >
       {children}
@@ -247,21 +247,21 @@ export function CustomerManagement({
               }
             />
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-growth-border">
-              <table className="w-full min-w-[900px] border-collapse text-left text-sm">
-                <thead className="bg-growth-mint/50 text-growth-sidebar">
+            <div className="sf-dashboard-table-wrap">
+              <table className="sf-dashboard-table min-w-[900px]">
+                <thead>
                   <tr>
                     <th className="px-4 py-3 font-semibold">Customer</th>
                     <th className="px-4 py-3 font-semibold">Phone</th>
                     <th className="px-4 py-3 font-semibold">Bookings</th>
                     <th className="px-4 py-3 font-semibold">Last appointment</th>
                     <th className="px-4 py-3 font-semibold">Consent</th>
-                    <th className="px-4 py-3 text-right font-semibold">
+                    <th className="px-4 py-3 text-end font-semibold">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-growth-border bg-white">
+                <tbody>
                   {customers.map((customer) => (
                     <tr
                       className="hover:bg-growth-mint/20"
@@ -305,7 +305,7 @@ export function CustomerManagement({
                             : "Not opted in"}
                         </Badge>
                       </td>
-                      <td className="px-4 py-4 text-right">
+                      <td className="px-4 py-4 text-end">
                         <Button asChild size="sm" variant="outline">
                           <Link href={`/dashboard/customers/${customer.id}`}>
                             View profile

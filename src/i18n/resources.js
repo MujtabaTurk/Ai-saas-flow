@@ -6,6 +6,7 @@ import enCommon from "@/locales/en/common.json";
 import enDashboard from "@/locales/en/dashboard.json";
 import enServices from "@/locales/en/services.json";
 import enPublic from "@/locales/en/public.json";
+import enLegacy from "@/locales/en/legacy.json";
 import deAdmin from "@/locales/de/admin.json";
 import deAuth from "@/locales/de/auth.json";
 import deBilling from "@/locales/de/billing.json";
@@ -14,6 +15,7 @@ import deCommon from "@/locales/de/common.json";
 import deDashboard from "@/locales/de/dashboard.json";
 import deServices from "@/locales/de/services.json";
 import dePublic from "@/locales/de/public.json";
+import deLegacy from "@/locales/de/legacy.json";
 import arAdmin from "@/locales/ar/admin.json";
 import arAuth from "@/locales/ar/auth.json";
 import arBilling from "@/locales/ar/billing.json";
@@ -22,6 +24,7 @@ import arCommon from "@/locales/ar/common.json";
 import arDashboard from "@/locales/ar/dashboard.json";
 import arServices from "@/locales/ar/services.json";
 import arPublic from "@/locales/ar/public.json";
+import arLegacy from "@/locales/ar/legacy.json";
 import esAdmin from "@/locales/es/admin.json";
 import esAuth from "@/locales/es/auth.json";
 import esBilling from "@/locales/es/billing.json";
@@ -30,6 +33,7 @@ import esCommon from "@/locales/es/common.json";
 import esDashboard from "@/locales/es/dashboard.json";
 import esServices from "@/locales/es/services.json";
 import esPublic from "@/locales/es/public.json";
+import esLegacy from "@/locales/es/legacy.json";
 import urAdmin from "@/locales/ur/admin.json";
 import urAuth from "@/locales/ur/auth.json";
 import urBilling from "@/locales/ur/billing.json";
@@ -38,6 +42,7 @@ import urCommon from "@/locales/ur/common.json";
 import urDashboard from "@/locales/ur/dashboard.json";
 import urServices from "@/locales/ur/services.json";
 import urPublic from "@/locales/ur/public.json";
+import urLegacy from "@/locales/ur/legacy.json";
 
 export const resources = {
   en: {
@@ -48,7 +53,8 @@ export const resources = {
     common: enCommon,
     dashboard: enDashboard,
     services: enServices,
-    public: enPublic
+    public: enPublic,
+    legacy: enLegacy
   },
   de: {
     admin: deAdmin,
@@ -58,7 +64,8 @@ export const resources = {
     common: deCommon,
     dashboard: deDashboard,
     services: deServices,
-    public: dePublic
+    public: dePublic,
+    legacy: deLegacy
   },
   ar: {
     admin: arAdmin,
@@ -68,7 +75,8 @@ export const resources = {
     common: arCommon,
     dashboard: arDashboard,
     services: arServices,
-    public: arPublic
+    public: arPublic,
+    legacy: arLegacy
   },
   es: {
     admin: esAdmin,
@@ -78,7 +86,8 @@ export const resources = {
     common: esCommon,
     dashboard: esDashboard,
     services: esServices,
-    public: esPublic
+    public: esPublic,
+    legacy: esLegacy
   },
   ur: {
     admin: urAdmin,
@@ -88,6 +97,7 @@ export const resources = {
     common: urCommon,
     dashboard: urDashboard,
     services: urServices,
-    public: urPublic
+    public: urPublic,
+    legacy: urLegacy
   }
 };

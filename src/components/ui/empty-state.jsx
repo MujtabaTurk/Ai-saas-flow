@@ -9,11 +9,11 @@ function EmptyState({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-dashed border-growth-border bg-growth-dashboard p-8 text-center",
+        "rounded-xl border border-dashed border-growth-border bg-growth-dashboard p-8 text-center",
         className
       )}
     >
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-growth-mint text-lg font-bold text-growth-sidebar">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-growth-mint text-lg font-bold text-growth-sidebar">
         SF
       </div>
       <h3 className="text-lg font-bold text-growth-sidebar">{title}</h3>

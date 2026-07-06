@@ -80,7 +80,7 @@ export default async function RegisterPage({ searchParams }) {
         <>
           {t("register.alreadyUser")}{" "}
           <Link
-            className="font-semibold text-primary hover:underline"
+            className="font-semibold text-[#3525cd] transition-colors hover:text-[#2f22b6] hover:underline"
             href={buildAuthUrl("/login", { callbackUrl, email })}
           >
             {t("register.signIn")}

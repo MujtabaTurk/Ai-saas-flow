@@ -549,132 +549,155 @@ export function BookingManagement({
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {bookings.map((booking) => (
-                <div
-                  className="rounded-2xl border border-growth-border bg-white p-4"
-                  key={booking.id}
-                >
-                  <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-bold text-growth-sidebar">{booking.serviceNameSnapshot}</p>
-                        <Badge variant={statusVariant(booking.status)}>{booking.status.replace("_", " ")}</Badge>
-                        {booking.paymentRequiredSnapshot ? <Badge variant="warning">Payment required</Badge> : null}
-                      </div>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDateTime(booking.startsAt, timezone)} |{" "}
+            <div className="sf-dashboard-table-wrap">
+              <table className="sf-dashboard-table min-w-[1080px]">
+                <thead>
+                  <tr>
+                    <th>Booking</th>
+                    <th>Customer</th>
+                    <th>Time</th>
+                    <th>Assigned</th>
+                    <th>Status</th>
+                    <th className="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookings.map((booking) => (
+                    <tr key={booking.id}>
+                      <td>
+                        <p className="font-semibold text-growth-sidebar">
+                          {booking.serviceNameSnapshot}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {booking.bookingNumber} | {booking.source}
+                        </p>
+                        {booking.internalNotes ? (
+                          <p className="mt-2 max-w-sm rounded-lg bg-growth-dashboard px-3 py-2 text-xs text-muted-foreground">
+                            Internal: {booking.internalNotes}
+                          </p>
+                        ) : null}
+                      </td>
+                      <td>
                         {businessRole === "STAFF" ? (
-                          <span className="font-medium text-growth-sidebar">
+                          <p className="font-semibold text-growth-sidebar">
                             {booking.customerName}
-                          </span>
+                          </p>
                         ) : (
                           <Link
-                            className="font-medium text-primary hover:underline"
+                            className="font-semibold text-primary hover:underline"
                             href={`/dashboard/customers/${booking.customerId}`}
                           >
                             {booking.customerName}
                           </Link>
-                        )}{" "}
-                        | {booking.customerEmail}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {booking.bookingNumber} | Source: {booking.source}
-                      </p>
-                      {booking.internalNotes ? (
-                        <p className="max-w-2xl rounded-xl bg-growth-dashboard px-3 py-2 text-xs text-muted-foreground">
-                          Internal: {booking.internalNotes}
+                        )}
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {booking.customerEmail}
                         </p>
-                      ) : null}
-                      <p className="text-xs text-muted-foreground">
-                        Assigned to:{" "}
-                        <span className="font-semibold text-growth-sidebar">
-                          {booking.assignedMember?.user?.name ||
-                            booking.assignedMember?.user?.email ||
-                            "Unassigned"}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {access?.canAssign ? (
-                        <Select
-                          className="h-9 rounded-xl border border-input bg-white px-3 text-sm"
-                          disabled={assignmentMutation.isPending}
-                          value={booking.assignedMemberId || ""}
-                          onChange={(event) =>
-                            changeAssignment(booking, event.target.value)
-                          }
-                        >
-                          <option value="">Unassigned</option>
-                          {teamMembers
-                            .filter((member) =>
-                              member.serviceAssignments.some(
-                                (assignment) =>
-                                  assignment.serviceId === booking.serviceId
-                              )
-                            )
-                            .map((member) => (
-                              <option key={member.id} value={member.id}>
-                                {member.user.name || member.user.email}
-                              </option>
-                            ))}
-                        </Select>
-                      ) : null}
-                      {booking.status === "PENDING" ? (
-                        <Button
-                          disabled={statusMutation.isPending}
-                          size="sm"
-                          onClick={() => changeStatus(booking, "CONFIRMED")}
-                        >
-                          Confirm
-                        </Button>
-                      ) : null}
-                      {booking.status === "CONFIRMED" ? (
-                        <>
-                          <Button
-                            disabled={statusMutation.isPending}
-                            size="sm"
-                            onClick={() => changeStatus(booking, "COMPLETED")}
+                      </td>
+                      <td className="text-muted-foreground">
+                        {formatDateTime(booking.startsAt, timezone)}
+                      </td>
+                      <td>
+                        {access?.canAssign ? (
+                          <Select
+                            className="h-9 min-w-40 rounded-lg border border-input bg-white px-3 text-sm"
+                            disabled={assignmentMutation.isPending}
+                            value={booking.assignedMemberId || ""}
+                            onChange={(event) =>
+                              changeAssignment(booking, event.target.value)
+                            }
                           >
-                            Complete
-                          </Button>
+                            <option value="">Unassigned</option>
+                            {teamMembers
+                              .filter((member) =>
+                                member.serviceAssignments.some(
+                                  (assignment) =>
+                                    assignment.serviceId === booking.serviceId
+                                )
+                              )
+                              .map((member) => (
+                                <option key={member.id} value={member.id}>
+                                  {member.user.name || member.user.email}
+                                </option>
+                              ))}
+                          </Select>
+                        ) : (
+                          <span className="font-semibold text-growth-sidebar">
+                            {booking.assignedMember?.user?.name ||
+                              booking.assignedMember?.user?.email ||
+                              "Unassigned"}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant={statusVariant(booking.status)}>
+                            {booking.status.replace("_", " ")}
+                          </Badge>
+                          {booking.paymentRequiredSnapshot ? (
+                            <Badge variant="warning">Payment required</Badge>
+                          ) : null}
+                        </div>
+                      </td>
+                      <td>
+                        <div className="flex flex-wrap justify-end gap-2">
+                          {booking.status === "PENDING" ? (
+                            <Button
+                              disabled={statusMutation.isPending}
+                              size="sm"
+                              onClick={() => changeStatus(booking, "CONFIRMED")}
+                            >
+                              Confirm
+                            </Button>
+                          ) : null}
+                          {booking.status === "CONFIRMED" ? (
+                            <>
+                              <Button
+                                disabled={statusMutation.isPending}
+                                size="sm"
+                                onClick={() => changeStatus(booking, "COMPLETED")}
+                              >
+                                Complete
+                              </Button>
+                              <Button
+                                disabled={statusMutation.isPending}
+                                size="sm"
+                                variant="outline"
+                                onClick={() => changeStatus(booking, "NO_SHOW")}
+                              >
+                                No-show
+                              </Button>
+                            </>
+                          ) : null}
+                          {["PENDING", "CONFIRMED"].includes(booking.status) ? (
+                            <Button
+                              disabled={statusMutation.isPending}
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => changeStatus(booking, "CANCELED")}
+                            >
+                              Cancel
+                            </Button>
+                          ) : null}
                           <Button
-                            disabled={statusMutation.isPending}
+                            disabled={notesMutation.isPending}
                             size="sm"
                             variant="outline"
-                            onClick={() => changeStatus(booking, "NO_SHOW")}
+                            onClick={() =>
+                              setNotesDialog({
+                                booking,
+                                internalNotes: booking.internalNotes || ""
+                              })
+                            }
                           >
-                            No-show
+                            Internal notes
                           </Button>
-                        </>
-                      ) : null}
-                      {["PENDING", "CONFIRMED"].includes(booking.status) ? (
-                        <Button
-                          disabled={statusMutation.isPending}
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => changeStatus(booking, "CANCELED")}
-                        >
-                          Cancel
-                        </Button>
-                      ) : null}
-                      <Button
-                        disabled={notesMutation.isPending}
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          setNotesDialog({
-                            booking,
-                            internalNotes: booking.internalNotes || ""
-                          })
-                        }
-                      >
-                        Internal notes
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
           {pagination && pagination.totalItems > 0 ? (

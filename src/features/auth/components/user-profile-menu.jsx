@@ -13,7 +13,9 @@ import {
   User
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 function getInitials(name, email) {
@@ -52,8 +54,8 @@ function Avatar({ email, image, name, size = "md" }) {
   return (
     <span
       className={cn(
-        "relative grid shrink-0 place-items-center overflow-hidden rounded-2xl bg-gradient-to-br from-growth-sidebar via-growth-forest to-primary text-sm font-bold text-white shadow-sm ring-1 ring-white/60 dark:ring-white/10",
-        size === "lg" ? "size-11" : "size-10"
+        "relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-[#e2dfff] text-sm font-bold text-[#3525cd] shadow-sm ring-1 ring-[#c7c4d8] dark:ring-white/10",
+        size === "lg" ? "size-11" : "size-8"
       )}
       aria-hidden="true"
     >
@@ -89,10 +91,10 @@ function MenuItem({
     </>
   );
   const itemClassName = cn(
-    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[highlighted]:outline-none",
+    "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[highlighted]:outline-none",
     variant === "destructive"
       ? "text-red-700 hover:bg-red-50 data-[highlighted]:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10 dark:data-[highlighted]:bg-red-500/10"
-      : "text-growth-sidebar hover:bg-growth-mint/50 data-[highlighted]:bg-growth-mint/50 dark:text-zinc-100 dark:hover:bg-white/10 dark:data-[highlighted]:bg-white/10",
+      : "text-[#0b1c30] hover:bg-[#e5eeff] data-[highlighted]:bg-[#e5eeff] dark:text-zinc-100 dark:hover:bg-white/10 dark:data-[highlighted]:bg-white/10",
     className
   );
 
@@ -118,9 +120,15 @@ function MenuItem({
 export function UserProfileMenu({
   callbackUrl,
   className,
+  compact = false,
+  layout = "default",
+  menuAlign = "end",
+  menuSide = "bottom",
   user: providedUser = null,
+  tooltipSide = "top",
   variant = "workspace"
 }) {
+  const { i18n, t } = useTranslation("common");
   const pathname = usePathname();
   const { data: session, status } = useSession();
   const [open, setOpen] = useState(false);
@@ -148,12 +156,12 @@ export function UserProfileMenu({
       : "/dashboard/settings#account";
     const items = [
       {
-        label: "Profile",
+        label: t("userMenu.profile"),
         href: profileHref,
         icon: User
       },
       {
-        label: "Account Settings",
+        label: t("userMenu.accountSettings"),
         href: settingsHref,
         icon: Settings
       }
@@ -161,7 +169,7 @@ export function UserProfileMenu({
 
     if (!isCustomerContext && hasBusiness && !isAdminContext) {
       items.push({
-        label: "Business Settings",
+        label: t("userMenu.businessSettings"),
         href: "/dashboard/bookings#booking-rules",
         icon: Building2
       });
@@ -169,14 +177,14 @@ export function UserProfileMenu({
 
     if (canViewBilling) {
       items.push({
-        label: "Subscription / Billing",
+        label: t("userMenu.subscriptionBilling"),
         href: "/dashboard/billing",
         icon: CreditCard
       });
     }
 
     return items;
-  }, [canViewBilling, hasBusiness, isAdminContext, isCustomerContext]);
+  }, [canViewBilling, hasBusiness, isAdminContext, isCustomerContext, t]);
 
   async function handleSignOut() {
     setOpen(false);
@@ -187,11 +195,11 @@ export function UserProfileMenu({
     return (
       <div
         className={cn(
-          "flex h-12 w-[12.5rem] items-center gap-3 rounded-2xl border border-growth-border bg-white/80 px-3 shadow-sm dark:border-white/10 dark:bg-white/5",
+          "flex h-12 w-12 items-center justify-center gap-3 rounded-2xl border border-growth-border bg-white/80 px-3 shadow-sm dark:border-white/10 dark:bg-white/5 sm:w-[12.5rem] sm:justify-start",
           className
         )}
         role="status"
-        aria-label="Loading account menu"
+        aria-label={t("loading.accountMenu")}
       >
         <Skeleton className="size-9 rounded-2xl" />
         <div className="hidden min-w-0 flex-1 space-y-2 sm:block">
@@ -206,45 +214,75 @@ export function UserProfileMenu({
     return null;
   }
 
-  return (
-    <DropdownMenuPrimitive.Root open={open} onOpenChange={setOpen}>
-      <div className={cn("relative", className)}>
-        <DropdownMenuPrimitive.Trigger asChild>
-          <button
-            className="group flex h-12 max-w-[15rem] items-center gap-3 rounded-2xl border border-growth-border bg-white/90 px-2.5 text-left shadow-sm transition-colors hover:bg-growth-mint/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 sm:px-3"
-            type="button"
-          >
-            <Avatar email={user.email} image={user.image} name={user.name} />
-            <span className="hidden min-w-0 flex-1 sm:block">
-              <span className="block truncate text-sm font-bold text-growth-sidebar dark:text-white">
-                {user.name}
-              </span>
-              {user.email ? (
-                <span className="block truncate text-xs font-medium text-muted-foreground dark:text-zinc-400">
-                  {user.email}
-                </span>
-              ) : null}
+  const triggerLabel = compact && user.email ? `${user.name} (${user.email})` : user.name;
+  const trigger = (
+    <DropdownMenuPrimitive.Trigger asChild>
+      <button
+        aria-label={
+          compact ? `${t("userMenu.open")}: ${triggerLabel}` : t("userMenu.open")
+        }
+        className={cn(
+          "group flex h-10 max-w-[15rem] items-center gap-3 rounded-full border border-[#c7c4d8] bg-white/70 px-1 text-start shadow-sm transition-[background-color,box-shadow,width] duration-200 hover:bg-[#e5eeff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 sm:px-1",
+          layout === "sidebar" &&
+            "h-12 w-full max-w-full rounded-xl bg-white/65 px-2 sm:px-2",
+          compact && "size-10 max-w-none justify-center rounded-full px-1 sm:px-1"
+        )}
+        type="button"
+      >
+        <Avatar email={user.email} image={user.image} name={user.name} />
+        <span
+          className={cn(
+            "min-w-0 flex-1 transition-[max-width,opacity,transform] duration-200",
+            layout === "sidebar" ? "block" : "hidden sm:block",
+            compact
+              ? "max-w-0 -translate-x-1 overflow-hidden opacity-0"
+              : "max-w-[11rem] translate-x-0 opacity-100"
+          )}
+        >
+          <span className="block truncate text-sm font-bold text-[#0b1c30] dark:text-white">
+            {user.name}
+          </span>
+          {user.email ? (
+            <span className="block truncate text-xs font-medium text-muted-foreground dark:text-zinc-400">
+              {user.email}
             </span>
-            <ChevronDown
-              className={cn(
-                "hidden size-4 shrink-0 text-muted-foreground transition-transform sm:block",
-                open && "rotate-180"
-              )}
-              aria-hidden="true"
-            />
-          </button>
-        </DropdownMenuPrimitive.Trigger>
+          ) : null}
+        </span>
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-[opacity,transform] duration-200",
+            layout === "sidebar" ? "block" : "hidden sm:block",
+            open && "rotate-180",
+            compact && "hidden opacity-0"
+          )}
+          aria-hidden="true"
+        />
+      </button>
+    </DropdownMenuPrimitive.Trigger>
+  );
+
+  return (
+    <DropdownMenuPrimitive.Root dir={i18n.dir()} open={open} onOpenChange={setOpen}>
+      <div className={cn("relative", className)}>
+        {compact ? (
+          <Tooltip content={triggerLabel} side={tooltipSide}>
+            {trigger}
+          </Tooltip>
+        ) : (
+          trigger
+        )}
 
         <DropdownMenuPrimitive.Portal>
           <DropdownMenuPrimitive.Content
-            align="end"
-            className="z-50 w-[min(20rem,calc(100vw-2rem))] origin-top-right animate-stat-rise rounded-2xl border border-growth-border bg-white p-2 shadow-xl shadow-emerald-950/10 outline-none dark:border-white/10 dark:bg-zinc-950 dark:shadow-black/40"
+            align={menuAlign}
+            className="origin-top-inline-end z-50 w-[min(20rem,calc(100vw-2rem))] animate-stat-rise rounded-xl border border-[#c7c4d8] bg-white p-2 shadow-xl shadow-slate-950/10 outline-none dark:border-white/10 dark:bg-zinc-950 dark:shadow-black/40"
+            side={menuSide}
             sideOffset={8}
           >
-            <div className="flex min-w-0 items-center gap-3 border-b border-growth-border px-3 py-3 dark:border-white/10">
+            <div className="flex min-w-0 items-center gap-3 border-b border-[#c7c4d8] px-3 py-3 dark:border-white/10">
               <Avatar email={user.email} image={user.image} name={user.name} size="lg" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-growth-sidebar dark:text-white">
+                <p className="truncate text-sm font-bold text-[#0b1c30] dark:text-white">
                   {user.name}
                 </p>
                 {user.email ? (
@@ -253,7 +291,7 @@ export function UserProfileMenu({
                   </p>
                 ) : null}
                 {user.activeBusinessName ? (
-                  <p className="mt-1 truncate text-xs font-semibold text-growth-forest dark:text-emerald-300">
+                  <p className="mt-1 truncate text-xs font-semibold text-[#3525cd] dark:text-emerald-300">
                     {user.activeBusinessName}
                   </p>
                 ) : null}
@@ -273,10 +311,10 @@ export function UserProfileMenu({
               ))}
             </div>
 
-            <DropdownMenuPrimitive.Separator className="border-t border-growth-border dark:border-white/10" />
+            <DropdownMenuPrimitive.Separator className="border-t border-[#c7c4d8] dark:border-white/10" />
             <div className="pt-2">
               <MenuItem icon={LogOut} onClick={handleSignOut} variant="destructive">
-                Sign Out
+                {t("actions.signOut")}
               </MenuItem>
             </div>
           </DropdownMenuPrimitive.Content>

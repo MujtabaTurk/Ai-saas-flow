@@ -100,7 +100,7 @@ export function CustomerBookingCard({
             />
             <Button asChild size="sm" variant="outline">
               <Link href={`/${booking.business.slug}`}>
-                <RotateCcw className="mr-2 size-4" aria-hidden="true" />
+                <RotateCcw className="me-2 size-4" aria-hidden="true" />
                 Book again
               </Link>
             </Button>

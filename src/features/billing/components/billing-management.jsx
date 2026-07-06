@@ -288,7 +288,7 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
                 loadingLabel="Opening..."
                 onClick={openPortal}
               >
-                <CreditCard className="mr-2 h-4 w-4" />
+                <CreditCard className="me-2 h-4 w-4" />
                 Manage billing
               </Button>
               <p className="text-xs text-muted-foreground">
@@ -400,7 +400,7 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
                       ? "Manage in billing portal"
                       : plan.cta}
                   {!isTrial && !isCurrentPlan ? (
-                    <ExternalLink className="ml-2 h-4 w-4" />
+                    <ExternalLink className="ms-2 h-4 w-4" />
                   ) : null}
                 </Button>
 

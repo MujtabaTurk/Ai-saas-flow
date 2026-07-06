@@ -1,9 +1,13 @@
 {
   "app": {
-    "name": "ServiceFlow SaaS"
+    "name": "ServiceFlow SaaS",
+    "shortName": "ServiceFlow",
+    "tagline": "Business Management"
   },
   "language": {
-    "label": "Language"
+    "label": "Language",
+    "choose": "Choose app language",
+    "available": "Available languages"
   },
   "navigation": {
     "activity": "Activity",
@@ -24,7 +28,24 @@
     "businesses": "Businesses",
     "users": "Users",
     "plans": "Plans",
-    "subscriptions": "Subscriptions"
+    "subscriptions": "Subscriptions",
+    "primary": "Primary navigation",
+    "workspace": "{{workspace}} navigation",
+    "openSidebar": "Open sidebar navigation",
+    "closeSidebar": "Close sidebar navigation",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "sidebarDescription": "Open a section of the authenticated application.",
+    "dashboardSearch": "Dashboard search",
+    "dashboardSearchPlaceholder": "Search appointments or customers...",
+    "quickBooking": "Quick booking"
+  },
+  "userMenu": {
+    "open": "Open account menu",
+    "profile": "Profile",
+    "accountSettings": "Account Settings",
+    "businessSettings": "Business Settings",
+    "subscriptionBilling": "Subscription / Billing"
   },
   "actions": {
     "startBuilding": "Start building",
@@ -55,6 +76,10 @@
     "description": "The page you are looking for does not exist or may have moved."
   },
   "loading": {
-    "message": "Loading ServiceFlow..."
+    "message": "Loading ServiceFlow...",
+    "accountMenu": "Loading account menu",
+    "workspace": "Loading workspace",
+    "navigation": "Loading navigation",
+    "dashboard": "Loading dashboard"
   }
 }

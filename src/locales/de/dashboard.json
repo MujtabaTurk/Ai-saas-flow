@@ -1,5 +1,105 @@
 {
   "title": "Dashboard",
   "workspace": "Unternehmensbereich",
-  "sessionContext": "Sitzungskontext"
+  "sessionContext": "Sitzungskontext",
+  "overview": {
+    "common": {
+      "never": "Nie",
+      "shortMinutes": "{{count}} Min."
+    },
+    "greeting": {
+      "morning": "Guten Morgen",
+      "afternoon": "Guten Tag",
+      "evening": "Guten Abend"
+    },
+    "heading": "{{greeting}}, {{name}}",
+    "subheading": "Das passiert heute bei {{business}}.",
+    "createBookingModal": {
+      "title": "Buchung erstellen",
+      "description": "Erstelle eine Buchung im Dashboard, indem du Service, freien Slot und Kundendaten ausw?hlst."
+    },
+    "actions": {
+      "addService": "Service hinzuf?gen",
+      "createBooking": "Buchung erstellen"
+    },
+    "metrics": {
+      "todayBookings": "Heutige Buchungen",
+      "pendingBookings": "Ausstehende Buchungen",
+      "revenueThisMonth": "Umsatz diesen Monat",
+      "newCustomers": "Neue Kunden",
+      "attention": "Achtung"
+    },
+    "schedule": {
+      "title": "Heutiger Zeitplan",
+      "loading": "Heutigen Zeitplan laden",
+      "empty": "F?r heute sind keine Termine geplant.",
+      "viewCalendar": "Vollen Kalender anzeigen"
+    },
+    "setup": {
+      "title": "Setup-Checkliste",
+      "description": "Schlie?e das Setup ab, um erweiterte Analysen und KI-Funktionen freizuschalten.",
+      "items": {
+        "businessHours": "Gesch?ftszeiten hinzuf?gen",
+        "firstService": "Ersten Service erstellen",
+        "inviteTeam": "Teammitglied einladen",
+        "connectPayments": "Zahlungen verbinden",
+        "publishPage": "Buchungsseite ver?ffentlichen"
+      }
+    },
+    "chart": {
+      "bookingsTooltip": "{{count}} Buchungen"
+    },
+    "performance": {
+      "title": "Buchungsleistung",
+      "period": "Letzte {{count}} Tage"
+    },
+    "usage": {
+      "title": "Plannutzung",
+      "services": "Dienstleistungen",
+      "teamMembers": "Teammitglieder",
+      "bookings": "Buchungen",
+      "upgradePlan": "Plan upgraden",
+      "usedOfLimit": "{{used}} / {{limit}}",
+      "usedUnlimited": "{{used}} / unbegrenzt"
+    },
+    "ai": {
+      "title": "KI-Vorschl?ge",
+      "items": {
+        "descriptions": "Bessere Beschreibungen f?r schwache Services erzeugen",
+        "reminders": "Erinnerungen an ausstehende Buchungen senden",
+        "cancellations": "Stornotrends dieser Woche pr?fen"
+      },
+      "open": "KI-Assistent ?ffnen"
+    },
+    "customers": {
+      "title": "Neue Kunden",
+      "empty": "Noch keine Kunden.",
+      "fallbackName": "Kunde",
+      "view": "Ansehen",
+      "table": {
+        "customer": "Kunde",
+        "lastBooking": "Letzte Buchung",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "status": {
+        "vip": "VIP",
+        "regular": "Regul?r",
+        "new": "Neu"
+      }
+    },
+    "reviews": {
+      "title": "Neue Bewertungen",
+      "loading": "Neue Bewertungen laden",
+      "empty": "Noch keine ver?ffentlichten Bewertungen.",
+      "noText": "Kein Bewertungstext vorhanden."
+    },
+    "status": {
+      "CONFIRMED": "Best?tigt",
+      "COMPLETED": "Abgeschlossen",
+      "CANCELED": "Storniert",
+      "NO_SHOW": "Nicht erschienen",
+      "PENDING": "Ausstehend"
+    }
+  }
 }

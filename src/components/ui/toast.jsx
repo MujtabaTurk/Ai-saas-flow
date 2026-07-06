@@ -2,6 +2,8 @@
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, Info, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { translateLegacyText } from "@/i18n/legacy";
 import { cn } from "@/lib/utils";
 
 const ToastContext = createContext(null);
@@ -25,6 +27,7 @@ const toastStyles = {
 };
 
 function ToastProvider({ children }) {
+  const { i18n } = useTranslation("legacy");
   const [toasts, setToasts] = useState([]);
 
   const dismissToast = useCallback((id) => {
@@ -61,7 +64,7 @@ function ToastProvider({ children }) {
       {children}
       <div
         aria-live="polite"
-        className="fixed right-4 top-4 z-[60] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3 sm:right-6 sm:top-6"
+        className="i18n-toast-viewport fixed top-4 z-[60] flex w-[calc(100vw-2rem)] max-w-sm flex-col gap-3 sm:top-6"
         role="status"
       >
         {toasts.map((toast) => {
@@ -82,16 +85,22 @@ function ToastProvider({ children }) {
               />
               <div className="min-w-0 flex-1">
                 {toast.title ? (
-                  <p className="font-semibold leading-5">{toast.title}</p>
+                  <p className="font-semibold leading-5">
+                    {typeof toast.title === "string"
+                      ? translateLegacyText(i18n, toast.title)
+                      : toast.title}
+                  </p>
                 ) : null}
                 {toast.description ? (
                   <p className="mt-1 leading-5 text-muted-foreground">
-                    {toast.description}
+                    {typeof toast.description === "string"
+                      ? translateLegacyText(i18n, toast.description)
+                      : toast.description}
                   </p>
                 ) : null}
               </div>
               <button
-                aria-label="Dismiss notification"
+                aria-label={translateLegacyText(i18n, "Dismiss notification")}
                 className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 type="button"
                 onClick={() => dismissToast(toast.id)}

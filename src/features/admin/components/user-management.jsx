@@ -283,7 +283,7 @@ export function UserManagement() {
             />
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-growth-border">
-              <table className="w-full min-w-[1050px] border-collapse text-left text-sm">
+              <table className="w-full min-w-[1050px] border-collapse text-start text-sm">
                 <thead className="bg-growth-mint/50 text-growth-sidebar">
                   <tr>
                     <th className="px-4 py-3 font-semibold">User</th>

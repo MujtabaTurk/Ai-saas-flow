@@ -1,9 +1,13 @@
 {
   "app": {
-    "name": "ServiceFlow SaaS"
+    "name": "ServiceFlow SaaS",
+    "shortName": "ServiceFlow",
+    "tagline": "???? ???????"
   },
   "language": {
-    "label": "زبان"
+    "label": "زبان",
+    "choose": "ایپ کی زبان منتخب کریں",
+    "available": "دستیاب زبانیں"
   },
   "navigation": {
     "analytics": "تجزیات",
@@ -24,7 +28,24 @@
     "users": "یوزرز",
     "plans": "پلانز",
     "subscriptions": "سبسکرپشنز",
-    "memberships": "Memberships"
+    "memberships": "ممبرشپس",
+    "primary": "بنیادی نیویگیشن",
+    "workspace": "{{workspace}} نیویگیشن",
+    "openSidebar": "سائیڈ بار نیویگیشن کھولیں",
+    "closeSidebar": "سائیڈ بار نیویگیشن بند کریں",
+    "collapseSidebar": "سائیڈ بار سمیٹیں",
+    "expandSidebar": "سائیڈ بار پھیلائیں",
+    "sidebarDescription": "تصدیق شدہ ایپلیکیشن کا کوئی سیکشن کھولیں۔",
+    "dashboardSearch": "??? ???? ????",
+    "dashboardSearchPlaceholder": "?????????? ?? ?????? ???? ????...",
+    "quickBooking": "???? ????"
+  },
+  "userMenu": {
+    "open": "اکاؤنٹ مینو کھولیں",
+    "profile": "پروفائل",
+    "accountSettings": "اکاؤنٹ سیٹنگز",
+    "businessSettings": "کاروباری سیٹنگز",
+    "subscriptionBilling": "سبسکرپشن / بلنگ"
   },
   "actions": {
     "startBuilding": "شروع کریں",
@@ -55,6 +76,10 @@
     "description": "آپ جس صفحے کو تلاش کر رہے ہیں وہ موجود نہیں یا منتقل ہو چکا ہے۔"
   },
   "loading": {
-    "message": "ServiceFlow لوڈ ہو رہا ہے..."
+    "message": "ServiceFlow لوڈ ہو رہا ہے...",
+    "accountMenu": "اکاؤنٹ مینو لوڈ ہو رہا ہے",
+    "workspace": "ورک اسپیس لوڈ ہو رہی ہے",
+    "navigation": "نیویگیشن لوڈ ہو رہی ہے",
+    "dashboard": "ڈیش بورڈ لوڈ ہو رہا ہے"
   }
 }

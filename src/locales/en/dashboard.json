@@ -1,5 +1,105 @@
 {
   "title": "Dashboard",
   "workspace": "Business workspace",
-  "sessionContext": "Session context"
+  "sessionContext": "Session context",
+  "overview": {
+    "common": {
+      "never": "Never",
+      "shortMinutes": "{{count}} min"
+    },
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "heading": "{{greeting}}, {{name}}",
+    "subheading": "Here's what's happening at {{business}} today.",
+    "createBookingModal": {
+      "title": "Create booking",
+      "description": "Create a booking from the dashboard by choosing a service, open slot, and customer details."
+    },
+    "actions": {
+      "addService": "Add service",
+      "createBooking": "Create booking"
+    },
+    "metrics": {
+      "todayBookings": "Today's bookings",
+      "pendingBookings": "Pending bookings",
+      "revenueThisMonth": "Revenue this month",
+      "newCustomers": "New customers",
+      "attention": "Attention"
+    },
+    "schedule": {
+      "title": "Today's schedule",
+      "loading": "Loading today's schedule",
+      "empty": "No appointments are scheduled for today.",
+      "viewCalendar": "View full calendar"
+    },
+    "setup": {
+      "title": "Setup checklist",
+      "description": "Complete your setup to unlock advanced analytics and AI features.",
+      "items": {
+        "businessHours": "Add business hours",
+        "firstService": "Create first service",
+        "inviteTeam": "Invite team member",
+        "connectPayments": "Connect payments",
+        "publishPage": "Publish booking page"
+      }
+    },
+    "chart": {
+      "bookingsTooltip": "{{count}} bookings"
+    },
+    "performance": {
+      "title": "Booking performance",
+      "period": "Last {{count}} days"
+    },
+    "usage": {
+      "title": "Plan usage",
+      "services": "Services",
+      "teamMembers": "Team members",
+      "bookings": "Bookings",
+      "upgradePlan": "Upgrade plan",
+      "usedOfLimit": "{{used}} / {{limit}}",
+      "usedUnlimited": "{{used}} / unlimited"
+    },
+    "ai": {
+      "title": "AI suggestions",
+      "items": {
+        "descriptions": "Generate better descriptions for underperforming services",
+        "reminders": "Send reminders to pending bookings",
+        "cancellations": "Review cancellation trends this week"
+      },
+      "open": "Open AI Assistant"
+    },
+    "customers": {
+      "title": "Recent customers",
+      "empty": "No customers yet.",
+      "fallbackName": "Customer",
+      "view": "View",
+      "table": {
+        "customer": "Customer",
+        "lastBooking": "Last booking",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "vip": "VIP",
+        "regular": "Regular",
+        "new": "New"
+      }
+    },
+    "reviews": {
+      "title": "Recent reviews",
+      "loading": "Loading recent reviews",
+      "empty": "No published reviews yet.",
+      "noText": "No review text provided."
+    },
+    "status": {
+      "CONFIRMED": "Confirmed",
+      "COMPLETED": "Completed",
+      "CANCELED": "Canceled",
+      "NO_SHOW": "No show",
+      "PENDING": "Pending"
+    }
+  }
 }

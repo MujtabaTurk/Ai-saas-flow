@@ -40,11 +40,23 @@ module.exports = {
         },
         growth: {
           emerald: "#10B981",
-          forest: "#047857",
-          mint: "#A7F3D0",
-          dashboard: "#F0FDF4",
-          sidebar: "#064E3B",
-          border: "#D1FAE5"
+          forest: "#3525CD",
+          mint: "#D5E0F8",
+          dashboard: "#F8F9FF",
+          sidebar: "#0B1C30",
+          border: "#C7C4D8"
+        },
+        serviceflow: {
+          canvas: "#F8F9FF",
+          panel: "#FFFFFF",
+          panelSoft: "#EFF4FF",
+          border: "#C7C4D8",
+          ink: "#0B1C30",
+          muted: "#464555",
+          subtle: "#586377",
+          brand: "#3525CD",
+          brandSoft: "#D5E0F8",
+          brandMist: "#E5EEFF"
         }
       },
       borderRadius: {
@@ -53,7 +65,7 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)"
       },
       fontFamily: {
-        sans: ["Plus Jakarta Sans Variable", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: ["Inter", "Plus Jakarta Sans Variable", "ui-sans-serif", "system-ui", "sans-serif"]
       }
     }
   },
