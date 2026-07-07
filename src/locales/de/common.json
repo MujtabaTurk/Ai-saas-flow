@@ -38,7 +38,11 @@
     "sidebarDescription": "Öffnet einen Bereich der authentifizierten Anwendung.",
     "dashboardSearch": "Dashboard-Suche",
     "dashboardSearchPlaceholder": "Termine oder Kunden suchen...",
-    "quickBooking": "Schnellbuchung"
+    "quickBooking": "Schnellbuchung",
+    "dashboardSearchMinLength": "Geben Sie mindestens 2 Zeichen ein, um zu suchen.",
+    "dashboardSearchLoading": "Suche läuft...",
+    "dashboardSearchNoResults": "Keine passenden Buchungen oder Kunden gefunden.",
+    "dashboardSearchError": "Die Suche konnte nicht abgeschlossen werden."
   },
   "actions": {
     "startBuilding": "Loslegen",

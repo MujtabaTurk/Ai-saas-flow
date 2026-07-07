@@ -1,4 +1,6 @@
 import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource-variable/noto-sans-arabic";
+import "@fontsource-variable/noto-nastaliq-urdu";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
 import { getLanguageDirection } from "@/i18n/settings";
@@ -15,7 +17,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang={language} dir={direction} suppressHydrationWarning>
-      <body className="font-sans">
+      <body className="font-sans" data-language={language}>
         <AppProviders initialLanguage={language}>{children}</AppProviders>
       </body>
     </html>

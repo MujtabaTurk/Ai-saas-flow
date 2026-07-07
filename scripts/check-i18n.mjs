@@ -9,6 +9,8 @@ const referenceLanguage = "en";
 const sourceRoots = ["src/app", "src/features", "src/components", "src/config"];
 const sourceExtensions = new Set([".js", ".jsx"]);
 const hardcodedSampleLimit = 25;
+const corruptedTranslationPattern = /\uFFFD|\?{2,}|[\u00c2\u00c3\u00d8\u00d9]/u;
+const encodingIssues = [];
 const intentionallySharedTerms = new Set([
   "Admin",
   "ADMIN",
@@ -67,6 +69,22 @@ function flattenEntries(value, prefix = "") {
   return new Map([[prefix, { type: typeof value, value }]]);
 }
 
+function flattenStringEntries(value, prefix = "") {
+  if (Array.isArray(value)) {
+    return value.flatMap((child, index) =>
+      flattenStringEntries(child, `${prefix}[${index}]`)
+    );
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, child]) =>
+      flattenStringEntries(child, prefix ? `${prefix}.${key}` : key)
+    );
+  }
+
+  return typeof value === "string" ? [[prefix, value]] : [];
+}
+
 function normalizeSourceText(value) {
   return typeof value === "string" ? value.replace(/\s+/g, " ").trim() : "";
 }
@@ -85,15 +103,28 @@ function parseStringArray(source, exportName) {
 
 async function readCatalog(language, namespace) {
   const filename = path.join(localesRoot, language, namespace);
-  const source = await readFile(filename, "utf8");
+  const bytes = await readFile(filename);
+  const hasBom =
+    bytes[0] === 0xef &&
+    bytes[1] === 0xbb &&
+    bytes[2] === 0xbf;
+  const source = bytes.toString("utf8");
+
+  if (hasBom) {
+    encodingIssues.push(`${language}/${namespace} has a UTF-8 BOM.`);
+  }
 
   if (source.includes("\uFFFD")) {
-    throw new Error(
+    encodingIssues.push(
       `${language}/${namespace} contains invalid UTF-8 replacement characters.`
     );
   }
 
-  return JSON.parse(source);
+  return JSON.parse(source.replace(/^\uFEFF/, ""));
+}
+
+function isCorruptedTranslation(value) {
+  return corruptedTranslationPattern.test(value);
 }
 
 async function getFilesRecursive(directory) {
@@ -226,6 +257,8 @@ const report = {
   totalTranslationKeys: 0,
   missingTranslationsPerLanguage: {},
   likelyUntranslatedPerLanguage: {},
+  corruptedTranslationsPerLanguage: {},
+  encodingIssues: [],
   extraKeysPerLanguage: {},
   typeMismatchesPerLanguage: {},
   hardcodedStrings: {
@@ -265,7 +298,16 @@ for (const namespace of namespaces) {
       continue;
     }
 
-    const catalogShape = flattenEntries(await readCatalog(language, namespace));
+    const catalog = await readCatalog(language, namespace);
+    const catalogShape = flattenEntries(catalog);
+
+    for (const [key, value] of flattenStringEntries(catalog)) {
+      if (isCorruptedTranslation(value)) {
+        errors.push(`${language}/${namespace} has corrupted text at "${key}".`);
+        report.corruptedTranslationsPerLanguage[language] =
+          (report.corruptedTranslationsPerLanguage[language] || 0) + 1;
+      }
+    }
 
     for (const [key, referenceEntry] of referenceShape) {
       const catalogEntry = catalogShape.get(key);
@@ -353,9 +395,13 @@ report.hardcodedStrings = {
 for (const language of configuredLanguages) {
   report.missingTranslationsPerLanguage[language] ||= 0;
   report.likelyUntranslatedPerLanguage[language] ||= 0;
+  report.corruptedTranslationsPerLanguage[language] ||= 0;
   report.extraKeysPerLanguage[language] ||= 0;
   report.typeMismatchesPerLanguage[language] ||= 0;
 }
+
+report.encodingIssues = encodingIssues;
+errors.push(...encodingIssues);
 
 console.log("i18n quality audit");
 console.log(JSON.stringify(report, null, 2));

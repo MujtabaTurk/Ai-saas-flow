@@ -65,7 +65,15 @@ module.exports = {
         sm: "calc(var(--radius) - 4px)"
       },
       fontFamily: {
-        sans: ["Inter", "Plus Jakarta Sans Variable", "ui-sans-serif", "system-ui", "sans-serif"]
+        sans: [
+          "Inter",
+          "Plus Jakarta Sans Variable",
+          "Noto Sans Arabic Variable",
+          "Noto Nastaliq Urdu Variable",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif"
+        ]
       }
     }
   },

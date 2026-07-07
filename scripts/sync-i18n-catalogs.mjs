@@ -5,14 +5,14 @@ import process from "node:process";
 const localesRoot = path.join(process.cwd(), "src", "locales");
 const languages = ["ar", "de", "es"];
 const enLegacy = JSON.parse(
-  readFileSync(path.join(localesRoot, "en", "legacy.json"), "utf8")
+  readFileSync(path.join(localesRoot, "en", "legacy.json"), "utf8"),
 );
 
 const commonPatches = {
   ar: {
     language: {
       choose: "اختر لغة التطبيق",
-      available: "اللغات المتاحة"
+      available: "اللغات المتاحة",
     },
     navigation: {
       team: "الفريق",
@@ -21,26 +21,26 @@ const commonPatches = {
       workspace: "تنقل {{workspace}}",
       openSidebar: "فتح تنقل الشريط الجانبي",
       closeSidebar: "إغلاق تنقل الشريط الجانبي",
-      sidebarDescription: "افتح قسما من التطبيق بعد تسجيل الدخول."
+      sidebarDescription: "افتح قسما من التطبيق بعد تسجيل الدخول.",
     },
     userMenu: {
       open: "فتح قائمة الحساب",
       profile: "الملف الشخصي",
       accountSettings: "إعدادات الحساب",
       businessSettings: "إعدادات النشاط التجاري",
-      subscriptionBilling: "الاشتراك / الفوترة"
+      subscriptionBilling: "الاشتراك / الفوترة",
     },
     loading: {
       accountMenu: "جار تحميل قائمة الحساب",
       workspace: "جار تحميل مساحة العمل",
       navigation: "جار تحميل التنقل",
-      dashboard: "جار تحميل لوحة التحكم"
-    }
+      dashboard: "جار تحميل لوحة التحكم",
+    },
   },
   de: {
     language: {
       choose: "App-Sprache auswählen",
-      available: "Verfügbare Sprachen"
+      available: "Verfügbare Sprachen",
     },
     navigation: {
       services: "Dienstleistungen",
@@ -49,26 +49,27 @@ const commonPatches = {
       workspace: "{{workspace}}-Navigation",
       openSidebar: "Seitennavigation öffnen",
       closeSidebar: "Seitennavigation schließen",
-      sidebarDescription: "Öffnet einen Bereich der authentifizierten Anwendung."
+      sidebarDescription:
+        "Öffnet einen Bereich der authentifizierten Anwendung.",
     },
     userMenu: {
       open: "Kontomenü öffnen",
       profile: "Profil",
       accountSettings: "Kontoeinstellungen",
       businessSettings: "Unternehmenseinstellungen",
-      subscriptionBilling: "Abonnement / Abrechnung"
+      subscriptionBilling: "Abonnement / Abrechnung",
     },
     loading: {
       accountMenu: "Kontomenü wird geladen",
       workspace: "Arbeitsbereich wird geladen",
       navigation: "Navigation wird geladen",
-      dashboard: "Dashboard wird geladen"
-    }
+      dashboard: "Dashboard wird geladen",
+    },
   },
   es: {
     language: {
       choose: "Elegir idioma de la aplicación",
-      available: "Idiomas disponibles"
+      available: "Idiomas disponibles",
     },
     navigation: {
       memberships: "Membresías",
@@ -76,39 +77,39 @@ const commonPatches = {
       workspace: "Navegación de {{workspace}}",
       openSidebar: "Abrir navegación lateral",
       closeSidebar: "Cerrar navegación lateral",
-      sidebarDescription: "Abre una sección de la aplicación autenticada."
+      sidebarDescription: "Abre una sección de la aplicación autenticada.",
     },
     userMenu: {
       open: "Abrir menú de cuenta",
       profile: "Perfil",
       accountSettings: "Configuración de la cuenta",
       businessSettings: "Configuración del negocio",
-      subscriptionBilling: "Suscripción / Facturación"
+      subscriptionBilling: "Suscripción / Facturación",
     },
     loading: {
       accountMenu: "Cargando menú de cuenta",
       workspace: "Cargando espacio de trabajo",
       navigation: "Cargando navegación",
-      dashboard: "Cargando panel"
-    }
-  }
+      dashboard: "Cargando panel",
+    },
+  },
 };
 
 const catalogPatches = {
   ar: {},
   de: {
     "admin.json": {
-      title: "Super-Admin"
+      title: "Super-Admin",
     },
     "services.json": {
-      title: "Dienstleistungen"
-    }
+      title: "Dienstleistungen",
+    },
   },
   es: {
     "admin.json": {
-      title: "Superadministrador"
-    }
-  }
+      title: "Superadministrador",
+    },
+  },
 };
 
 const exact = {
@@ -420,8 +421,10 @@ const exact = {
     "Choose a service": "اختر خدمة",
     Apply: "تطبيق",
     APPLIED: "تم التطبيق",
-    "Approved draft copied to the clipboard.": "تم نسخ المسودة المعتمدة إلى الحافظة.",
-    "The browser could not copy this draft.": "تعذر على المتصفح نسخ هذه المسودة.",
+    "Approved draft copied to the clipboard.":
+      "تم نسخ المسودة المعتمدة إلى الحافظة.",
+    "The browser could not copy this draft.":
+      "تعذر على المتصفح نسخ هذه المسودة.",
     "This draft has already been applied.": "تم تطبيق هذه المسودة بالفعل.",
     "Draft generated. Review and approve it before copying or applying it.":
       "تم إنشاء المسودة. راجعها واعتمدها قبل نسخها أو تطبيقها.",
@@ -552,7 +555,8 @@ const exact = {
     "Confirm your password.": "أكد كلمة المرور.",
     "Confirm your new password.": "أكد كلمة المرور الجديدة.",
     "Current password is incorrect.": "كلمة المرور الحالية غير صحيحة.",
-    "New password must be different.": "يجب أن تكون كلمة المرور الجديدة مختلفة.",
+    "New password must be different.":
+      "يجب أن تكون كلمة المرور الجديدة مختلفة.",
     "Use lowercase letters, numbers, and hyphens.":
       "استخدم أحرفا صغيرة وأرقاما وشرطات.",
     "This public booking slug is already taken.":
@@ -630,8 +634,8 @@ const exact = {
     "Your ServiceFlow account is ready.": "حسابك في ServiceFlow جاهز.",
     "Account created successfully.": "تم إنشاء الحساب بنجاح.",
     "Business workspace created successfully.":
-      "تم إنشاء مساحة عمل النشاط التجاري بنجاح."
-  }
+      "تم إنشاء مساحة عمل النشاط التجاري بنجاح.",
+  },
 };
 
 exact.es = {
@@ -1089,7 +1093,8 @@ exact.es = {
   "Rating must be at least 1.": "La calificación debe ser al menos 1.",
   "Service assignments are required.":
     "Las asignaciones de servicio son obligatorias.",
-  "Rating cannot be greater than 5.": "La calificación no puede ser mayor que 5.",
+  "Rating cannot be greater than 5.":
+    "La calificación no puede ser mayor que 5.",
   "Invitation token is invalid.": "El token de invitación no es válido.",
   "Invitation acceptance must be confirmed.":
     "La aceptación de la invitación debe confirmarse.",
@@ -1121,8 +1126,7 @@ exact.es = {
   "User not found.": "Usuario no encontrado.",
   "Notification not found.": "Notificación no encontrada.",
   "Membership plan not found.": "Plan de membresía no encontrado.",
-  "Working-hours range not found.":
-    "Rango de horario laboral no encontrado.",
+  "Working-hours range not found.": "Rango de horario laboral no encontrado.",
   "Unavailable date not found.": "Fecha no disponible no encontrada.",
   "A customer with this email already exists.":
     "Ya existe un cliente con este correo.",
@@ -1155,13 +1159,14 @@ exact.es = {
   "Customer canceled a booking": "Un cliente canceló una reserva",
   "Upcoming booking reminder": "Recordatorio de próxima reserva",
   "New ServiceFlow review": "Nueva reseña de ServiceFlow",
-  "Please check the cancellation request.": "Revisa la solicitud de cancelación.",
+  "Please check the cancellation request.":
+    "Revisa la solicitud de cancelación.",
   "If an account exists for that email, a password reset email has been sent.":
     "Si existe una cuenta para ese correo, se ha enviado un correo para restablecer la contraseña.",
   "Your ServiceFlow account is ready.": "Tu cuenta de ServiceFlow está lista.",
   "Account created successfully.": "Cuenta creada correctamente.",
   "Business workspace created successfully.":
-    "Espacio de trabajo del negocio creado correctamente."
+    "Espacio de trabajo del negocio creado correctamente.",
 };
 
 exact.de = {
@@ -1404,8 +1409,7 @@ exact.de = {
   "Membership activated.": "Mitgliedschaft aktiviert.",
   "Membership renewed.": "Mitgliedschaft verlängert.",
   "Cancel membership?": "Mitgliedschaft kündigen?",
-  "Select a plan to continue.":
-    "Wählen Sie einen Plan, um fortzufahren.",
+  "Select a plan to continue.": "Wählen Sie einen Plan, um fortzufahren.",
   "Back to business": "Zurück zum Unternehmen",
   Billing: "Abrechnung",
   "Current subscription": "Aktuelles Abonnement",
@@ -1695,7 +1699,7 @@ exact.de = {
   "Your ServiceFlow account is ready.": "Ihr ServiceFlow-Konto ist bereit.",
   "Account created successfully.": "Konto erfolgreich erstellt.",
   "Business workspace created successfully.":
-    "Unternehmensarbeitsbereich erfolgreich erstellt."
+    "Unternehmensarbeitsbereich erfolgreich erstellt.",
 };
 
 const fieldLabels = {
@@ -1752,7 +1756,7 @@ const fieldLabels = {
     Features: "المزايا",
     "Each feature": "كل ميزة",
     "A reason": "السبب",
-    Search: "البحث"
+    Search: "البحث",
   },
   de: {
     Name: "Name",
@@ -1807,7 +1811,7 @@ const fieldLabels = {
     Features: "Funktionen",
     "Each feature": "Jede Funktion",
     "A reason": "Ein Grund",
-    Search: "Suche"
+    Search: "Suche",
   },
   es: {
     Name: "El nombre",
@@ -1862,8 +1866,8 @@ const fieldLabels = {
     Features: "Las características",
     "Each feature": "Cada característica",
     "A reason": "Un motivo",
-    Search: "La búsqueda"
-  }
+    Search: "La búsqueda",
+  },
 };
 
 function deepMerge(target, patch) {
@@ -2067,7 +2071,7 @@ function translate(lang, key) {
 for (const language of languages) {
   const patches = {
     "common.json": commonPatches[language],
-    ...catalogPatches[language]
+    ...catalogPatches[language],
   };
 
   for (const [filename, patch] of Object.entries(patches)) {
@@ -2087,6 +2091,6 @@ for (const language of languages) {
   writeFileSync(
     path.join(localesRoot, language, "legacy.json"),
     `${JSON.stringify(legacy, null, 2)}\n`,
-    "utf8"
+    "utf8",
   );
 }

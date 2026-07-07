@@ -19,6 +19,11 @@ if (!i18n.isInitialized) {
     .init({
       resources,
       fallbackLng: defaultLanguage,
+      fallbackNS: namespaces,
+      load: "languageOnly",
+      nonExplicitSupportedLngs: true,
+      returnEmptyString: false,
+      returnNull: false,
       supportedLngs: supportedLanguages.map((language) => language.code),
       ns: namespaces,
       defaultNS: "common",

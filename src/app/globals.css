@@ -62,6 +62,25 @@
     @apply bg-background text-foreground antialiased;
   }
 
+  body[data-language="ar"] {
+    font-family:
+      "Noto Sans Arabic Variable",
+      "Plus Jakarta Sans Variable",
+      ui-sans-serif,
+      system-ui,
+      sans-serif;
+  }
+
+  body[data-language="ur"] {
+    font-family:
+      "Noto Nastaliq Urdu Variable",
+      "Noto Sans Arabic Variable",
+      "Plus Jakarta Sans Variable",
+      ui-sans-serif,
+      system-ui,
+      sans-serif;
+  }
+
   html[dir="rtl"] body {
     direction: rtl;
   }

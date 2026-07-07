@@ -12,8 +12,9 @@ import {
   X
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useDeferredValue, useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { AppShellNavigation } from "@/components/i18n/app-shell-navigation";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
@@ -27,6 +28,8 @@ import { cn } from "@/lib/utils";
 
 const SIDEBAR_STORAGE_KEY = "serviceflow:dashboard-sidebar-state";
 const SIDEBAR_STORAGE_EVENT = "serviceflow:sidebar-state-change";
+const DASHBOARD_SEARCH_MIN_LENGTH = 2;
+const DASHBOARD_SEARCH_PAGE_SIZE = 5;
 let sidebarStateFallback = "expanded";
 
 function normalizeSidebarState(value) {
@@ -75,6 +78,217 @@ function writeSidebarState(nextState) {
   }
 
   window.dispatchEvent(new Event(SIDEBAR_STORAGE_EVENT));
+}
+
+async function parseDashboardSearchResponse(response, fallbackMessage) {
+  const payload = await response.json();
+
+  if (!response.ok) {
+    throw new Error(payload?.error?.message || fallbackMessage);
+  }
+
+  return payload.data || {};
+}
+
+function buildDashboardSearchUrl(path, search) {
+  const params = new URLSearchParams({
+    page: "1",
+    pageSize: String(DASHBOARD_SEARCH_PAGE_SIZE),
+    search
+  });
+
+  return `${path}?${params.toString()}`;
+}
+
+function DashboardSearchResult({ eyebrow, href, meta, onSelect, title }) {
+  return (
+    <Link
+      className="block rounded-lg px-3 py-2 text-start transition-colors hover:bg-[#eff4ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+      href={href}
+      onClick={onSelect}
+    >
+      <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#3525cd]">
+        {eyebrow}
+      </span>
+      <span className="mt-1 block truncate text-sm font-semibold text-[#0b1c30]">
+        {title}
+      </span>
+      {meta ? (
+        <span className="mt-0.5 block truncate text-xs text-[#586377]">
+          {meta}
+        </span>
+      ) : null}
+    </Link>
+  );
+}
+
+function DashboardSearch() {
+  const { t } = useTranslation("common");
+  const { data: session } = useSession();
+  const [searchValue, setSearchValue] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
+  const [results, setResults] = useState({
+    bookings: [],
+    customers: [],
+    query: ""
+  });
+  const [searchStatus, setSearchStatus] = useState("idle");
+  const deferredSearch = useDeferredValue(searchValue.trim());
+  const canSearchCustomers =
+    session?.user?.platformRole === "SUPER_ADMIN" ||
+    ["OWNER", "ADMIN"].includes(session?.user?.businessRole);
+  const isCurrentResult = results.query === deferredSearch;
+  const visibleResults = isCurrentResult
+    ? results
+    : { bookings: [], customers: [] };
+  const effectiveSearchStatus =
+    deferredSearch.length < DASHBOARD_SEARCH_MIN_LENGTH
+      ? "idle"
+      : isCurrentResult
+        ? searchStatus
+        : "loading";
+  const hasResults =
+    visibleResults.bookings.length > 0 || visibleResults.customers.length > 0;
+  const showResultsPanel = isFocused && searchValue.length > 0;
+
+  useEffect(() => {
+    if (deferredSearch.length < DASHBOARD_SEARCH_MIN_LENGTH) {
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(async () => {
+      setSearchStatus("loading");
+
+      try {
+        const bookingsRequest = fetch(
+          buildDashboardSearchUrl("/api/bookings", deferredSearch),
+          { signal: controller.signal }
+        );
+        const customersRequest = canSearchCustomers
+          ? fetch(buildDashboardSearchUrl("/api/customers", deferredSearch), {
+              signal: controller.signal
+            })
+          : Promise.resolve(null);
+        const [bookingsResponse, customersResponse] = await Promise.all([
+          bookingsRequest,
+          customersRequest
+        ]);
+        const [bookingsData, customersData] = await Promise.all([
+          parseDashboardSearchResponse(
+            bookingsResponse,
+            t("navigation.dashboardSearchError")
+          ),
+          customersResponse
+            ? parseDashboardSearchResponse(
+                customersResponse,
+                t("navigation.dashboardSearchError")
+              )
+            : Promise.resolve({ customers: [] })
+        ]);
+
+        setResults({
+          bookings: bookingsData.bookings || [],
+          customers: customersData.customers || [],
+          query: deferredSearch
+        });
+        setSearchStatus("success");
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          return;
+        }
+
+        setResults({ bookings: [], customers: [], query: deferredSearch });
+        setSearchStatus("error");
+      }
+    }, 180);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      controller.abort();
+    };
+  }, [canSearchCustomers, deferredSearch, t]);
+
+  function closeResults() {
+    setIsFocused(false);
+  }
+
+  return (
+    <div
+      aria-label={t("navigation.dashboardSearch")}
+      className="relative hidden w-[min(24rem,42vw)] shrink md:block"
+      role="search"
+    >
+      <Search
+        className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-[#6b7280]"
+        aria-hidden="true"
+      />
+      <input
+        aria-label={t("navigation.dashboardSearch")}
+        autoComplete="off"
+        className="h-9 w-full rounded-full bg-[#eff4ff] pe-4 ps-10 text-sm font-semibold text-[#0b1c30] outline-none transition-shadow placeholder:text-[#6b7280] focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+        placeholder={t("navigation.dashboardSearchPlaceholder")}
+        type="search"
+        value={searchValue}
+        onBlur={() => {
+          window.setTimeout(() => setIsFocused(false), 120);
+        }}
+        onChange={(event) => setSearchValue(event.target.value)}
+        onFocus={() => setIsFocused(true)}
+      />
+
+      {showResultsPanel ? (
+        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-[#c7c4d8] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(11,28,48,0.45)]">
+          {searchValue.trim().length < DASHBOARD_SEARCH_MIN_LENGTH ? (
+            <p className="px-3 py-2 text-sm text-[#586377]">
+              {t("navigation.dashboardSearchMinLength")}
+            </p>
+          ) : effectiveSearchStatus === "loading" ? (
+            <p className="px-3 py-2 text-sm text-[#586377]">
+              {t("navigation.dashboardSearchLoading")}
+            </p>
+          ) : effectiveSearchStatus === "error" ? (
+            <p className="px-3 py-2 text-sm text-red-600">
+              {t("navigation.dashboardSearchError")}
+            </p>
+          ) : hasResults ? (
+            <div className="space-y-1">
+              {visibleResults.bookings.map((booking) => (
+                <DashboardSearchResult
+                  eyebrow={t("navigation.bookings")}
+                  href="/dashboard/bookings"
+                  key={`booking-${booking.id}`}
+                  meta={[
+                    booking.bookingNumber,
+                    booking.customerName,
+                    booking.status?.replace("_", " ")
+                  ]
+                    .filter(Boolean)
+                    .join(" | ")}
+                  title={booking.serviceNameSnapshot || booking.bookingNumber}
+                  onSelect={closeResults}
+                />
+              ))}
+              {visibleResults.customers.map((customer) => (
+                <DashboardSearchResult
+                  eyebrow={t("navigation.customers")}
+                  href={`/dashboard/customers/${customer.id}`}
+                  key={`customer-${customer.id}`}
+                  meta={[customer.email, customer.phone].filter(Boolean).join(" | ")}
+                  title={customer.name}
+                  onSelect={closeResults}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="px-3 py-2 text-sm text-[#586377]">
+              {t("navigation.dashboardSearchNoResults")}
+            </p>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 function HeaderProfileSkeleton({ className }) {
@@ -453,19 +667,7 @@ export function AppShell({
                 </p>
               </div>
             </div>
-            <div
-              aria-label={t("navigation.dashboardSearch")}
-              className="relative hidden w-[min(24rem,42vw)] shrink md:block"
-              role="search"
-            >
-              <Search
-                className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-[#6b7280]"
-                aria-hidden="true"
-              />
-              <div className="flex h-9 items-center rounded-full bg-[#eff4ff] pe-4 ps-10 text-sm font-semibold text-[#6b7280]">
-                {t("navigation.dashboardSearchPlaceholder")}
-              </div>
-            </div>
+            {homeHref.startsWith("/dashboard") ? <DashboardSearch /> : null}
             <div className="flex shrink-0 items-center gap-3">
               <LanguageSwitcher />
               {isLoading ? (

@@ -44,7 +44,52 @@ import urServices from "@/locales/ur/services.json";
 import urPublic from "@/locales/ur/public.json";
 import urLegacy from "@/locales/ur/legacy.json";
 
-export const resources = {
+const corruptedTranslationPattern = /\uFFFD|\?{2,}|[\u00c2\u00c3\u00d8\u00d9]/u;
+
+function isCorruptedTranslation(value) {
+  return (
+    typeof value === "string" &&
+    corruptedTranslationPattern.test(value)
+  );
+}
+
+function withFallbackValue(value, fallbackValue) {
+  if (isCorruptedTranslation(value)) {
+    return typeof fallbackValue === "string" ? fallbackValue : "";
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item, index) =>
+      withFallbackValue(item, Array.isArray(fallbackValue) ? fallbackValue[index] : undefined)
+    );
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, child]) => [
+        key,
+        withFallbackValue(child, fallbackValue?.[key])
+      ])
+    );
+  }
+
+  return value;
+}
+
+function withSafeFallbacks(sourceResources) {
+  const englishResources = sourceResources.en;
+
+  return Object.fromEntries(
+    Object.entries(sourceResources).map(([language, languageResources]) => [
+      language,
+      language === "en"
+        ? languageResources
+        : withFallbackValue(languageResources, englishResources)
+    ])
+  );
+}
+
+const rawResources = {
   en: {
     admin: enAdmin,
     auth: enAuth,
@@ -101,3 +146,5 @@ export const resources = {
     legacy: urLegacy
   }
 };
+
+export const resources = withSafeFallbacks(rawResources);

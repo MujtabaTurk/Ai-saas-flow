@@ -2,7 +2,7 @@
   "app": {
     "name": "ServiceFlow SaaS",
     "shortName": "ServiceFlow",
-    "tagline": "???? ???????"
+    "tagline": "کاروباری نظم و نسق"
   },
   "language": {
     "label": "زبان",
@@ -36,9 +36,13 @@
     "collapseSidebar": "سائیڈ بار سمیٹیں",
     "expandSidebar": "سائیڈ بار پھیلائیں",
     "sidebarDescription": "تصدیق شدہ ایپلیکیشن کا کوئی سیکشن کھولیں۔",
-    "dashboardSearch": "??? ???? ????",
-    "dashboardSearchPlaceholder": "?????????? ?? ?????? ???? ????...",
-    "quickBooking": "???? ????"
+    "dashboardSearch": "ڈیش بورڈ تلاش",
+    "dashboardSearchPlaceholder": "بکنگ یا کسٹمر تلاش کریں...",
+    "quickBooking": "فوری بکنگ",
+    "dashboardSearchMinLength": "تلاش کے لیے کم از کم 2 حروف لکھیں۔",
+    "dashboardSearchLoading": "تلاش جاری ہے...",
+    "dashboardSearchNoResults": "کوئی مماثل بکنگ یا کسٹمر نہیں ملا۔",
+    "dashboardSearchError": "تلاش مکمل نہیں ہو سکی۔"
   },
   "userMenu": {
     "open": "اکاؤنٹ مینو کھولیں",

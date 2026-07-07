@@ -38,7 +38,11 @@
     "sidebarDescription": "Abre una sección de la aplicación autenticada.",
     "dashboardSearch": "B?squeda del panel",
     "dashboardSearchPlaceholder": "Buscar citas o clientes...",
-    "quickBooking": "Reserva r?pida"
+    "quickBooking": "Reserva r?pida",
+    "dashboardSearchMinLength": "Escribe al menos 2 caracteres para buscar.",
+    "dashboardSearchLoading": "Buscando...",
+    "dashboardSearchNoResults": "No se encontraron reservas ni clientes.",
+    "dashboardSearchError": "No se pudo completar la búsqueda."
   },
   "actions": {
     "startBuilding": "Empezar",

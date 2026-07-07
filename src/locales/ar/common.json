@@ -2,7 +2,7 @@
   "app": {
     "name": "ServiceFlow SaaS",
     "shortName": "ServiceFlow",
-    "tagline": "????? ???????"
+    "tagline": "إدارة الأعمال"
   },
   "language": {
     "label": "اللغة",
@@ -36,9 +36,13 @@
     "collapseSidebar": "طي الشريط الجانبي",
     "expandSidebar": "توسيع الشريط الجانبي",
     "sidebarDescription": "افتح قسما من التطبيق بعد تسجيل الدخول.",
-    "dashboardSearch": "??? ???? ??????",
-    "dashboardSearchPlaceholder": "???? ?? ???????? ?? ???????...",
-    "quickBooking": "??? ????"
+    "dashboardSearch": "بحث لوحة التحكم",
+    "dashboardSearchPlaceholder": "ابحث عن المواعيد أو العملاء...",
+    "quickBooking": "حجز سريع",
+    "dashboardSearchMinLength": "اكتب حرفين على الأقل للبحث.",
+    "dashboardSearchLoading": "جار البحث...",
+    "dashboardSearchNoResults": "لم يتم العثور على حجوزات أو عملاء مطابقين.",
+    "dashboardSearchError": "تعذر إكمال البحث."
   },
   "actions": {
     "startBuilding": "ابدأ البناء",

@@ -38,6 +38,10 @@
     "sidebarDescription": "Open a section of the authenticated application.",
     "dashboardSearch": "Dashboard search",
     "dashboardSearchPlaceholder": "Search appointments or customers...",
+    "dashboardSearchMinLength": "Type at least 2 characters to search.",
+    "dashboardSearchLoading": "Searching...",
+    "dashboardSearchNoResults": "No matching bookings or customers found.",
+    "dashboardSearchError": "Search could not be completed.",
     "quickBooking": "Quick booking"
   },
   "userMenu": {
