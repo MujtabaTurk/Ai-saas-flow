@@ -15,6 +15,14 @@ function isAuthenticationCallback(callbackUrl) {
   );
 }
 
+function isSuperAdminCallback(callbackUrl) {
+  return (
+    callbackUrl === "/admin" ||
+    callbackUrl?.startsWith("/admin?") ||
+    callbackUrl?.startsWith("/admin/")
+  );
+}
+
 export default async function AuthenticationContinuePage({
   searchParams
 }) {
@@ -38,7 +46,8 @@ export default async function AuthenticationContinuePage({
 
   if (
     callbackUrl &&
-    !isAuthenticationCallback(callbackUrl)
+    !isAuthenticationCallback(callbackUrl) &&
+    !isSuperAdminCallback(callbackUrl)
   ) {
     redirect(callbackUrl);
   }

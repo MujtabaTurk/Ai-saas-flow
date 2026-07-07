@@ -63,10 +63,10 @@ export function AuthLayout({
   return (
     <main className="min-h-dvh w-full overflow-x-hidden bg-white text-[#0b1c30] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
       <div className="grid min-h-dvh w-full min-w-0 grid-cols-[minmax(0,1fr)] lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="flex min-h-dvh w-full min-w-0 items-center justify-center px-5 py-7 sm:px-8 sm:py-8 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:px-8 lg:py-4 xl:px-10">
+        <section className="flex min-h-dvh w-full min-w-0 flex-col items-center justify-start overflow-y-auto px-5 py-7 sm:px-8 sm:py-8 lg:h-full lg:min-h-0 lg:px-8 lg:py-6 xl:px-10">
           <div
             className={cn(
-              "w-full min-w-0 max-w-[calc(100vw-2.5rem)] sm:max-w-[430px]",
+              "my-auto w-full min-w-0 max-w-[calc(100vw-2.5rem)] sm:max-w-[430px]",
               className
             )}
           >

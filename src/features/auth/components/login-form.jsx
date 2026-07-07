@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useFormik } from "formik";
 import { useTranslation } from "react-i18next";
-import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, LockKeyhole, Mail, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -47,7 +47,7 @@ function AuthInputIcon({ icon: Icon }) {
 }
 
 export function LoginForm({
-  authMode = "user",
+  authMode = "business",
   googleEnabled = false,
   googleClientId = null,
   defaultCallbackUrl = null,
@@ -59,7 +59,7 @@ export function LoginForm({
   const [isOAuthLoading, setIsOAuthLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const rememberedEmailLoadedRef = useRef(false);
-  const isAdminMode = authMode === "admin";
+  const isSuperAdminMode = authMode === "super-admin";
   const callbackUrl = getSafeCallbackUrl(
     searchParams.get("callbackUrl"),
     defaultCallbackUrl
@@ -191,12 +191,18 @@ export function LoginForm({
       className="w-full space-y-4"
       onSubmit={formik.handleSubmit}
     >
-      {isAdminMode ? (
-        <div className="rounded-[8px] border border-[#d8dff0] bg-[#f8f9ff] px-3 py-2 text-sm leading-5 text-[#464555]">
-          <span className="font-semibold text-[#0b1c30]">
-            {t("login.adminNoticeTitle")}
-          </span>{" "}
-          {t("login.adminNotice")}
+      {isSuperAdminMode ? (
+        <div className="flex gap-3 rounded-[8px] border border-[#f59e0b]/45 bg-[#fff7ed] px-3 py-3 text-sm leading-5 text-[#7c2d12]">
+          <ShieldAlert
+            className="mt-0.5 size-4 shrink-0 text-[#b45309]"
+            aria-hidden="true"
+          />
+          <div>
+            <span className="block font-semibold text-[#7c2d12]">
+              {t("login.adminNoticeTitle")}
+            </span>
+            <span>{t("login.adminNotice")}</span>
+          </div>
         </div>
       ) : null}
 
@@ -294,7 +300,7 @@ export function LoginForm({
         loadingLabel={t("login.submitting")}
         type="submit"
       >
-        {t("login.submit")}
+        {isSuperAdminMode ? t("login.adminSubmit") : t("login.submit")}
         {!formik.isSubmitting ? (
           <ArrowRight className="ms-2 size-4" aria-hidden="true" />
         ) : null}

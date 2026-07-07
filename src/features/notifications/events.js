@@ -70,6 +70,8 @@ export async function notifyTeamInvitation({
           "team-invitation",
           {
             businessName: business.name,
+            inviterName:
+              invitation.invitedBy?.name || invitation.invitedBy?.email,
             role: invitation.role,
             expiresIn: "7 days"
           },
