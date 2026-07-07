@@ -109,7 +109,6 @@
       }
     },
     "hero": {
-      "badge": "Experiencias premium de reserva para negocios de servicios",
       "title": "Descubre servicios, reserva citas y crece desde una",
       "titleAccent": "plataforma pulida.",
       "description": "ServiceFlow ayuda a los clientes a encontrar negocios locales confiables mientras los equipos gestionan reservas, membres?as, pagos y relaciones con clientes en una capa operativa elegante.",
@@ -131,7 +130,6 @@
       ]
     },
     "discovery": {
-      "eyebrow": "Descubrimiento local",
       "title": "Encuentra negocios y servicios cerca de ti",
       "description": "Busca por nombre de negocio o tipo de servicio y previsualiza un flujo de descubrimiento con filtros, categor?as, calificaciones y ubicaciones.",
       "businessLabel": "Buscar negocio",
@@ -143,13 +141,11 @@
       "submit": "Buscar"
     },
     "featured": {
-      "eyebrow": "Negocios seleccionados",
       "title": "Una galer?a en movimiento de servicios que vale la pena descubrir.",
       "description": "Explora estudios, cl?nicas, consultores y equipos de servicio locales con una vitrina visual creada para descubrir.",
       "cta": "Explorar directorio"
     },
     "categories": {
-      "eyebrow": "Categor?as",
       "title": "Creado para los servicios que los clientes buscan cada d?a",
       "description": "Una capa de reservas limpia para equipos que venden citas, experiencia, membres?as, cuidado y servicios sensibles al tiempo.",
       "items": {
@@ -184,7 +180,6 @@
       }
     },
     "features": {
-      "eyebrow": "Plataforma",
       "title": "Todo detr?s de una experiencia premium de reserva",
       "description": "Mant?n descubrimiento, agenda, clientes, pagos, membres?as y se?ales de rendimiento conectadas en un espacio dise?ado para operaciones repetidas.",
       "items": {
@@ -215,7 +210,6 @@
       }
     },
     "workflow": {
-      "eyebrow": "Ruta de reserva",
       "title": "Un recorrido simple del inter?s a la confirmaci?n",
       "description": "La ruta de reserva reduce fricci?n, mantiene la disponibilidad precisa y hace que cada confirmaci?n sea clara.",
       "step": "Paso {{count}}",
@@ -243,7 +237,6 @@
       }
     },
     "publish": {
-      "eyebrow": "Lanzamiento",
       "title": "Publica una p?gina de reservas sin frenar operaciones",
       "description": "Pasa de configurar el negocio a recibir reservas con una secuencia clara para equipos no t?cnicos.",
       "items": {
@@ -270,7 +263,6 @@
       }
     },
     "pricing": {
-      "eyebrow": "Precios",
       "title": "Precios simples para negocios listos para crecer",
       "description": "Empieza con la base operativa y escala a m?s servicios, m?s reservas y relaciones m?s fuertes.",
       "popular": "M?S POPULAR",
@@ -314,7 +306,6 @@
       }
     },
     "testimonials": {
-      "eyebrow": "Rese?as de clientes",
       "title": "Los equipos de servicio usan ServiceFlow para verse organizados desde el primer d?a",
       "description": "Las experiencias premium convierten mejor cuando la operaci?n interna est? tranquila, conectada y genera confianza.",
       "ratingAria": "Calificaci?n de cinco estrellas",
@@ -352,7 +343,6 @@
       }
     },
     "faq": {
-      "eyebrow": "FAQ",
       "title": "Respuestas antes de cambiar tu flujo de reservas",
       "description": "Preguntas comunes sobre reservas online, personal, membres?as, pagos y p?ginas de reserva para clientes.",
       "items": {
@@ -383,7 +373,6 @@
       }
     },
     "cta": {
-      "badge": "Creado para operaciones reales",
       "title": "Une descubrimiento, reservas, clientes, membres?as y pagos en un solo espacio",
       "description": "Empieza con una prueba, configura servicios y publica una experiencia de reserva en la que tus clientes puedan confiar.",
       "primary": "Comenzar ahora",

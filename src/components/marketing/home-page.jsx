@@ -23,7 +23,6 @@ import {
   Search,
   Send,
   Settings2,
-  ShieldCheck,
   Smartphone,
   Sparkles,
   Star,
@@ -156,7 +155,7 @@ function SecondaryLink({ children, className, href }) {
   );
 }
 
-function SectionHeader({ align = "center", description, eyebrow, inverse = false, title }) {
+function SectionHeader({ align = "center", description, inverse = false, title }) {
   return (
     <div
       className={cn(
@@ -164,17 +163,9 @@ function SectionHeader({ align = "center", description, eyebrow, inverse = false
         align === "center" ? "mx-auto text-center" : "text-start"
       )}
     >
-      <p
-        className={cn(
-          "text-xs font-semibold uppercase tracking-[0.12em]",
-          inverse ? "text-[#a9b4ff]" : "text-[#3525cd]"
-        )}
-      >
-        {eyebrow}
-      </p>
       <h2
         className={cn(
-          "mt-3 text-3xl font-bold leading-tight sm:text-4xl",
+          "text-3xl font-bold leading-tight sm:text-4xl",
           inverse ? "text-white" : "text-[#0b1c30]"
         )}
       >
@@ -242,12 +233,7 @@ function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-[#f8f9ff] pb-16 pt-20 sm:pb-20 sm:pt-24">
       <div className="mx-auto flex max-w-[1280px] flex-col items-center px-8 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-[#d5e0f8] px-4 py-1 text-xs font-medium tracking-[0.02em] text-[#586377]">
-          <CalendarCheck className="size-3.5 text-[#3525cd]" aria-hidden="true" />
-          {t("landing.hero.badge")}
-        </div>
-
-        <h1 className="mt-6 max-w-[920px] text-[42px] font-bold leading-[1.02] text-[#0b1c30] sm:text-[56px] lg:text-[64px]">
+        <h1 className="max-w-[920px] text-[42px] font-bold leading-[1.02] text-[#0b1c30] sm:text-[56px] lg:text-[64px]">
           {t("landing.hero.title")}{" "}
           <span className="text-[#3525cd]">{t("landing.hero.titleAccent")}</span>
         </h1>
@@ -286,10 +272,7 @@ function DiscoverySearchSection() {
     <section className="bg-white py-12" id="discover-search">
       <div className="mx-auto grid max-w-[1280px] gap-8 px-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#3525cd]">
-            {t("landing.discovery.eyebrow")}
-          </p>
-          <h2 className="mt-3 text-3xl font-bold leading-tight text-[#0b1c30] sm:text-4xl">
+          <h2 className="text-3xl font-bold leading-tight text-[#0b1c30] sm:text-4xl">
             {t("landing.discovery.title")}
           </h2>
           <p className="mt-4 max-w-[560px] text-base leading-7 text-[#464555]">
@@ -341,10 +324,7 @@ function FeaturedBusinessesSection({ businesses }) {
       <div className="mx-auto max-w-[1280px] px-8">
         <div className="grid gap-8 lg:grid-cols-[0.95fr_0.55fr] lg:items-end">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#3525cd]">
-              {t("landing.featured.eyebrow")}
-            </p>
-            <h2 className="mt-4 max-w-[820px] text-4xl font-bold leading-[1.03] text-[#0b1c30] sm:text-5xl lg:text-[56px]">
+            <h2 className="max-w-[820px] text-4xl font-bold leading-[1.03] text-[#0b1c30] sm:text-5xl lg:text-[56px]">
               {t("landing.featured.title")}
             </h2>
           </div>
@@ -378,10 +358,7 @@ function CategoriesSection() {
       <div className="mx-auto max-w-[1280px] px-8">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#3525cd]">
-              {t("landing.categories.eyebrow")}
-            </p>
-            <h2 className="mt-2 text-2xl font-bold leading-tight text-[#0b1c30]">
+            <h2 className="text-2xl font-bold leading-tight text-[#0b1c30]">
               {t("landing.categories.title")}
             </h2>
           </div>
@@ -442,7 +419,6 @@ function FeaturesSection() {
     <section className="bg-[#f8fafc] py-20" id="features">
       <div className="mx-auto max-w-[1280px] px-8">
         <SectionHeader
-          eyebrow={t("landing.features.eyebrow")}
           title={t("landing.features.title")}
           description={t("landing.features.description")}
         />
@@ -495,7 +471,6 @@ function BookingWorkflowSection() {
     <section className="bg-white py-20" id="booking-workflow">
       <div className="mx-auto max-w-[1280px] px-8">
         <SectionHeader
-          eyebrow={t("landing.workflow.eyebrow")}
           title={t("landing.workflow.title")}
           description={t("landing.workflow.description")}
         />
@@ -520,7 +495,6 @@ function PublishSection() {
       <div className="mx-auto grid max-w-[1280px] gap-12 px-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
         <SectionHeader
           align="left"
-          eyebrow={t("landing.publish.eyebrow")}
           title={t("landing.publish.title")}
           description={t("landing.publish.description")}
         />
@@ -600,7 +574,6 @@ function PricingSection() {
     <section className="bg-white py-20" id="pricing">
       <div className="mx-auto max-w-[1280px] px-8">
         <SectionHeader
-          eyebrow={t("landing.pricing.eyebrow")}
           title={t("landing.pricing.title")}
           description={t("landing.pricing.description")}
         />
@@ -625,7 +598,6 @@ function TestimonialsSection() {
           <div>
             <SectionHeader
               align="left"
-              eyebrow={t("landing.testimonials.eyebrow")}
               title={t("landing.testimonials.title")}
               description={t("landing.testimonials.description")}
             />
@@ -688,7 +660,6 @@ function FaqSection() {
     <section className="bg-white py-20" id="faq">
       <div className="mx-auto max-w-[960px] px-8">
         <SectionHeader
-          eyebrow={t("landing.faq.eyebrow")}
           title={t("landing.faq.title")}
           description={t("landing.faq.description")}
         />
@@ -723,11 +694,7 @@ function CtaSection() {
   return (
     <section className="bg-[#0b1c30] py-20">
       <div className="mx-auto max-w-[1280px] px-8 text-center text-white">
-        <div className="mx-auto inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1 text-xs font-semibold text-[#dbe4ff]">
-          <ShieldCheck className="size-3.5" aria-hidden="true" />
-          {t("landing.cta.badge")}
-        </div>
-        <h2 className="mx-auto mt-5 max-w-[760px] text-3xl font-bold leading-tight sm:text-4xl">
+        <h2 className="mx-auto max-w-[760px] text-3xl font-bold leading-tight sm:text-4xl">
           {t("landing.cta.title")}
         </h2>
         <p className="mx-auto mt-5 max-w-[640px] text-base leading-7 text-[#cbd5e1]">

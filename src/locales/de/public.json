@@ -109,7 +109,6 @@
       }
     },
     "hero": {
-      "badge": "Premium-Buchungserlebnisse f?r Dienstleister",
       "title": "Dienste entdecken, Termine buchen und wachsen mit einer",
       "titleAccent": "polierten Plattform.",
       "description": "ServiceFlow hilft Kunden, vertrauensw?rdige lokale Unternehmen zu finden, w?hrend Teams Buchungen, Mitgliedschaften, Zahlungen und Kundenbeziehungen in einer eleganten Betriebsebene verwalten.",
@@ -131,7 +130,6 @@
       ]
     },
     "discovery": {
-      "eyebrow": "Lokale Suche",
       "title": "Unternehmen und Services in deiner N?he finden",
       "description": "Suche nach Unternehmensname oder Serviceart und sieh dir einen produktionsreifen Discovery-Flow mit Filtern, Kategorien, Bewertungen und Standorten an.",
       "businessLabel": "Unternehmen suchen",
@@ -143,13 +141,11 @@
       "submit": "Suchen"
     },
     "featured": {
-      "eyebrow": "Kuratierte Unternehmen",
       "title": "Eine bewegte Galerie entdeckenswerter Services.",
       "description": "Durchst?bere hochwertige lokale Studios, Kliniken, Beratungen und Serviceteams in einer visuellen Showcase-Erfahrung.",
       "cta": "Verzeichnis ?ffnen"
     },
     "categories": {
-      "eyebrow": "Kategorien",
       "title": "Gebaut f?r Services, nach denen Kunden t?glich suchen",
       "description": "Eine klare Buchungsebene f?r Teams, die Termine, Expertise, Mitgliedschaften, Betreuung und zeitkritische Services verkaufen.",
       "items": {
@@ -184,7 +180,6 @@
       }
     },
     "features": {
-      "eyebrow": "Plattform",
       "title": "Alles hinter einem Premium-Buchungserlebnis",
       "description": "Halte Entdeckung, Planung, Kunden, Zahlungen, Mitgliedschaften und Leistungssignale in einem Workspace f?r wiederholbare Abl?ufe verbunden.",
       "items": {
@@ -215,7 +210,6 @@
       }
     },
     "workflow": {
-      "eyebrow": "Buchungsroute",
       "title": "Eine einfache Kundenreise vom Interesse zur Best?tigung",
       "description": "Die Buchungsroute reduziert Reibung, h?lt Verf?gbarkeit korrekt und macht jede Best?tigung klar.",
       "step": "Schritt {{count}}",
@@ -243,7 +237,6 @@
       }
     },
     "publish": {
-      "eyebrow": "Einf?hrung",
       "title": "Eine Buchungsseite ver?ffentlichen, ohne Abl?ufe zu bremsen",
       "description": "Vom Business-Setup zu Live-Buchungen mit einer klaren Launch-Sequenz f?r nicht technische Teams.",
       "items": {
@@ -270,7 +263,6 @@
       }
     },
     "pricing": {
-      "eyebrow": "Preise",
       "title": "Einfache Preise f?r Unternehmen, die wachsen wollen",
       "description": "Starte mit der operativen Grundlage und skaliere zu mehr Services, Buchungen und st?rkeren Kundenbeziehungen.",
       "popular": "AM BELIEBTESTEN",
@@ -314,7 +306,6 @@
       }
     },
     "testimonials": {
-      "eyebrow": "Kundenstimmen",
       "title": "Serviceteams wirken mit ServiceFlow ab Tag eins organisierter",
       "description": "Premium-Buchungserlebnisse konvertieren besser, wenn das Backoffice ruhig, verbunden und vertrauensw?rdig ist.",
       "ratingAria": "F?nf-Sterne-Kundenbewertung",
@@ -352,7 +343,6 @@
       }
     },
     "faq": {
-      "eyebrow": "FAQ",
       "title": "Antworten vor dem Wechsel deines Buchungsworkflows",
       "description": "H?ufige Fragen zu Online-Buchung, Teamverwaltung, Mitgliedschaften, Zahlungen und Kundenseiten.",
       "items": {
@@ -383,7 +373,6 @@
       }
     },
     "cta": {
-      "badge": "F?r echte Serviceabl?ufe gebaut",
       "title": "Bringe Entdeckung, Buchungen, Kunden, Mitgliedschaften und Zahlungen in einen Workspace",
       "description": "Starte mit einer Testphase, konfiguriere Services und ver?ffentliche ein Buchungserlebnis, dem Kunden vertrauen k?nnen.",
       "primary": "Jetzt loslegen",

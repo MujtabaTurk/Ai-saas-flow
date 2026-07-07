@@ -109,7 +109,6 @@
       }
     },
     "hero": {
-      "badge": "Premium booking experiences for service businesses",
       "title": "Discover services, book appointments, and grow from one",
       "titleAccent": "polished platform.",
       "description": "ServiceFlow helps customers find trusted local businesses while teams manage bookings, memberships, payments, and customer relationships in one elegant operating layer.",
@@ -131,7 +130,6 @@
       ]
     },
     "discovery": {
-      "eyebrow": "Local Discovery",
       "title": "Find Businesses & Services Near You",
       "description": "Search by business name or service type and preview a production discovery flow with filters, categories, ratings, and locations.",
       "businessLabel": "Search Business",
@@ -143,13 +141,11 @@
       "submit": "Search"
     },
     "featured": {
-      "eyebrow": "Curated Businesses",
       "title": "A moving gallery of services worth discovering.",
       "description": "Browse polished local studios, clinics, consultants, and service teams through a visual-first showcase built for discovery.",
       "cta": "Explore directory"
     },
     "categories": {
-      "eyebrow": "Categories",
       "title": "Built for the services customers search for every day",
       "description": "A clean booking layer for teams that sell appointments, expertise, memberships, care, and time-sensitive services.",
       "items": {
@@ -184,7 +180,6 @@
       }
     },
     "features": {
-      "eyebrow": "Platform",
       "title": "Everything behind a premium booking experience",
       "description": "Keep discovery, scheduling, customers, payments, memberships, and performance signals connected in a workspace designed for repeat operations.",
       "items": {
@@ -215,7 +210,6 @@
       }
     },
     "workflow": {
-      "eyebrow": "Booking Route",
       "title": "A simple customer journey from interest to confirmation",
       "description": "The booking route is designed to reduce friction, keep availability accurate, and make every confirmation feel clear.",
       "step": "Step {{count}}",
@@ -243,7 +237,6 @@
       }
     },
     "publish": {
-      "eyebrow": "Launch",
       "title": "Publish a booking page without slowing down operations",
       "description": "Move from business setup to live customer bookings with a clear launch sequence built for non-technical teams.",
       "items": {
@@ -270,7 +263,6 @@
       }
     },
     "pricing": {
-      "eyebrow": "Pricing",
       "title": "Simple pricing for businesses ready to grow",
       "description": "Start with the operating foundation, then scale into more services, more bookings, and stronger customer relationships.",
       "popular": "MOST POPULAR",
@@ -314,7 +306,6 @@
       }
     },
     "testimonials": {
-      "eyebrow": "Customer Reviews",
       "title": "Service teams use ServiceFlow to look more organized from day one",
       "description": "Premium booking experiences convert better when the back office is calm, connected, and easy to trust.",
       "ratingAria": "Five star customer rating",
@@ -352,7 +343,6 @@
       }
     },
     "faq": {
-      "eyebrow": "FAQ",
       "title": "Answers before you switch your booking workflow",
       "description": "Common questions about online booking, staff management, memberships, payments, and customer-facing booking pages.",
       "items": {
@@ -383,7 +373,6 @@
       }
     },
     "cta": {
-      "badge": "Built for real service operations",
       "title": "Bring discovery, bookings, customers, memberships, and payments into one workspace",
       "description": "Start with a trial, configure your services, and publish a booking experience your customers can trust.",
       "primary": "Get Started Now",
