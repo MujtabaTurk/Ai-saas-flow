@@ -1,9 +1,7 @@
 import {
   BarChart3,
   BriefcaseBusiness,
-  Building2,
   CalendarCheck,
-  CalendarDays,
   CheckCircle2,
   Clock3,
   CreditCard,
@@ -14,10 +12,8 @@ import {
   Layers3,
   Linkedin,
   MousePointerClick,
-  Rocket,
   Scissors,
   Send,
-  Settings2,
   Smartphone,
   Sparkles,
   Stethoscope,
@@ -96,14 +92,6 @@ export const bookingRouteConfig = [
   { key: "slot", icon: Clock3 },
   { key: "confirm", icon: CheckCircle2 },
   { key: "confirmation", icon: Send }
-];
-
-export const publishStepConfig = [
-  { key: "business", icon: Building2 },
-  { key: "services", icon: Settings2 },
-  { key: "availability", icon: CalendarDays },
-  { key: "publish", icon: Rocket },
-  { key: "bookings", icon: CalendarCheck }
 ];
 
 export const planOrder = ["TRIAL", "BASIC", "PRO"];

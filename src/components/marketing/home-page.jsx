@@ -15,6 +15,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { FeaturedBusinessesCarousel } from "@/components/marketing/featured-businesses-carousel";
+import { PublishBookingJourney } from "@/components/marketing/publish-booking-journey";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import {
   bookingRouteConfig,
@@ -25,7 +26,6 @@ import {
   footerHrefs,
   navLinks,
   planOrder,
-  publishStepConfig,
   socialLinks,
   testimonialKeys
 } from "@/components/marketing/home-page-config";
@@ -500,11 +500,7 @@ function PublishSection() {
           description={t("landing.publish.description")}
         />
 
-        <StepGrid
-          iconClassName="bg-[#3525cd] text-white"
-          items={publishStepConfig}
-          stepKey="landing.publish.items"
-        />
+        <PublishBookingJourney />
       </div>
     </section>
   );
