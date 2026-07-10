@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
+import { ActionErrorDialog } from "@/components/ui/action-error-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ErrorDialog } from "@/components/ui/error-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
@@ -220,16 +220,9 @@ export function BookingManagement({
 
   return (
     <div className="space-y-6">
-      <ErrorDialog
-        description={actionError?.description}
-        details={actionError?.details}
-        open={Boolean(actionError)}
-        title={actionError?.title}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActionError(null);
-          }
-        }}
+      <ActionErrorDialog
+        error={actionError}
+        onClear={() => setActionError(null)}
       />
 
       <Modal

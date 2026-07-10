@@ -9,6 +9,14 @@ const CUSTOMER_AUTH_ROUTES = [
   "/customer/reset-password",
   "/customer/verify-email"
 ];
+const CUSTOMER_AUTH_PASSTHROUGH_ROUTES = [
+  "/customer/reset-password",
+  "/customer/verify-email"
+];
+
+function hasUsableToken(token) {
+  return Boolean(token?.id && !token?.accountMissing);
+}
 
 function hasDashboardAccess(token) {
   return token?.platformRole === "SUPER_ADMIN" || Boolean(token?.activeBusinessId && token?.businessRole);
@@ -22,6 +30,10 @@ function hasCustomerAccess(token) {
   );
 }
 
+function redirectTo(request, pathname) {
+  return NextResponse.redirect(new URL(pathname, request.url));
+}
+
 function redirectToLogin(request, pathname = "/login") {
   const loginUrl = new URL(pathname, request.url);
   loginUrl.searchParams.set("callbackUrl", request.nextUrl.pathname + request.nextUrl.search);
@@ -31,18 +43,18 @@ function redirectToLogin(request, pathname = "/login") {
 
 function redirectForAuthenticatedUser(request, token) {
   if (token?.platformRole === "SUPER_ADMIN") {
-    return NextResponse.redirect(new URL("/admin", request.url));
+    return redirectTo(request, "/admin");
   }
 
   if (hasDashboardAccess(token)) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return redirectTo(request, "/dashboard");
   }
 
   if (hasCustomerAccess(token)) {
-    return NextResponse.redirect(new URL("/customer", request.url));
+    return redirectTo(request, "/customer");
   }
 
-  return NextResponse.redirect(new URL("/onboarding", request.url));
+  return redirectTo(request, "/onboarding");
 }
 
 function isInvitationAuthentication(request) {
@@ -54,79 +66,123 @@ function isInvitationAuthentication(request) {
   );
 }
 
+function getAuthenticatedAuthRedirect(request, pathname, token) {
+  if (
+    AUTH_ROUTES.includes(pathname) &&
+    pathname !== "/reset-password" &&
+    !isInvitationAuthentication(request)
+  ) {
+    return redirectForAuthenticatedUser(request, token);
+  }
+
+  if (
+    CUSTOMER_AUTH_ROUTES.includes(pathname) &&
+    !CUSTOMER_AUTH_PASSTHROUGH_ROUTES.includes(pathname)
+  ) {
+    return redirectTo(request, "/customer");
+  }
+
+  return null;
+}
+
+function guardAdminRoute(request, pathname, token, authenticated) {
+  if (!pathname.startsWith("/admin")) {
+    return null;
+  }
+
+  if (!authenticated) {
+    return redirectToLogin(request);
+  }
+
+  if (token.platformRole !== "SUPER_ADMIN") {
+    return redirectTo(
+      request,
+      token.activeBusinessId ? "/dashboard" : "/onboarding"
+    );
+  }
+
+  return null;
+}
+
+function guardDashboardRoute(request, pathname, token, authenticated) {
+  if (!pathname.startsWith("/dashboard")) {
+    return null;
+  }
+
+  if (!authenticated) {
+    return redirectToLogin(request);
+  }
+
+  if (token.platformRole === "SUPER_ADMIN") {
+    return redirectTo(request, "/admin");
+  }
+
+  if (!hasDashboardAccess(token)) {
+    return redirectTo(request, "/onboarding");
+  }
+
+  return null;
+}
+
+function guardCustomerRoute(request, pathname, authenticated) {
+  if (
+    !pathname.startsWith("/customer") ||
+    CUSTOMER_AUTH_ROUTES.includes(pathname)
+  ) {
+    return null;
+  }
+
+  if (!authenticated) {
+    return redirectToLogin(request, "/customer/login");
+  }
+
+  return null;
+}
+
+function guardOnboardingRoute(request, pathname, token, authenticated) {
+  if (!pathname.startsWith("/onboarding")) {
+    return null;
+  }
+
+  if (!authenticated) {
+    return redirectToLogin(request);
+  }
+
+  if (token.platformRole === "SUPER_ADMIN") {
+    return redirectTo(request, "/admin");
+  }
+
+  if (hasDashboardAccess(token)) {
+    return redirectTo(request, "/dashboard");
+  }
+
+  return null;
+}
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET
   });
+  const authenticated = hasUsableToken(token);
 
-  const hasUsableToken = Boolean(
-    token?.id && !token?.accountMissing
-  );
+  if (authenticated) {
+    const authRedirect = getAuthenticatedAuthRedirect(request, pathname, token);
 
-  if (hasUsableToken) {
-    if (
-      AUTH_ROUTES.includes(pathname) &&
-      pathname !== "/reset-password" &&
-      !isInvitationAuthentication(request)
-    ) {
-      return redirectForAuthenticatedUser(request, token);
-    }
-
-    if (
-      CUSTOMER_AUTH_ROUTES.includes(pathname) &&
-      !["/customer/reset-password", "/customer/verify-email"].includes(pathname)
-    ) {
-      return NextResponse.redirect(new URL("/customer", request.url));
+    if (authRedirect) {
+      return authRedirect;
     }
   }
 
-  if (pathname.startsWith("/admin")) {
-    if (!hasUsableToken) {
-      return redirectToLogin(request);
-    }
+  const protectedRouteRedirect =
+    guardAdminRoute(request, pathname, token, authenticated) ||
+    guardDashboardRoute(request, pathname, token, authenticated) ||
+    guardCustomerRoute(request, pathname, authenticated) ||
+    guardOnboardingRoute(request, pathname, token, authenticated);
 
-    if (token.platformRole !== "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL(token.activeBusinessId ? "/dashboard" : "/onboarding", request.url));
-    }
-  }
-
-  if (pathname.startsWith("/dashboard")) {
-    if (!hasUsableToken) {
-      return redirectToLogin(request);
-    }
-
-    if (token.platformRole === "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-
-    if (!hasDashboardAccess(token)) {
-      return NextResponse.redirect(new URL("/onboarding", request.url));
-    }
-  }
-
-  if (
-    pathname.startsWith("/customer") &&
-    !CUSTOMER_AUTH_ROUTES.includes(pathname)
-  ) {
-    if (!hasUsableToken) {
-      return redirectToLogin(request, "/customer/login");
-    }
-  }
-
-  if (pathname.startsWith("/onboarding")) {
-    if (!hasUsableToken) {
-      return redirectToLogin(request);
-    }
-
-    if (token.platformRole === "SUPER_ADMIN") {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
-
-    if (hasDashboardAccess(token)) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+  if (protectedRouteRedirect) {
+    return protectedRouteRedirect;
   }
 
   return NextResponse.next();

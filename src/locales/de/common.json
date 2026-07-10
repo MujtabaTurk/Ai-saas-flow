@@ -9,6 +9,15 @@
     "choose": "App-Sprache auswählen",
     "available": "Verfügbare Sprachen"
   },
+  "theme": {
+    "switchToDark": "Dunkler Modus",
+    "switchToLight": "Heller Modus",
+    "label": "Design",
+    "choose": "Design auswaehlen",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "system": "System"
+  },
   "navigation": {
     "analytics": "Analysen",
     "team": "Team",

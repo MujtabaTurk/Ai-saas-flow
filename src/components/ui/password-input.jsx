@@ -41,7 +41,7 @@ function PasswordInput({
       <Tooltip content={toggleLabel}>
         <button
           type="button"
-          className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-[#eef4ff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+          className="absolute end-1 top-1/2 inline-flex size-9 -translate-y-1/2 items-center justify-center rounded-[8px] text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           aria-controls={id}
           aria-label={toggleLabel}
           aria-pressed={isVisible}

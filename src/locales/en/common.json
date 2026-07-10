@@ -9,6 +9,15 @@
     "choose": "Choose app language",
     "available": "Available languages"
   },
+  "theme": {
+    "switchToDark": "Dark mode",
+    "switchToLight": "Light mode",
+    "label": "Theme",
+    "choose": "Choose theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "navigation": {
     "activity": "Activity",
     "notifications": "Notifications",

@@ -12,7 +12,11 @@ function NavigationSkeleton({ className, collapsed = false }) {
 
   return (
     <div
-      className={cn("space-y-2", collapsed && "flex flex-col items-center", className)}
+      className={cn(
+        "space-y-2",
+        collapsed && "flex flex-col items-center",
+        className,
+      )}
       role="status"
       aria-label={t("loading.navigation")}
     >
@@ -20,11 +24,11 @@ function NavigationSkeleton({ className, collapsed = false }) {
       {Array.from({ length: 9 }).map((_, index) => (
         <div
           className={cn(
-            "h-10 animate-pulse rounded-lg bg-[#e5eeff]",
+            "h-10 animate-pulse rounded-lg bg-primary-mist",
             collapsed && "w-10",
             !collapsed && index % 3 === 0 && "w-11/12",
             !collapsed && index % 3 === 1 && "w-full",
-            !collapsed && index % 3 === 2 && "w-10/12"
+            !collapsed && index % 3 === 2 && "w-10/12",
           )}
           key={index}
         />
@@ -40,7 +44,7 @@ export function AppShellNavigation({
   isLoading = false,
   navigation,
   onNavigate,
-  placement = "content"
+  placement = "content",
 }) {
   const { i18n, t } = useTranslation("common");
   const pathname = usePathname();
@@ -56,22 +60,16 @@ export function AppShellNavigation({
     (item) =>
       !item.roles ||
       session?.user?.platformRole === "SUPER_ADMIN" ||
-      item.roles.includes(session?.user?.businessRole)
+      item.roles.includes(session?.user?.businessRole),
   );
   const groups =
     placement === "footer"
-      ? [
-          visibleNavigation.filter(
-            (item) => item.section === "footer"
-          )
-        ]
+      ? [visibleNavigation.filter((item) => item.section === "footer")]
       : [
           visibleNavigation.filter(
-            (item) => !item.section || item.section === "main"
+            (item) => !item.section || item.section === "main",
           ),
-          visibleNavigation.filter(
-            (item) => item.section === "secondary"
-          )
+          visibleNavigation.filter((item) => item.section === "secondary"),
         ];
   const visibleGroups = groups.filter((group) => group.length > 0);
 
@@ -86,14 +84,18 @@ export function AppShellNavigation({
     >
       {visibleGroups.map((group, groupIndex) => (
         <div
-          className={cn(groupIndex > 0 && "border-t border-growth-border/60 pt-2")}
+          className={cn(
+            groupIndex > 0 && "border-t border-growth-border/60 pt-2",
+          )}
           key={`${placement}-${groupIndex}`}
         >
           {groupIndex > 0 ? <div className="pb-1" /> : null}
           <div className="space-y-1">
             {group.map((item) => {
               const Icon = item.icon;
-              const label = item.labelKey ? t(item.labelKey, item.label) : item.label;
+              const label = item.labelKey
+                ? t(item.labelKey, item.label)
+                : item.label;
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/admin" &&
@@ -105,9 +107,10 @@ export function AppShellNavigation({
                   aria-label={collapsed ? label : undefined}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-[15px] font-medium text-[#464555] transition-[background-color,color,box-shadow] duration-150 hover:bg-[#e5eeff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30",
-                    collapsed && "mx-auto h-10 w-10 justify-center gap-0 px-0 py-0",
-                    isActive && "bg-[#d5e0f8] text-[#586377]"
+                    "relative flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-[15px] font-medium text-serviceflow-muted transition-[background-color,color,box-shadow] duration-150 hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    collapsed &&
+                      "mx-auto h-10 w-10 justify-center gap-0 px-0 py-0",
+                    isActive && "bg-primary-soft text-serviceflow-subtle",
                   )}
                   href={item.href}
                   key={item.href}
@@ -117,7 +120,7 @@ export function AppShellNavigation({
                     <Icon
                       className={cn(
                         "size-[18px] shrink-0 transition-transform duration-200",
-                        collapsed && "size-5"
+                        collapsed && "size-5",
                       )}
                       aria-hidden="true"
                     />
@@ -128,7 +131,7 @@ export function AppShellNavigation({
                       "truncate whitespace-nowrap transition-[max-width,opacity,transform] duration-200",
                       collapsed
                         ? "max-w-0 -translate-x-1 opacity-0"
-                        : "max-w-[10rem] translate-x-0 opacity-100"
+                        : "max-w-[10rem] translate-x-0 opacity-100",
                     )}
                   >
                     {label}

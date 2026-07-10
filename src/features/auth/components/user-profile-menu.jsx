@@ -7,6 +7,8 @@ import { signOut, useSession } from "next-auth/react";
 import {
   Building2,
   ChevronDown,
+  ChevronRight,
+  Check,
   CreditCard,
   LogOut,
   Settings,
@@ -15,7 +17,9 @@ import {
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Skeleton } from "@/components/ui/skeleton";
+import { THEME_OPTIONS } from "@/components/theme/theme-switcher";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useTheme } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 
 function getInitials(name, email) {
@@ -54,7 +58,7 @@ function Avatar({ email, image, name, size = "md" }) {
   return (
     <span
       className={cn(
-        "relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-[#e2dfff] text-sm font-bold text-[#3525cd] shadow-sm ring-1 ring-[#c7c4d8] dark:ring-white/10",
+        "relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-primary-soft text-sm font-bold text-primary shadow-sm ring-1 ring-growth-border dark:shadow-none",
         size === "lg" ? "size-11" : "size-8"
       )}
       aria-hidden="true"
@@ -93,8 +97,8 @@ function MenuItem({
   const itemClassName = cn(
     "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[highlighted]:outline-none",
     variant === "destructive"
-      ? "text-red-700 hover:bg-red-50 data-[highlighted]:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10 dark:data-[highlighted]:bg-red-500/10"
-      : "text-[#0b1c30] hover:bg-[#e5eeff] data-[highlighted]:bg-[#e5eeff] dark:text-zinc-100 dark:hover:bg-white/10 dark:data-[highlighted]:bg-white/10",
+      ? "text-[hsl(var(--error-foreground))] hover:bg-[hsl(var(--error-bg))] data-[highlighted]:bg-[hsl(var(--error-bg))]"
+      : "text-foreground hover:bg-accent data-[highlighted]:bg-accent",
     className
   );
 
@@ -117,6 +121,62 @@ function MenuItem({
   );
 }
 
+function ThemeMenu({ currentTheme, onThemeChange, t }) {
+  const currentOption =
+    THEME_OPTIONS.find((option) => option.value === currentTheme) ||
+    THEME_OPTIONS[2];
+  const CurrentIcon = currentOption.icon;
+
+  return (
+    <DropdownMenuPrimitive.Sub>
+      <DropdownMenuPrimitive.SubTrigger className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[highlighted]:bg-accent data-[highlighted]:outline-none">
+        <CurrentIcon className="size-4 shrink-0" aria-hidden="true" />
+        <span className="min-w-0 flex-1 truncate">{t("theme.label")}</span>
+        <span className="hidden shrink-0 text-xs font-semibold text-muted-foreground sm:inline">
+          {t(currentOption.labelKey)}
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground rtl:rotate-180" aria-hidden="true" />
+      </DropdownMenuPrimitive.SubTrigger>
+      <DropdownMenuPrimitive.Portal>
+        <DropdownMenuPrimitive.SubContent
+          alignOffset={-4}
+          className="z-50 w-48 animate-stat-rise rounded-xl border border-growth-border bg-card p-2 text-foreground shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none dark:shadow-[hsl(var(--sf-shadow)/0.45)]"
+          sideOffset={8}
+        >
+          <DropdownMenuPrimitive.Label className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
+            {t("theme.label")}
+          </DropdownMenuPrimitive.Label>
+          <DropdownMenuPrimitive.RadioGroup
+            aria-label={t("theme.choose")}
+            value={currentTheme}
+            onValueChange={onThemeChange}
+          >
+            {THEME_OPTIONS.map((option) => {
+              const Icon = option.icon;
+
+              return (
+                <DropdownMenuPrimitive.RadioItem
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-start text-sm font-semibold text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[highlighted]:bg-accent data-[highlighted]:outline-none"
+                  key={option.value}
+                  value={option.value}
+                >
+                  <Icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {t(option.labelKey)}
+                  </span>
+                  <DropdownMenuPrimitive.ItemIndicator className="text-primary">
+                    <Check className="size-4" aria-hidden="true" />
+                  </DropdownMenuPrimitive.ItemIndicator>
+                </DropdownMenuPrimitive.RadioItem>
+              );
+            })}
+          </DropdownMenuPrimitive.RadioGroup>
+        </DropdownMenuPrimitive.SubContent>
+      </DropdownMenuPrimitive.Portal>
+    </DropdownMenuPrimitive.Sub>
+  );
+}
+
 export function UserProfileMenu({
   callbackUrl,
   className,
@@ -131,6 +191,7 @@ export function UserProfileMenu({
   const { i18n, t } = useTranslation("common");
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { setTheme, theme } = useTheme();
   const [open, setOpen] = useState(false);
 
   const user = normalizeUser(providedUser || session?.user);
@@ -195,7 +256,7 @@ export function UserProfileMenu({
     return (
       <div
         className={cn(
-          "flex h-12 w-12 items-center justify-center gap-3 rounded-2xl border border-growth-border bg-white/80 px-3 shadow-sm dark:border-white/10 dark:bg-white/5 sm:w-[12.5rem] sm:justify-start",
+          "flex h-12 w-12 items-center justify-center gap-3 rounded-2xl border border-growth-border bg-card/80 px-3 shadow-sm sm:w-[12.5rem] sm:justify-start",
           className
         )}
         role="status"
@@ -222,9 +283,9 @@ export function UserProfileMenu({
           compact ? `${t("userMenu.open")}: ${triggerLabel}` : t("userMenu.open")
         }
         className={cn(
-          "group flex h-10 max-w-[15rem] items-center gap-3 rounded-full border border-[#c7c4d8] bg-white/70 px-1 text-start shadow-sm transition-[background-color,box-shadow,width] duration-200 hover:bg-[#e5eeff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10 sm:px-1",
+          "group flex h-10 max-w-[15rem] items-center gap-3 rounded-full border border-growth-border bg-card/70 px-1 text-start shadow-sm transition-[background-color,box-shadow,width] duration-200 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:shadow-none sm:px-1",
           layout === "sidebar" &&
-            "h-12 w-full max-w-full rounded-xl bg-white/65 px-2 sm:px-2",
+            "h-12 w-full max-w-full rounded-xl bg-card/65 px-2 sm:px-2",
           compact && "size-10 max-w-none justify-center rounded-full px-1 sm:px-1"
         )}
         type="button"
@@ -239,11 +300,11 @@ export function UserProfileMenu({
               : "max-w-[11rem] translate-x-0 opacity-100"
           )}
         >
-          <span className="block truncate text-sm font-bold text-[#0b1c30] dark:text-white">
+          <span className="block truncate text-sm font-bold text-foreground">
             {user.name}
           </span>
           {user.email ? (
-            <span className="block truncate text-xs font-medium text-muted-foreground dark:text-zinc-400">
+            <span className="block truncate text-xs font-medium text-muted-foreground">
               {user.email}
             </span>
           ) : null}
@@ -275,23 +336,23 @@ export function UserProfileMenu({
         <DropdownMenuPrimitive.Portal>
           <DropdownMenuPrimitive.Content
             align={menuAlign}
-            className="origin-top-inline-end z-50 w-[min(20rem,calc(100vw-2rem))] animate-stat-rise rounded-xl border border-[#c7c4d8] bg-white p-2 shadow-xl shadow-slate-950/10 outline-none dark:border-white/10 dark:bg-zinc-950 dark:shadow-black/40"
+            className="origin-top-inline-end z-50 w-[min(20rem,calc(100vw-2rem))] animate-stat-rise rounded-xl border border-growth-border bg-card p-2 shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none dark:shadow-[hsl(var(--sf-shadow)/0.45)]"
             side={menuSide}
             sideOffset={8}
           >
-            <div className="flex min-w-0 items-center gap-3 border-b border-[#c7c4d8] px-3 py-3 dark:border-white/10">
+            <div className="flex min-w-0 items-center gap-3 border-b border-growth-border px-3 py-3">
               <Avatar email={user.email} image={user.image} name={user.name} size="lg" />
               <div className="min-w-0">
-                <p className="truncate text-sm font-bold text-[#0b1c30] dark:text-white">
+                <p className="truncate text-sm font-bold text-foreground">
                   {user.name}
                 </p>
                 {user.email ? (
-                  <p className="truncate text-xs font-medium text-muted-foreground dark:text-zinc-400">
+                  <p className="truncate text-xs font-medium text-muted-foreground">
                     {user.email}
                   </p>
                 ) : null}
                 {user.activeBusinessName ? (
-                  <p className="mt-1 truncate text-xs font-semibold text-[#3525cd] dark:text-emerald-300">
+                  <p className="mt-1 truncate text-xs font-semibold text-primary">
                     {user.activeBusinessName}
                   </p>
                 ) : null}
@@ -309,9 +370,17 @@ export function UserProfileMenu({
                   {item.label}
                 </MenuItem>
               ))}
+              <ThemeMenu
+                currentTheme={theme}
+                t={t}
+                onThemeChange={(nextTheme) => {
+                  setTheme(nextTheme);
+                  setOpen(false);
+                }}
+              />
             </div>
 
-            <DropdownMenuPrimitive.Separator className="border-t border-[#c7c4d8] dark:border-white/10" />
+            <DropdownMenuPrimitive.Separator className="border-t border-growth-border" />
             <div className="pt-2">
               <MenuItem icon={LogOut} onClick={handleSignOut} variant="destructive">
                 {t("actions.signOut")}

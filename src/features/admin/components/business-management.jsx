@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
+import { ActionErrorDialog } from "@/components/ui/action-error-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -170,16 +170,9 @@ export function BusinessManagement() {
 
   return (
     <div className="space-y-5">
-      <ErrorDialog
-        description={actionError?.description}
-        details={actionError?.details}
-        open={Boolean(actionError)}
-        title={actionError?.title}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActionError(null);
-          }
-        }}
+      <ActionErrorDialog
+        error={actionError}
+        onClear={() => setActionError(null)}
       />
 
       <Modal
@@ -217,7 +210,7 @@ export function BusinessManagement() {
               }
             />
             {statusReasonDialog?.validationError ? (
-              <p className="text-xs text-red-600">
+              <p className="text-xs text-[hsl(var(--error-foreground))]">
                 {statusReasonDialog.validationError}
               </p>
             ) : null}
@@ -308,7 +301,7 @@ export function BusinessManagement() {
                     <th className="px-4 py-3 font-semibold">Status action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-growth-border bg-white">
+                <tbody className="divide-y divide-growth-border bg-card">
                   {businesses.map((business) => (
                     <tr className="hover:bg-growth-mint/20" key={business.id}>
                       <td className="px-4 py-4">

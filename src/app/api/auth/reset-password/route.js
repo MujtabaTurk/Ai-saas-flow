@@ -5,7 +5,7 @@ import {
 } from "@/features/auth/password";
 import { resetPasswordSchema } from "@/features/auth/validation/reset-password-schema";
 import { fail, ok } from "@/lib/api/api-response";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -20,8 +20,10 @@ const STALE_RESET_LINK_MESSAGE =
   "This reset link has already been used or expired. Please request a new password reset link.";
 
 export async function POST(request) {
-  const payload = await request.json().catch(() => null);
-  const { data, errors } = await validateRequest(resetPasswordSchema, payload || {});
+  const { data, errors } = await validateJsonRequest(
+    request,
+    resetPasswordSchema
+  );
 
   if (errors) {
     return fail("Please check the reset password form.", 422, errors);

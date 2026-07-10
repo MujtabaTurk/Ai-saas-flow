@@ -1,28 +1,13 @@
-import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ServiceManagement } from "@/features/services/components/service-management";
-import { getCurrentSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
 
 export const metadata = {
   title: "Services | ServiceFlow"
 };
 
 export default async function ServicesPage() {
-  const session = await getCurrentSession();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (!session.user.activeBusinessId) {
-    redirect("/onboarding");
-  }
-
-  const business = await prisma.business.findUnique({
-    where: {
-      id: session.user.activeBusinessId
-    },
+  const { business } = await requireDashboardPageBusiness({
     select: {
       id: true,
       name: true,
@@ -30,10 +15,6 @@ export default async function ServicesPage() {
       currency: true
     }
   });
-
-  if (!business) {
-    redirect("/onboarding");
-  }
 
   return (
     <AppShell>

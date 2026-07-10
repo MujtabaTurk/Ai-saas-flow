@@ -11,18 +11,18 @@ const ToastContext = createContext(null);
 const toastStyles = {
   success: {
     icon: CheckCircle2,
-    className: "border-growth-border bg-white text-growth-sidebar",
+    className: "border-growth-border bg-card text-card-foreground",
     iconClassName: "text-primary"
   },
   info: {
     icon: Info,
-    className: "border-growth-border bg-white text-growth-sidebar",
+    className: "border-growth-border bg-card text-card-foreground",
     iconClassName: "text-growth-forest"
   },
   error: {
     icon: AlertCircle,
-    className: "border-red-200 bg-white text-red-800",
-    iconClassName: "text-red-600"
+    className: "border-[hsl(var(--error-border))] bg-[hsl(var(--error-bg))] text-[hsl(var(--error-foreground))]",
+    iconClassName: "text-[hsl(var(--error-foreground))]"
   }
 };
 
@@ -101,7 +101,7 @@ function ToastProvider({ children }) {
               </div>
               <button
                 aria-label={translateLegacyText(i18n, "Dismiss notification")}
-                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 type="button"
                 onClick={() => dismissToast(toast.id)}
               >

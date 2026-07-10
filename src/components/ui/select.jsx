@@ -93,7 +93,7 @@ function Select({
       >
         <SelectPrimitive.Trigger
           className={cn(
-            "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-none",
             className
           )}
           id={id}
@@ -110,7 +110,7 @@ function Select({
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
             className={cn(
-              "z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-growth-border bg-white text-growth-sidebar shadow-2xl shadow-slate-950/10 outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1",
+              "z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-growth-border bg-card text-foreground shadow-2xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 dark:shadow-[hsl(var(--sf-shadow)/0.45)]",
               contentClassName
             )}
             position="popper"
@@ -120,7 +120,7 @@ function Select({
               {options.map((option) => (
                 <SelectPrimitive.Item
                   className={cn(
-                    "relative flex cursor-pointer select-none items-center rounded-lg py-2 pe-9 ps-3 text-start text-sm font-medium outline-none transition-colors data-[disabled]:pointer-events-none data-[highlighted]:bg-growth-mint/45 data-[highlighted]:text-growth-sidebar data-[disabled]:opacity-50",
+                    "relative flex cursor-pointer select-none items-center rounded-lg py-2 pe-9 ps-3 text-start text-sm font-medium outline-none transition-colors data-[disabled]:pointer-events-none data-[highlighted]:bg-accent data-[highlighted]:text-foreground data-[disabled]:opacity-50",
                     itemClassName
                   )}
                   disabled={option.disabled}

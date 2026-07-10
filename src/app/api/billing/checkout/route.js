@@ -17,10 +17,124 @@ import { isSuperAdmin } from "@/features/auth/permissions";
 import { fail, ok } from "@/lib/api/api-response";
 import { AppError } from "@/lib/api/errors";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { requireCurrentUser } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
+
+function withRequestId(response, requestId) {
+  response.headers.set("x-request-id", requestId);
+
+  return response;
+}
+
+function hasManagedStripeSubscription(subscription) {
+  return Boolean(
+    subscription?.stripeSubscriptionId &&
+      STRIPE_MANAGED_SUBSCRIPTION_STATUSES.includes(subscription.status)
+  );
+}
+
+function getBillingReturnPath(user) {
+  return isSuperAdmin(user) ? "/admin" : "/dashboard/billing";
+}
+
+function buildCheckoutSessionPayload({
+  baseUrl,
+  business,
+  customerId,
+  planCode,
+  priceId,
+  returnPath
+}) {
+  return {
+    mode: "subscription",
+    customer: customerId,
+    client_reference_id: business.id,
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1
+      }
+    ],
+    billing_address_collection: "auto",
+    customer_update: {
+      address: "auto",
+      name: "auto"
+    },
+    allow_promotion_codes: true,
+    success_url: `${baseUrl}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${baseUrl}${returnPath}?checkout=canceled`,
+    metadata: {
+      businessId: business.id,
+      planCode
+    },
+    subscription_data: {
+      metadata: {
+        businessId: business.id,
+        planCode
+      }
+    }
+  };
+}
+
+function buildCheckoutResponse({ requestId, session }) {
+  return withRequestId(
+    ok({
+      url: session.url,
+      sessionId: session.id,
+      requestId
+    }),
+    requestId
+  );
+}
+
+async function assertCustomerLinkOrExpireCheckout({
+  businessId,
+  checkoutSession,
+  context,
+  customerId,
+  stripe
+}) {
+  try {
+    await assertBusinessStripeCustomerLink(
+      businessId,
+      customerId,
+      context
+    );
+  } catch (linkError) {
+    if (checkoutSession.status === "open") {
+      try {
+        await stripe.checkout.sessions.expire(checkoutSession.id);
+      } catch (expireError) {
+        logBillingEvent(
+          "stripe.checkout.expire_failed",
+          {
+            ...context,
+            businessId,
+            stripeCustomerId: customerId,
+            checkoutSessionId: checkoutSession.id,
+            errorMessage: expireError?.message
+          },
+          "error"
+        );
+      }
+    }
+
+    logBillingEvent(
+      "stripe.checkout.expired_after_customer_change",
+      {
+        ...context,
+        businessId,
+        stripeCustomerId: customerId,
+        checkoutSessionId: checkoutSession.id
+      },
+      "warn"
+    );
+
+    throw linkError;
+  }
+}
 
 export async function POST(request) {
   const requestId = getBillingRequestId(request);
@@ -33,14 +147,16 @@ export async function POST(request) {
       requestId,
       userId
     };
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(checkoutSessionSchema, payload || {});
+    const { data, errors } = await validateJsonRequest(
+      request,
+      checkoutSessionSchema
+    );
 
     if (errors) {
-      const response = fail("Please choose a billing plan.", 422, errors);
-      response.headers.set("x-request-id", requestId);
-
-      return response;
+      return withRequestId(
+        fail("Please choose a billing plan.", 422, errors),
+        requestId
+      );
     }
 
     const businessId = new URL(request.url).searchParams.get("businessId");
@@ -51,10 +167,7 @@ export async function POST(request) {
     );
     const currentSubscription = business.subscriptions[0] || null;
 
-    if (
-      currentSubscription?.stripeSubscriptionId &&
-      STRIPE_MANAGED_SUBSCRIPTION_STATUSES.includes(currentSubscription.status)
-    ) {
+    if (hasManagedStripeSubscription(currentSubscription)) {
       throw new AppError("Manage your current subscription from the billing portal.", 409);
     }
 
@@ -67,7 +180,7 @@ export async function POST(request) {
       }
     });
     const baseUrl = getAppBaseUrl(request);
-    const returnPath = isSuperAdmin(user) ? "/admin" : "/dashboard/billing";
+    const returnPath = getBillingReturnPath(user);
     const reusableSession = await findReusableCheckoutSession({
       businessId: business.id,
       customerId,
@@ -82,14 +195,10 @@ export async function POST(request) {
         context
       );
 
-      const response = ok({
-        url: reusableSession.url,
-        sessionId: reusableSession.id,
-        requestId
+      return buildCheckoutResponse({
+        requestId,
+        session: reusableSession
       });
-      response.headers.set("x-request-id", requestId);
-
-      return response;
     }
 
     const stripeIdempotencyKey = getCheckoutIdempotencyKey(
@@ -112,78 +221,26 @@ export async function POST(request) {
     });
 
     const checkoutSession = await stripe.checkout.sessions.create(
-      {
-        mode: "subscription",
-        customer: customerId,
-        client_reference_id: business.id,
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1
-          }
-        ],
-        billing_address_collection: "auto",
-        customer_update: {
-          address: "auto",
-          name: "auto"
-        },
-        allow_promotion_codes: true,
-        success_url: `${baseUrl}${returnPath}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}${returnPath}?checkout=canceled`,
-        metadata: {
-          businessId: business.id,
-          planCode: data.planCode
-        },
-        subscription_data: {
-          metadata: {
-            businessId: business.id,
-            planCode: data.planCode
-          }
-        }
-      },
+      buildCheckoutSessionPayload({
+        baseUrl,
+        business,
+        customerId,
+        planCode: data.planCode,
+        priceId,
+        returnPath
+      }),
       {
         idempotencyKey: stripeIdempotencyKey
       }
     );
 
-    try {
-      await assertBusinessStripeCustomerLink(
-        business.id,
-        customerId,
-        context
-      );
-    } catch (linkError) {
-      if (checkoutSession.status === "open") {
-        try {
-          await stripe.checkout.sessions.expire(checkoutSession.id);
-        } catch (expireError) {
-          logBillingEvent(
-            "stripe.checkout.expire_failed",
-            {
-              ...context,
-              businessId: business.id,
-              stripeCustomerId: customerId,
-              checkoutSessionId: checkoutSession.id,
-              errorMessage: expireError?.message
-            },
-            "error"
-          );
-        }
-      }
-
-      logBillingEvent(
-        "stripe.checkout.expired_after_customer_change",
-        {
-          ...context,
-          businessId: business.id,
-          stripeCustomerId: customerId,
-          checkoutSessionId: checkoutSession.id
-        },
-        "warn"
-      );
-
-      throw linkError;
-    }
+    await assertCustomerLinkOrExpireCheckout({
+      businessId: business.id,
+      checkoutSession,
+      context,
+      customerId,
+      stripe
+    });
 
     logBillingEvent("stripe.checkout.created", {
       ...context,
@@ -194,14 +251,10 @@ export async function POST(request) {
       planCode: data.planCode
     });
 
-    const response = ok({
-      url: checkoutSession.url,
-      sessionId: checkoutSession.id,
-      requestId
+    return buildCheckoutResponse({
+      requestId,
+      session: checkoutSession
     });
-    response.headers.set("x-request-id", requestId);
-
-    return response;
   } catch (error) {
     logBillingEvent(
       "stripe.checkout.failed",
@@ -214,8 +267,7 @@ export async function POST(request) {
     );
 
     const response = handleApiError(error);
-    response.headers.set("x-request-id", requestId);
 
-    return response;
+    return withRequestId(response, requestId);
   }
 }

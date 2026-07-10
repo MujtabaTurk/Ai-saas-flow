@@ -1,12 +1,10 @@
-import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { ANALYTICS_PERIOD_OPTIONS } from "@/features/analytics/constants";
 import { OverviewDashboard } from "@/features/analytics/components/overview-dashboard";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { getSubscriptionEntitlement } from "@/features/billing/status";
 import { PLAN_LIMITS } from "@/features/businesses/plan-limits";
-import { getCurrentSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
 
 export const metadata = {
   title: "Overview | ServiceFlow"
@@ -46,27 +44,8 @@ function getInitialDays(rawDays, sessionUser, entitlement) {
 
 export default async function OverviewPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  const session = await getCurrentSession();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (!session.user.activeBusinessId) {
-    redirect("/onboarding");
-  }
-
-  if (
-    !isSuperAdmin(session.user) &&
-    !["OWNER", "ADMIN"].includes(session.user.businessRole)
-  ) {
-    redirect("/dashboard/bookings");
-  }
-
-  const business = await prisma.business.findUnique({
-    where: {
-      id: session.user.activeBusinessId
-    },
+  const { business, session } = await requireDashboardPageBusiness({
+    requireBusinessManager: true,
     select: {
       id: true,
       name: true,
@@ -87,10 +66,6 @@ export default async function OverviewPage({ searchParams }) {
       }
     }
   });
-
-  if (!business) {
-    redirect("/onboarding");
-  }
 
   const entitlement = getSubscriptionEntitlement(
     business.subscriptions[0] || null

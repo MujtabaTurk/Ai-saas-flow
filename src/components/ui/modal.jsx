@@ -41,10 +41,10 @@ function Modal({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-growth-sidebar/45 backdrop-blur-sm" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[hsl(var(--sf-overlay)/0.45)] backdrop-blur-sm" />
         <DialogPrimitive.Content
           className={cn(
-            "modal-content fixed z-50 flex max-h-[calc(100dvh-2rem)] w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-white text-growth-sidebar shadow-2xl outline-none",
+            "modal-content fixed z-50 flex max-h-[calc(100dvh-2rem)] w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-card text-card-foreground shadow-2xl outline-none",
             modalSizes[size] || modalSizes.md,
             className
           )}
@@ -93,7 +93,7 @@ function Modal({
             <DialogPrimitive.Close asChild>
               <button
                 aria-label={closeLabel}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-growth-mint/40 hover:text-growth-sidebar focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
                 disabled={isDismissDisabled}
                 type="button"
               >
@@ -105,7 +105,7 @@ function Modal({
             {children}
           </div>
           {footer ? (
-            <div className="border-t border-growth-border bg-growth-dashboard/80 px-5 py-4 sm:px-6">
+            <div className="border-t border-growth-border bg-muted/80 px-5 py-4 sm:px-6">
               {footer}
             </div>
           ) : null}
@@ -132,7 +132,7 @@ function ModalError({ className, children, ...props }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700",
+        "rounded-xl border border-[hsl(var(--error-border))] bg-[hsl(var(--error-bg))] px-4 py-3 text-sm text-[hsl(var(--error-foreground))]",
         className
       )}
       role="alert"

@@ -47,7 +47,7 @@ function Checkbox({
     <CheckboxPrimitive.Root
       checked={currentChecked}
       className={cn(
-        "inline-flex size-4 shrink-0 items-center justify-center rounded border border-growth-border bg-white text-primary shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white",
+        "inline-flex size-4 shrink-0 items-center justify-center rounded border border-growth-border bg-card text-primary shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-white dark:shadow-none",
         className
       )}
       name={name}

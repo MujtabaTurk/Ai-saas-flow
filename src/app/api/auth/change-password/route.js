@@ -6,7 +6,7 @@ import {
 } from "@/features/auth/password";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { requireSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -15,8 +15,10 @@ export const runtime = "nodejs";
 export async function POST(request) {
   try {
     const session = await requireSession();
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(changePasswordSchema, payload || {});
+    const { data, errors } = await validateJsonRequest(
+      request,
+      changePasswordSchema
+    );
 
     if (errors) {
       return fail("Please check the password form.", 422, errors);

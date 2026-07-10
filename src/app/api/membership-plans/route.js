@@ -10,7 +10,7 @@ import {
 import { membershipPlanApiSchema } from "@/features/memberships/validation/membership-schema";
 import { created, fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -35,10 +35,9 @@ export async function POST(request) {
     );
     assertMembershipWriteAccess(user, business);
 
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(
-      membershipPlanApiSchema,
-      payload || {}
+    const { data, errors } = await validateJsonRequest(
+      request,
+      membershipPlanApiSchema
     );
 
     if (errors) {

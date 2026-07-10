@@ -7,6 +7,7 @@ import {
   Settings,
   UserCircle
 } from "lucide-react";
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip } from "@/components/ui/tooltip";
 import { EmailVerificationNotice } from "@/features/auth/components/email-verification-notice";
@@ -52,8 +53,8 @@ export function CustomerPortalShell({
   user
 }) {
   return (
-    <main className="min-h-screen bg-growth-dashboard text-growth-sidebar dark:bg-background dark:text-foreground">
-      <aside className="customer-portal-sidebar fixed inset-y-0 hidden w-72 bg-white/95 p-6 shadow-sm dark:bg-card/95 lg:block">
+    <main className="min-h-screen bg-growth-dashboard text-foreground">
+      <aside className="customer-portal-sidebar fixed inset-y-0 hidden w-72 bg-card/95 p-6 shadow-sm lg:block">
         <Link className="text-lg font-bold" href="/customer">
           ServiceFlow
         </Link>
@@ -69,7 +70,7 @@ export function CustomerPortalShell({
               <Link
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-growth-mint/50 hover:text-growth-sidebar",
+                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-muted-foreground transition hover:bg-accent hover:text-foreground",
                   isActive && "bg-primary text-white hover:bg-primary hover:text-white"
                 )}
                 href={item.href}
@@ -84,11 +85,11 @@ export function CustomerPortalShell({
       </aside>
 
       <div className="customer-portal-main">
-        <header className="sticky top-0 z-20 border-b border-growth-border bg-white/90 px-4 py-3 shadow-sm backdrop-blur dark:border-white/10 dark:bg-card/90 sm:px-6">
+        <header className="sticky top-0 z-20 border-b border-growth-border bg-card/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link
-                className="shrink-0 font-bold text-growth-sidebar dark:text-white lg:hidden"
+                className="shrink-0 font-bold text-foreground lg:hidden"
                 href="/customer"
               >
                 ServiceFlow
@@ -112,7 +113,7 @@ export function CustomerPortalShell({
                       <Link
                         aria-current={isActive ? "page" : undefined}
                         className={cn(
-                          "inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-growth-border bg-white text-growth-forest",
+                          "inline-flex size-10 shrink-0 items-center justify-center rounded-2xl border border-growth-border bg-card text-primary",
                           isActive && "border-primary bg-primary text-white"
                         )}
                         href={item.href}
@@ -124,6 +125,7 @@ export function CustomerPortalShell({
                   );
                 })}
               </nav>
+              <ThemeSwitcher compact />
               <UserProfileMenu
                 callbackUrl="/customer/login"
                 user={user}

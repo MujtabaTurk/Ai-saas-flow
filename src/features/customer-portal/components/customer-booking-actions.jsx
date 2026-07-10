@@ -26,55 +26,18 @@ import {
   rescheduleCustomerPortalBooking,
   submitCustomerPortalReview
 } from "@/features/customer-portal/api";
+import {
+  formatCustomerBookingAppointment,
+  formatCustomerBookingPrice,
+  formatCustomerBookingSlot,
+  formatCustomerBookingStatus,
+  getCustomerBookingDateValue,
+  getCustomerBookingStatusVariant
+} from "@/features/customer-portal/customer-booking-formatters";
 import { ReviewStars } from "@/features/reviews/components/review-stars";
 import { reviewSubmissionSchema } from "@/features/reviews/validation/review-schema";
-import {
-  formatLocalizedDateTime,
-  formatLocalizedMoney
-} from "@/i18n/format";
+import { formatLocalizedDateTime } from "@/i18n/format";
 import { cn } from "@/lib/utils";
-
-function statusVariant(status) {
-  if (status === "CONFIRMED" || status === "COMPLETED") {
-    return "success";
-  }
-
-  if (status === "PENDING") {
-    return "warning";
-  }
-
-  if (status === "CANCELED" || status === "NO_SHOW") {
-    return "destructive";
-  }
-
-  return "default";
-}
-
-function formatStatus(status) {
-  return String(status || "")
-    .toLowerCase()
-    .replaceAll("_", " ");
-}
-
-function getDateValue(value, timezone) {
-  const parts = new Intl.DateTimeFormat("en", {
-    timeZone: timezone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(new Date(value));
-  const partMap = Object.fromEntries(
-    parts.map((part) => [part.type, part.value])
-  );
-
-  return `${partMap.year}-${partMap.month}-${partMap.day}`;
-}
-
-function formatSlot(slot, language) {
-  return formatLocalizedDateTime(slot.startsAt, slot.timezone, language, {
-    timeStyle: "short"
-  });
-}
 
 function DetailItem({ label, value }) {
   if (!value) {
@@ -126,7 +89,7 @@ function ReviewContent({ bookingId, details, language, onSaved }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <ReviewStars rating={review.rating} />
           <Badge variant={review.status === "PUBLISHED" ? "success" : "warning"}>
-            {formatStatus(review.status)}
+            {formatCustomerBookingStatus(review.status)}
           </Badge>
         </div>
         <div>
@@ -273,28 +236,10 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
       return "";
     }
 
-    return formatLocalizedDateTime(booking.startsAt, booking.timezone, language, {
-      dateStyle: "full",
-      timeStyle: "short"
-    });
+    return formatCustomerBookingAppointment(booking, language);
   }, [booking, language]);
   const priceLabel = useMemo(() => {
-    if (!booking) {
-      return "";
-    }
-
-    if (
-      booking.servicePriceCentsSnapshot === null ||
-      booking.servicePriceCentsSnapshot === undefined
-    ) {
-      return "Free";
-    }
-
-    return formatLocalizedMoney(
-      booking.servicePriceCentsSnapshot,
-      booking.serviceCurrencySnapshot,
-      language
-    );
+    return formatCustomerBookingPrice(booking, language);
   }, [booking, language]);
 
   async function refreshAfterAction() {
@@ -307,7 +252,10 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
       return;
     }
 
-    const nextDate = getDateValue(booking.startsAt, booking.timezone);
+    const nextDate = getCustomerBookingDateValue(
+      booking.startsAt,
+      booking.timezone
+    );
     setMode("reschedule");
     setActionError(null);
     setSelectedSlot("");
@@ -488,7 +436,7 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                     }
                     onClick={() => setSelectedSlot(slot.startsAt)}
                   >
-                    {formatSlot(slot, language)}
+                    {formatCustomerBookingSlot(slot, language)}
                   </Button>
                 ))}
               </div>
@@ -589,8 +537,8 @@ export function CustomerBookingActions({ bookingId, language = "en" }) {
                   {booking.serviceNameSnapshot}
                 </h2>
               </div>
-              <Badge variant={statusVariant(booking.status)}>
-                {formatStatus(booking.status)}
+              <Badge variant={getCustomerBookingStatusVariant(booking.status)}>
+                {formatCustomerBookingStatus(booking.status)}
               </Badge>
             </div>
 

@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 const badgeVariants = cva("inline-flex items-center rounded px-2.5 py-1 text-xs font-bold transition-colors", {
   variants: {
     variant: {
-      default: "bg-growth-mint text-[#586377]",
-      success: "bg-emerald-100 text-emerald-800",
-      warning: "bg-amber-100 text-amber-800",
-      destructive: "bg-red-100 text-red-800",
-      outline: "border border-growth-border bg-white text-growth-sidebar"
+      default: "bg-primary-soft text-serviceflow-subtle",
+      success: "bg-[hsl(var(--success-bg))] text-[hsl(var(--success-foreground))]",
+      warning: "bg-[hsl(var(--warning-bg))] text-[hsl(var(--warning-foreground))]",
+      destructive: "bg-[hsl(var(--error-bg))] text-[hsl(var(--error-foreground))]",
+      outline: "border border-growth-border bg-card text-foreground"
     }
   },
   defaultVariants: {

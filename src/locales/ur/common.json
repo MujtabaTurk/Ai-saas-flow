@@ -9,6 +9,15 @@
     "choose": "ایپ کی زبان منتخب کریں",
     "available": "دستیاب زبانیں"
   },
+  "theme": {
+    "switchToDark": "Dark mode",
+    "switchToLight": "Light mode",
+    "label": "Theme",
+    "choose": "Choose theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "navigation": {
     "analytics": "تجزیات",
     "team": "Team",

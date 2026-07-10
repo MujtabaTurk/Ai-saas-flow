@@ -15,20 +15,14 @@ import {
   getSafeCallbackUrl
 } from "@/features/auth/callback-url";
 import { registerSchema } from "@/features/auth/validation/register-schema";
+import {
+  AUTH_COMPACT_INPUT_CLASS_NAME,
+  AuthFormAlert,
+  AuthInputIcon,
+  AuthOAuthDivider
+} from "./auth-form-ui";
 import { FieldError } from "./field-error";
 import { GoogleSignInButton } from "./google-sign-in-button";
-
-const authInputClassName =
-  "h-11 rounded-[8px] border-[#c7c4d8] bg-white text-[#0b1c30] shadow-none placeholder:text-[#9aa3b2] focus-visible:ring-[#3525cd]/25 lg:h-10";
-
-function AuthInputIcon({ icon: Icon }) {
-  return (
-    <Icon
-      className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-[#8a93a6]"
-      aria-hidden="true"
-    />
-  );
-}
 
 export function RegisterForm({
   accountType = "BUSINESS",
@@ -126,15 +120,7 @@ export function RegisterForm({
       className="w-full space-y-4"
       onSubmit={formik.handleSubmit}
     >
-      {formik.status ? (
-        <div
-          aria-live="polite"
-          className="rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm leading-5 text-red-700"
-          role="alert"
-        >
-          {formik.status}
-        </div>
-      ) : null}
+      <AuthFormAlert compact>{formik.status}</AuthFormAlert>
 
       <div className="space-y-3">
         <div className="space-y-1">
@@ -151,7 +137,7 @@ export function RegisterForm({
               }
               aria-invalid={Boolean(formik.touched.name && formik.errors.name)}
               autoComplete="name"
-              className={`${authInputClassName} ps-10`}
+              className={`${AUTH_COMPACT_INPUT_CLASS_NAME} ps-10`}
               disabled={formik.isSubmitting || isOAuthLoading}
               id="name"
               name="name"
@@ -180,7 +166,7 @@ export function RegisterForm({
               }
               aria-invalid={Boolean(formik.touched.email && formik.errors.email)}
               autoComplete="email"
-              className={`${authInputClassName} ps-10`}
+              className={`${AUTH_COMPACT_INPUT_CLASS_NAME} ps-10`}
               disabled={Boolean(invitationToken) || formik.isSubmitting || isOAuthLoading}
               id="email"
               name="email"
@@ -208,7 +194,7 @@ export function RegisterForm({
             }
             aria-invalid={Boolean(formik.touched.password && formik.errors.password)}
             autoComplete="new-password"
-            className={authInputClassName}
+            className={AUTH_COMPACT_INPUT_CLASS_NAME}
             disabled={formik.isSubmitting || isOAuthLoading}
             id="password"
             leadingIcon={LockKeyhole}
@@ -240,7 +226,7 @@ export function RegisterForm({
               formik.touched.confirmPassword && formik.errors.confirmPassword
             )}
             autoComplete="new-password"
-            className={authInputClassName}
+            className={AUTH_COMPACT_INPUT_CLASS_NAME}
             disabled={formik.isSubmitting || isOAuthLoading}
             id="confirmPassword"
             leadingIcon={LockKeyhole}
@@ -271,12 +257,7 @@ export function RegisterForm({
 
       {googleEnabled && googleClientId ? (
         <div className="space-y-3">
-          <div className="relative flex h-7 items-center justify-center text-xs uppercase tracking-[0.1em] text-[#8a93a6]">
-            <span className="absolute inset-x-0 top-1/2 h-px bg-[#e3e7ef]" />
-            <span className="relative bg-white px-4">
-              Or continue with
-            </span>
-          </div>
+          <AuthOAuthDivider />
           <GoogleSignInButton
             className="max-w-none"
             clientId={googleClientId}

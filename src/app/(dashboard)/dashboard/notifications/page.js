@@ -1,38 +1,19 @@
-import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { NotificationManagement } from "@/features/notifications/components/notification-management";
-import { getCurrentSession } from "@/lib/auth/session";
-import { prisma } from "@/lib/prisma";
+import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
 
 export const metadata = {
   title: "Notifications | ServiceFlow"
 };
 
 export default async function NotificationsPage() {
-  const session = await getCurrentSession();
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (!session.user.activeBusinessId) {
-    redirect("/onboarding");
-  }
-
-  const business = await prisma.business.findUnique({
-    where: {
-      id: session.user.activeBusinessId
-    },
+  const { business } = await requireDashboardPageBusiness({
     select: {
       id: true,
       name: true,
       timezone: true
     }
   });
-
-  if (!business) {
-    redirect("/onboarding");
-  }
 
   return (
     <AppShell>

@@ -9,6 +9,15 @@
     "choose": "اختر لغة التطبيق",
     "available": "اللغات المتاحة"
   },
+  "theme": {
+    "switchToDark": "Dark mode",
+    "switchToLight": "Light mode",
+    "label": "Theme",
+    "choose": "Choose theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
   "navigation": {
     "analytics": "التحليلات",
     "team": "الفريق",

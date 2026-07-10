@@ -20,10 +20,14 @@ import {
 import { loginSchema } from "@/features/auth/validation/login-schema";
 import { FieldError } from "./field-error";
 import { GoogleSignInButton } from "./google-sign-in-button";
+import {
+  AUTH_COMPACT_INPUT_CLASS_NAME,
+  AuthFormAlert,
+  AuthInputIcon,
+  AuthOAuthDivider
+} from "./auth-form-ui";
 
 const REMEMBERED_EMAIL_KEY = "serviceflow_remembered_login_email";
-const authInputClassName =
-  "h-11 rounded-[8px] border-[#c7c4d8] bg-white text-[#0b1c30] shadow-none placeholder:text-[#9aa3b2] focus-visible:ring-[#3525cd]/25 lg:h-10";
 
 function getAuthenticationError(error, t) {
   if (error === "OAuthAccountNotLinked") {
@@ -35,15 +39,6 @@ function getAuthenticationError(error, t) {
   }
 
   return null;
-}
-
-function AuthInputIcon({ icon: Icon }) {
-  return (
-    <Icon
-      className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-[#8a93a6]"
-      aria-hidden="true"
-    />
-  );
 }
 
 export function LoginForm({
@@ -206,15 +201,7 @@ export function LoginForm({
         </div>
       ) : null}
 
-      {formik.status ? (
-        <div
-          className="rounded-[8px] border border-red-200 bg-red-50 px-3 py-2 text-sm leading-5 text-red-700"
-          aria-live="polite"
-          role="alert"
-        >
-          {formik.status}
-        </div>
-      ) : null}
+      <AuthFormAlert compact>{formik.status}</AuthFormAlert>
 
       <div className="space-y-4">
         <div className="space-y-1">
@@ -231,7 +218,7 @@ export function LoginForm({
               }
               aria-invalid={Boolean(formik.touched.email && formik.errors.email)}
               autoComplete="email"
-              className={`${authInputClassName} ps-10`}
+              className={`${AUTH_COMPACT_INPUT_CLASS_NAME} ps-10`}
               disabled={formik.isSubmitting || isOAuthLoading}
               id="email"
               name="email"
@@ -267,7 +254,7 @@ export function LoginForm({
             }
             aria-invalid={Boolean(formik.touched.password && formik.errors.password)}
             autoComplete="current-password"
-            className={authInputClassName}
+            className={AUTH_COMPACT_INPUT_CLASS_NAME}
             disabled={formik.isSubmitting || isOAuthLoading}
             id="password"
             leadingIcon={LockKeyhole}
@@ -308,12 +295,7 @@ export function LoginForm({
 
       {googleEnabled && googleClientId ? (
         <div className="space-y-3">
-          <div className="relative flex h-7 items-center justify-center text-xs uppercase tracking-[0.1em] text-[#8a93a6]">
-            <span className="absolute inset-x-0 top-1/2 h-px bg-[#e3e7ef]" />
-            <span className="relative bg-white px-4">
-              Or continue with
-            </span>
-          </div>
+          <AuthOAuthDivider />
           <GoogleSignInButton
             className="max-w-none"
             clientId={googleClientId}

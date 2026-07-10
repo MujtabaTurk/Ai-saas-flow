@@ -1,6 +1,6 @@
 import { created, fail } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { prisma } from "@/lib/prisma";
 import {
   buildEmailVerificationUrl,
@@ -22,8 +22,7 @@ export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(registerSchema, payload || {});
+    const { data, errors } = await validateJsonRequest(request, registerSchema);
 
     if (errors) {
       return fail("Please check the registration form.", 422, errors);

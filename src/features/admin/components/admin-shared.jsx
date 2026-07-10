@@ -5,7 +5,7 @@ import { Select } from "@/components/ui/select";
 export function AdminSelect({ children, className = "", ...props }) {
   return (
     <Select
-      className={`h-11 rounded-2xl border border-input bg-white px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${className}`}
+      className={`h-11 rounded-2xl border border-input bg-card px-4 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:shadow-none ${className}`}
       {...props}
     >
       {children}
@@ -16,10 +16,10 @@ export function AdminSelect({ children, className = "", ...props }) {
 export function AdminSummaryCard({ label, value, tone = "default" }) {
   const valueClass =
     tone === "danger"
-      ? "text-red-700"
+      ? "text-[hsl(var(--error-foreground))]"
       : tone === "warning"
-        ? "text-amber-700"
-        : "text-growth-sidebar";
+        ? "text-[hsl(var(--warning-foreground))]"
+        : "text-foreground";
 
   return (
     <Card>

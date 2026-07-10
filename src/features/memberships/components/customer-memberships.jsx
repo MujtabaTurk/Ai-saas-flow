@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CalendarClock, CreditCard, History, RefreshCcw, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { ActionErrorDialog } from "@/components/ui/action-error-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,7 +13,6 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { ErrorDialog } from "@/components/ui/error-dialog";
 import { useToast } from "@/components/ui/toast";
 import {
   getIntervalLabel,
@@ -186,16 +186,9 @@ export function CustomerMemberships({
 
   return (
     <div className="space-y-6">
-      <ErrorDialog
-        description={actionError?.description}
-        details={actionError?.details}
-        open={Boolean(actionError)}
-        title={actionError?.title}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActionError(null);
-          }
-        }}
+      <ActionErrorDialog
+        error={actionError}
+        onClear={() => setActionError(null)}
       />
 
       <ConfirmationDialog

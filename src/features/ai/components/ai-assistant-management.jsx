@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { useFormik } from "formik";
+import { ActionErrorDialog } from "@/components/ui/action-error-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
-import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
@@ -341,16 +341,9 @@ export function AiAssistantManagement({
 
   return (
     <div className="space-y-5">
-      <ErrorDialog
-        description={actionError?.description}
-        details={actionError?.details}
-        open={Boolean(actionError)}
-        title={actionError?.title}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActionError(null);
-          }
-        }}
+      <ActionErrorDialog
+        error={actionError}
+        onClear={() => setActionError(null)}
       />
       <ConfirmationDialog
         confirmLabel="Apply draft"

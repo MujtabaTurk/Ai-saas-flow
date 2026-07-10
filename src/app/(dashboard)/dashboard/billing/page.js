@@ -1,23 +1,14 @@
-import { redirect } from "next/navigation";
 import { AppShell } from "@/components/layout/app-shell";
 import { BillingManagement } from "@/features/billing/components/billing-management";
-import { getCurrentSession } from "@/lib/auth/session";
+import { requireDashboardPageSession } from "@/lib/auth/dashboard-page";
 
 export const metadata = {
   title: "Billing | ServiceFlow"
 };
 
 export default async function BillingPage({ searchParams }) {
-  const session = await getCurrentSession();
+  const session = await requireDashboardPageSession();
   const resolvedSearchParams = await searchParams;
-
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  if (!session.user.activeBusinessId) {
-    redirect("/onboarding");
-  }
 
   return (
     <AppShell>

@@ -29,7 +29,7 @@ function Skeleton({ className, ...props }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-lg bg-gradient-to-r from-[#d8d5e8] via-[#eef3ff] to-[#d8d5e8] bg-[length:240%_100%]",
+        "animate-pulse rounded-lg bg-gradient-to-r from-[hsl(var(--sf-skeleton-from))] via-[hsl(var(--sf-skeleton-via))] to-[hsl(var(--sf-skeleton-to))] bg-[length:240%_100%]",
         className
       )}
       aria-hidden="true"
@@ -47,7 +47,7 @@ function MetricCardsSkeleton({ count = 4, className }) {
     >
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-xl border border-growth-border bg-white p-4 shadow-sm"
+          className="rounded-xl border border-growth-border bg-card p-4 shadow-sm"
           key={index}
         >
           <Skeleton className="h-3 w-24" />
@@ -68,7 +68,7 @@ function TableSkeleton({
   return (
     <div
       className={cn(
-        "overflow-x-auto rounded-xl border border-growth-border bg-white",
+        "overflow-x-auto rounded-xl border border-growth-border bg-card",
         className
       )}
       role="status"
@@ -114,7 +114,7 @@ function CardListSkeleton({ count = 4, className }) {
     <div className={cn("space-y-3", className)} role="status" aria-label="Loading records">
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-xl border border-growth-border bg-white p-4 shadow-sm"
+          className="rounded-xl border border-growth-border bg-card p-4 shadow-sm"
           key={index}
         >
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -141,7 +141,7 @@ function ChartSkeleton({ className, bars = 18 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-growth-border bg-white p-5",
+        "rounded-xl border border-growth-border bg-card p-5",
         className
       )}
       role="status"

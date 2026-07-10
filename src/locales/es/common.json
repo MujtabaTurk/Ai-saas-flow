@@ -9,6 +9,15 @@
     "choose": "Elegir idioma de la aplicación",
     "available": "Idiomas disponibles"
   },
+  "theme": {
+    "switchToDark": "Modo oscuro",
+    "switchToLight": "Modo claro",
+    "label": "Tema",
+    "choose": "Elegir tema",
+    "light": "Claro",
+    "dark": "Oscuro",
+    "system": "Sistema"
+  },
   "navigation": {
     "analytics": "Analítica",
     "activity": "Actividad",

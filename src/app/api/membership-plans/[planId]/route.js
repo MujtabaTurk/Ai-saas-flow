@@ -10,7 +10,7 @@ import {
 import { membershipPlanApiSchema } from "@/features/memberships/validation/membership-schema";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -35,10 +35,9 @@ export async function PATCH(request, { params }) {
       return fail("Membership plan not found.", 404);
     }
 
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(
-      membershipPlanApiSchema,
-      payload || {}
+    const { data, errors } = await validateJsonRequest(
+      request,
+      membershipPlanApiSchema
     );
 
     if (errors) {

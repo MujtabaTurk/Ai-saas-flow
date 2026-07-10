@@ -35,13 +35,13 @@ function ErrorDialog({
       }
     >
       <div className="space-y-4">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-700">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--error-bg))] text-[hsl(var(--error-foreground))]">
           <AlertCircle aria-hidden="true" className="h-5 w-5" />
         </div>
         {details ? (
           <AccordionPrimitive.Root collapsible type="single">
             <AccordionPrimitive.Item
-              className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700"
+              className="rounded-2xl border border-[hsl(var(--error-border))] bg-[hsl(var(--error-bg))] px-4 py-3 text-sm text-[hsl(var(--error-foreground))]"
               value="details"
             >
               <AccordionPrimitive.Header>

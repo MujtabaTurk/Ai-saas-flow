@@ -19,10 +19,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ActionErrorDialog } from "@/components/ui/action-error-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { ErrorDialog } from "@/components/ui/error-dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { Modal } from "@/components/ui/modal";
 import {
@@ -334,16 +334,9 @@ export function CustomerProfile({
 
   return (
     <div className="mx-auto max-w-[1024px] space-y-8">
-      <ErrorDialog
-        description={actionError?.description}
-        details={actionError?.details}
-        open={Boolean(actionError)}
-        title={actionError?.title}
-        onOpenChange={(open) => {
-          if (!open) {
-            setActionError(null);
-          }
-        }}
+      <ActionErrorDialog
+        error={actionError}
+        onClear={() => setActionError(null)}
       />
 
       <ConfirmationDialog

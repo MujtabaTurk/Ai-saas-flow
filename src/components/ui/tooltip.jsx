@@ -24,14 +24,14 @@ function Tooltip({
           <TooltipPrimitive.Content
             align={align}
             className={cn(
-              "z-[80] max-w-xs rounded-xl border border-growth-border bg-white px-3 py-2 text-xs font-semibold text-growth-sidebar shadow-xl shadow-emerald-950/10 outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 dark:border-white/10 dark:bg-zinc-950 dark:text-white",
+              "z-[80] max-w-xs rounded-xl border border-growth-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 dark:shadow-[hsl(var(--sf-shadow)/0.45)]",
               className
             )}
             side={side}
             sideOffset={sideOffset}
           >
             {content}
-            <TooltipPrimitive.Arrow className="fill-white dark:fill-zinc-950" />
+            <TooltipPrimitive.Arrow className="fill-card" />
           </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
       </TooltipPrimitive.Root>

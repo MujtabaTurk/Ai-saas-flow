@@ -16,7 +16,10 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))"
+          foreground: "hsl(var(--primary-foreground))",
+          hover: "hsl(var(--primary-hover) / <alpha-value>)",
+          soft: "hsl(var(--primary-soft) / <alpha-value>)",
+          mist: "hsl(var(--primary-mist) / <alpha-value>)"
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -39,24 +42,34 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))"
         },
         growth: {
-          emerald: "#10B981",
-          forest: "#3525CD",
-          mint: "#D5E0F8",
-          dashboard: "#F8F9FF",
-          sidebar: "#0B1C30",
-          border: "#C7C4D8"
+          emerald: "hsl(var(--success) / <alpha-value>)",
+          forest: "hsl(var(--primary) / <alpha-value>)",
+          mint: "hsl(var(--primary-soft) / <alpha-value>)",
+          dashboard: "hsl(var(--sf-canvas) / <alpha-value>)",
+          sidebar: "hsl(var(--sf-ink) / <alpha-value>)",
+          border: "hsl(var(--sf-border) / <alpha-value>)"
         },
         serviceflow: {
-          canvas: "#F8F9FF",
-          panel: "#FFFFFF",
-          panelSoft: "#EFF4FF",
-          border: "#C7C4D8",
-          ink: "#0B1C30",
-          muted: "#464555",
-          subtle: "#586377",
-          brand: "#3525CD",
-          brandSoft: "#D5E0F8",
-          brandMist: "#E5EEFF"
+          canvas: "hsl(var(--sf-canvas) / <alpha-value>)",
+          canvasAlt: "hsl(var(--sf-canvas-alt) / <alpha-value>)",
+          panel: "hsl(var(--sf-panel) / <alpha-value>)",
+          panelElevated: "hsl(var(--sf-panel-elevated) / <alpha-value>)",
+          panelSoft: "hsl(var(--sf-panel-soft) / <alpha-value>)",
+          border: "hsl(var(--sf-border) / <alpha-value>)",
+          borderSoft: "hsl(var(--sf-border-soft) / <alpha-value>)",
+          ink: "hsl(var(--sf-ink) / <alpha-value>)",
+          muted: "hsl(var(--sf-muted) / <alpha-value>)",
+          subtle: "hsl(var(--sf-subtle) / <alpha-value>)",
+          brand: "hsl(var(--primary) / <alpha-value>)",
+          brandHover: "hsl(var(--primary-hover) / <alpha-value>)",
+          brandSoft: "hsl(var(--primary-soft) / <alpha-value>)",
+          brandMist: "hsl(var(--primary-mist) / <alpha-value>)",
+          success: "hsl(var(--success) / <alpha-value>)",
+          successBg: "hsl(var(--success-bg) / <alpha-value>)",
+          warning: "hsl(var(--warning) / <alpha-value>)",
+          warningBg: "hsl(var(--warning-bg) / <alpha-value>)",
+          error: "hsl(var(--error) / <alpha-value>)",
+          errorBg: "hsl(var(--error-bg) / <alpha-value>)"
         }
       },
       borderRadius: {

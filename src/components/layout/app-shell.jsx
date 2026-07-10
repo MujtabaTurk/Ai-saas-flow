@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { AppShellNavigation } from "@/components/i18n/app-shell-navigation";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { DashboardRouteProgress } from "@/components/layout/dashboard-route-progress";
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -103,18 +104,18 @@ function buildDashboardSearchUrl(path, search) {
 function DashboardSearchResult({ eyebrow, href, meta, onSelect, title }) {
   return (
     <Link
-      className="block rounded-lg px-3 py-2 text-start transition-colors hover:bg-[#eff4ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+      className="block rounded-lg px-3 py-2 text-start transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       href={href}
       onClick={onSelect}
     >
-      <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-[#3525cd]">
+      <span className="block text-[11px] font-bold uppercase tracking-[0.08em] text-primary">
         {eyebrow}
       </span>
-      <span className="mt-1 block truncate text-sm font-semibold text-[#0b1c30]">
+      <span className="mt-1 block truncate text-sm font-semibold text-foreground">
         {title}
       </span>
       {meta ? (
-        <span className="mt-0.5 block truncate text-xs text-[#586377]">
+        <span className="mt-0.5 block truncate text-xs text-muted-foreground">
           {meta}
         </span>
       ) : null}
@@ -220,13 +221,13 @@ function DashboardSearch() {
       role="search"
     >
       <Search
-        className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-[#6b7280]"
+        className="pointer-events-none absolute start-3 top-1/2 size-[18px] -translate-y-1/2 text-muted-foreground"
         aria-hidden="true"
       />
       <input
         aria-label={t("navigation.dashboardSearch")}
         autoComplete="off"
-        className="h-9 w-full rounded-full bg-[#eff4ff] pe-4 ps-10 text-sm font-semibold text-[#0b1c30] outline-none transition-shadow placeholder:text-[#6b7280] focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+        className="h-9 w-full rounded-full bg-muted pe-4 ps-10 text-sm font-semibold text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
         placeholder={t("navigation.dashboardSearchPlaceholder")}
         type="search"
         value={searchValue}
@@ -238,17 +239,17 @@ function DashboardSearch() {
       />
 
       {showResultsPanel ? (
-        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-[#c7c4d8] bg-white p-2 shadow-[0_24px_60px_-30px_rgba(11,28,48,0.45)]">
+        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-growth-border bg-card p-2 shadow-[0_24px_60px_-30px_hsl(var(--sf-shadow)/0.45)]">
           {searchValue.trim().length < DASHBOARD_SEARCH_MIN_LENGTH ? (
-            <p className="px-3 py-2 text-sm text-[#586377]">
+            <p className="px-3 py-2 text-sm text-muted-foreground">
               {t("navigation.dashboardSearchMinLength")}
             </p>
           ) : effectiveSearchStatus === "loading" ? (
-            <p className="px-3 py-2 text-sm text-[#586377]">
+            <p className="px-3 py-2 text-sm text-muted-foreground">
               {t("navigation.dashboardSearchLoading")}
             </p>
           ) : effectiveSearchStatus === "error" ? (
-            <p className="px-3 py-2 text-sm text-red-600">
+            <p className="px-3 py-2 text-sm text-[hsl(var(--error-foreground))]">
               {t("navigation.dashboardSearchError")}
             </p>
           ) : hasResults ? (
@@ -281,7 +282,7 @@ function DashboardSearch() {
               ))}
             </div>
           ) : (
-            <p className="px-3 py-2 text-sm text-[#586377]">
+            <p className="px-3 py-2 text-sm text-muted-foreground">
               {t("navigation.dashboardSearchNoResults")}
             </p>
           )}
@@ -297,7 +298,7 @@ function HeaderProfileSkeleton({ className }) {
   return (
     <div
       className={cn(
-        "flex h-10 w-10 items-center justify-center gap-3 rounded-full border border-[#c7c4d8] bg-white/80 px-3 shadow-sm dark:border-white/10 dark:bg-white/5 sm:w-[12rem] sm:justify-start",
+        "flex h-10 w-10 items-center justify-center gap-3 rounded-full border border-growth-border bg-card/80 px-3 shadow-sm sm:w-[12rem] sm:justify-start",
         className
       )}
       role="status"
@@ -332,11 +333,11 @@ function SidebarBrand({
         <span className="sr-only">{t("loading.workspace")}</span>
         <div
           className={cn(
-            "animate-pulse rounded-xl bg-[#e5eeff]",
+            "animate-pulse rounded-xl bg-primary-mist",
             collapsed ? "size-10" : "h-6 w-36"
           )}
         />
-        {!collapsed ? <div className="h-3 w-24 animate-pulse rounded-xl bg-[#e5eeff]" /> : null}
+        {!collapsed ? <div className="h-3 w-24 animate-pulse rounded-xl bg-primary-mist" /> : null}
       </div>
     );
   }
@@ -345,13 +346,13 @@ function SidebarBrand({
     <Link
       aria-label={collapsed ? workspaceLabel : undefined}
       className={cn(
-        "flex min-w-0 items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30",
+        "flex min-w-0 items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         collapsed && "justify-center"
       )}
       href={homeHref}
       onClick={onNavigate}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#3525cd] text-white">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
         <Sparkles className="size-5" aria-hidden="true" />
       </span>
       <span
@@ -361,10 +362,10 @@ function SidebarBrand({
           collapsed ? "max-w-0 -translate-x-1 opacity-0" : "max-w-[11rem] translate-x-0 opacity-100"
         )}
       >
-        <span className="block truncate text-xl font-bold leading-7 text-[#3525cd]">
+        <span className="block truncate text-xl font-bold leading-7 text-primary">
           {workspaceLabel}
         </span>
-        <span className="block truncate text-[10px] font-bold uppercase leading-[15px] tracking-[0.05em] text-[#464555]">
+        <span className="block truncate text-[10px] font-bold uppercase leading-[15px] tracking-[0.05em] text-serviceflow-muted">
           {t("app.tagline")}
         </span>
       </span>
@@ -386,12 +387,12 @@ function SidebarToggle({ isCollapsed, label, onToggle, tooltipSide }) {
       <button
         aria-label={label}
         aria-pressed={isCollapsed}
-        className="app-shell-sidebar-toggle group hidden h-11 w-8 items-center justify-center rounded-full border border-[#c7c4d8]/80 bg-white/80 text-[#3525cd] shadow-[0_18px_35px_-24px_rgba(11,28,48,0.65),0_0_0_1px_rgba(255,255,255,0.55)_inset] backdrop-blur-md hover:border-[#3525cd]/35 hover:bg-[#f8f9ff]/95 hover:shadow-[0_18px_38px_-20px_rgba(53,37,205,0.45),0_0_0_1px_rgba(255,255,255,0.7)_inset] active:border-[#3525cd]/50 active:bg-[#e5eeff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f8f9ff] md:inline-flex"
+        className="app-shell-sidebar-toggle group hidden h-11 w-8 items-center justify-center rounded-full border border-growth-border/80 bg-card/80 text-primary shadow-[0_18px_35px_-24px_hsl(var(--sf-shadow)/0.65),0_0_0_1px_hsl(var(--sf-panel)/0.55)_inset] backdrop-blur-md hover:border-primary/35 hover:bg-background/95 hover:shadow-[0_18px_38px_-20px_hsl(var(--primary)/0.45),0_0_0_1px_hsl(var(--sf-panel)/0.7)_inset] active:border-primary/50 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none dark:hover:shadow-none md:inline-flex"
         type="button"
         onClick={onToggle}
       >
-        <span className="absolute inset-y-2 start-1 w-0.5 rounded-full bg-[#3525cd]/40 opacity-70 transition-[opacity,background-color] duration-200 group-hover:bg-[#3525cd]/70 group-hover:opacity-100" />
-        <span className="relative grid size-6 place-items-center rounded-md bg-[#e5eeff]/80 shadow-[0_1px_0_rgba(255,255,255,0.85)_inset] transition-colors duration-200 group-hover:bg-[#d5e0f8] group-active:bg-[#d5e0f8]">
+        <span className="absolute inset-y-2 start-1 w-0.5 rounded-full bg-primary/40 opacity-70 transition-[opacity,background-color] duration-200 group-hover:bg-primary/70 group-hover:opacity-100" />
+        <span className="relative grid size-6 place-items-center rounded-md bg-primary-mist/80 shadow-[0_1px_0_hsl(var(--sf-panel)/0.85)_inset] transition-colors duration-200 group-hover:bg-primary-soft group-active:bg-primary-soft dark:shadow-none">
           <PanelLeftClose
             className={cn(
               "absolute size-3.5 transition-[opacity,transform] duration-200",
@@ -424,6 +425,7 @@ function SidebarContent({
   navigation,
   onNavigate,
   onToggleCollapsed,
+  showGlobalControls = false,
   showProfile = false,
   workspaceLabel
 }) {
@@ -497,6 +499,14 @@ function SidebarContent({
           onNavigate={onNavigate}
           placement="footer"
         />
+        {showGlobalControls ? (
+          <div className="mt-4 border-t border-growth-border/60 pt-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <LanguageSwitcher align="start" />
+              <ThemeSwitcher align="start" />
+            </div>
+          </div>
+        ) : null}
         {showProfile ? (
           <div
             className={cn(
@@ -538,15 +548,15 @@ function MobileSidebarDrawer({
           aria-expanded={open}
           aria-haspopup="dialog"
           aria-label={t("navigation.openSidebar")}
-          className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#c7c4d8] bg-white text-[#0b1c30] shadow-sm transition-colors hover:bg-[#e5eeff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 md:hidden"
+          className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-growth-border bg-card text-foreground shadow-sm transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:shadow-none md:hidden"
           type="button"
         >
           <Menu className="size-5" aria-hidden="true" />
         </button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="app-shell-mobile-overlay fixed inset-0 z-[80] bg-[#0b1c30]/45 backdrop-blur-sm md:hidden" />
-        <DialogPrimitive.Content className="app-shell-mobile-drawer fixed inset-y-0 z-[90] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden border-e border-[#c7c4d8] bg-[#f8f9ff] shadow-2xl outline-none md:hidden">
+        <DialogPrimitive.Overlay className="app-shell-mobile-overlay fixed inset-0 z-[80] bg-[hsl(var(--sf-overlay)/0.45)] backdrop-blur-sm md:hidden" />
+        <DialogPrimitive.Content className="app-shell-mobile-drawer fixed inset-y-0 z-[90] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden border-e border-growth-border bg-background shadow-2xl outline-none md:hidden">
           <DialogPrimitive.Title className="sr-only">
             {t("navigation.workspace", { workspace: workspaceLabel })}
           </DialogPrimitive.Title>
@@ -558,7 +568,7 @@ function MobileSidebarDrawer({
               <DialogPrimitive.Close asChild>
                 <button
                   aria-label={t("navigation.closeSidebar")}
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-[#464555] transition-colors hover:bg-[#e5eeff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   type="button"
                 >
                   <X className="size-4" aria-hidden="true" />
@@ -569,6 +579,7 @@ function MobileSidebarDrawer({
             isLoading={isLoading}
             navigation={navigation}
             onNavigate={onNavigate}
+            showGlobalControls
             workspaceLabel={workspaceLabel}
           />
         </DialogPrimitive.Content>
@@ -626,12 +637,12 @@ export function AppShell({
 
   return (
     <div
-      className="app-shell-root min-h-screen bg-[#f8f9ff] text-[#0b1c30] dark:bg-background"
+      className="app-shell-root min-h-screen bg-background text-foreground"
       data-sidebar-ready={isSidebarReady ? "true" : "false"}
       data-sidebar-state={isSidebarCollapsed ? "collapsed" : "expanded"}
     >
       <DashboardRouteProgress />
-      <aside className="app-shell-sidebar fixed inset-y-0 hidden flex-col overflow-visible border-e border-[#c7c4d8] bg-[#f8f9ff] md:flex">
+      <aside className="app-shell-sidebar fixed inset-y-0 hidden flex-col overflow-visible border-e border-growth-border bg-background md:flex">
         <SidebarContent
           homeHref={homeHref}
           isCollapsed={isSidebarCollapsed}
@@ -643,7 +654,7 @@ export function AppShell({
         />
       </aside>
       <main className="app-shell-main">
-        <header className="app-shell-header sticky top-0 h-16 border-b border-[#c7c4d8] bg-[#f8f9ff]/80 px-4 shadow-sm backdrop-blur-[6px] dark:border-white/10 dark:bg-card/90 sm:px-6 lg:px-8">
+        <header className="app-shell-header sticky top-0 h-16 border-b border-growth-border bg-background/80 px-4 shadow-sm backdrop-blur-[6px] sm:px-6 lg:px-8">
           <div className="flex h-full w-full items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <MobileSidebarDrawer
@@ -657,25 +668,28 @@ export function AppShell({
               />
               <div className="min-w-0">
                 <Link
-                  className="block truncate text-base font-bold text-[#0b1c30] transition-colors hover:text-[#3525cd] dark:text-white md:hidden"
+                  className="block truncate text-base font-bold text-foreground transition-colors hover:text-primary md:hidden"
                   href={homeHref}
                 >
                   {workspaceLabel}
                 </Link>
-                <p className="hidden truncate text-sm font-semibold text-[#464555] md:block">
+                <p className="hidden truncate text-sm font-semibold text-serviceflow-muted md:block">
                   {workspaceLabel}
                 </p>
               </div>
             </div>
             {homeHref.startsWith("/dashboard") ? <DashboardSearch /> : null}
             <div className="flex shrink-0 items-center gap-3">
-              <LanguageSwitcher />
+              <div className="hidden items-center gap-2 md:flex">
+                <LanguageSwitcher />
+                <ThemeSwitcher />
+              </div>
               {isLoading ? (
                 <HeaderProfileSkeleton className="md:hidden" />
               ) : (
                 <>
                 {planLabel ? (
-                  <span className="hidden items-center gap-2 rounded-full border border-[#4f46e5]/20 bg-[#4f46e5]/10 px-4 py-2 text-sm font-semibold text-[#4f46e5] sm:inline-flex">
+                  <span className="hidden items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary sm:inline-flex">
                     <Sparkles className="size-4" aria-hidden="true" />
                     {planLabel}
                   </span>
@@ -683,7 +697,7 @@ export function AppShell({
                 {homeHref.startsWith("/dashboard") ? (
                   <Link
                     aria-label={t("navigation.notifications")}
-                    className="relative inline-flex size-9 items-center justify-center rounded-full text-[#0b1c30] transition-colors hover:bg-[#e5eeff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+                    className="relative inline-flex size-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     href="/dashboard/notifications"
                   >
                     <Bell className="size-4" aria-hidden="true" />
@@ -708,7 +722,7 @@ export function AppShell({
         {homeHref.startsWith("/dashboard") ? (
           <Link
             aria-label={t("navigation.quickBooking")}
-            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-[#3525cd] text-white shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition hover:bg-[#2c1ea9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 focus-visible:ring-offset-2"
+            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none"
             href="/dashboard/bookings"
             title={t("navigation.quickBooking")}
           >
@@ -734,7 +748,7 @@ export function AppShellPageSkeleton() {
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, index) => (
           <div
-            className="rounded-xl border border-growth-border bg-white p-4 shadow-sm dark:border-white/10 dark:bg-card"
+            className="rounded-xl border border-growth-border bg-card p-4 shadow-sm"
             key={index}
           >
             <Skeleton className="h-3 w-24" />
@@ -743,7 +757,7 @@ export function AppShellPageSkeleton() {
           </div>
         ))}
       </div>
-      <div className="rounded-xl border border-growth-border bg-white p-5 shadow-sm dark:border-white/10 dark:bg-card">
+      <div className="rounded-xl border border-growth-border bg-card p-5 shadow-sm">
         <Skeleton className="h-5 w-44" />
         <Skeleton className="mt-3 h-3 w-64 max-w-full" />
         <div className="mt-6 space-y-3">

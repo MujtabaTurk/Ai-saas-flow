@@ -87,9 +87,9 @@ export function LoginEntry({
               aria-pressed={isSelected}
               className={`min-h-[76px] rounded-[8px] border px-3 py-3 text-start transition ${
                 isSelected && isPlatformMode
-                  ? "border-[#f59e0b] bg-[#fff7ed] text-[#7c2d12] shadow-sm ring-1 ring-[#f59e0b]/25"
+                  ? "border-[#f59e0b] bg-[#fff7ed] text-[#7c2d12] shadow-sm ring-1 ring-[#f59e0b]/25 dark:shadow-none"
                   : isSelected
-                    ? "border-[#3525cd] bg-[#f8f9ff] text-[#3525cd] shadow-sm ring-1 ring-[#3525cd]/15"
+                    ? "border-[#3525cd] bg-[#f8f9ff] text-[#3525cd] shadow-sm ring-1 ring-[#3525cd]/15 dark:shadow-none"
                     : isPlatformMode
                       ? "border-[#f6c56d] bg-white text-[#7c2d12] hover:bg-[#fff7ed]"
                       : "border-[#d8dff0] bg-white text-[#0b1c30] hover:bg-[#f8f9ff]"

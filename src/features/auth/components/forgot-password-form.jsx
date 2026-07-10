@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { forgotPasswordSchema } from "@/features/auth/validation/forgot-password-schema";
+import {
+  AUTH_INPUT_CLASS_NAME,
+  AuthFormAlert,
+  AuthInputIcon
+} from "./auth-form-ui";
 import { FieldError } from "./field-error";
-
-const authInputClassName =
-  "h-11 rounded-[8px] border-[#c7c4d8] bg-white text-[#0b1c30] shadow-none placeholder:text-[#9aa3b2] focus-visible:ring-[#3525cd]/25";
 
 export function ForgotPasswordForm({
   resetPath = "/reset-password"
@@ -68,22 +70,14 @@ export function ForgotPasswordForm({
   return (
     <form className="space-y-5" onSubmit={formik.handleSubmit}>
       {formik.status ? (
-        <div
-          aria-live="polite"
-          className={
-            formik.status.type === "error"
-              ? "rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
-              : "rounded-[8px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800"
-          }
-          role={formik.status.type === "error" ? "alert" : "status"}
-        >
+        <AuthFormAlert variant={formik.status.type}>
           <p>{formik.status.message}</p>
           {formik.status.devResetUrl ? (
             <Link className="mt-2 block font-semibold text-[#3525cd] hover:underline" href={formik.status.devResetUrl}>
               {t("forgotPassword.devLink")}
             </Link>
           ) : null}
-        </div>
+        </AuthFormAlert>
       ) : null}
 
       <div className="space-y-1">
@@ -91,10 +85,7 @@ export function ForgotPasswordForm({
           Email Address
         </Label>
         <div className="relative">
-          <Mail
-            className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-[#8a93a6]"
-            aria-hidden="true"
-          />
+          <AuthInputIcon icon={Mail} />
           <Input
             aria-describedby={
               formik.touched.email && formik.errors.email
@@ -103,7 +94,7 @@ export function ForgotPasswordForm({
             }
             aria-invalid={Boolean(formik.touched.email && formik.errors.email)}
             autoComplete="email"
-            className={`${authInputClassName} ps-10`}
+            className={`${AUTH_INPUT_CLASS_NAME} ps-10`}
             id="email"
             name="email"
             placeholder="name@company.com"

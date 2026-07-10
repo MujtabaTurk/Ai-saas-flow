@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { resetPasswordSchema } from "@/features/auth/validation/reset-password-schema";
+import {
+  AUTH_INPUT_CLASS_NAME,
+  AuthFormAlert
+} from "./auth-form-ui";
 import { FieldError } from "./field-error";
-
-const authInputClassName =
-  "h-11 rounded-[8px] border-[#c7c4d8] bg-white text-[#0b1c30] shadow-none placeholder:text-[#9aa3b2] focus-visible:ring-[#3525cd]/25";
 
 export function ResetPasswordForm({
   loginPath = "/login"
@@ -67,31 +68,20 @@ export function ResetPasswordForm({
   return (
     <form className="space-y-5" onSubmit={formik.handleSubmit}>
       {formik.status ? (
-        <div
-          aria-live="polite"
-          className={
-            formik.status.type === "error"
-              ? "rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-sm leading-6 text-red-700"
-              : "rounded-[8px] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm leading-6 text-emerald-800"
-          }
-          role={formik.status.type === "error" ? "alert" : "status"}
-        >
+        <AuthFormAlert variant={formik.status.type}>
           <p>{formik.status.message}</p>
           {formik.status.type === "success" ? (
             <Link className="mt-2 block font-semibold text-[#3525cd] hover:underline" href={loginPath}>
               {t("resetPassword.goLogin")}
             </Link>
           ) : null}
-        </div>
+        </AuthFormAlert>
       ) : null}
 
       {!token ? (
-        <div
-          className="rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-800"
-          role="alert"
-        >
+        <AuthFormAlert variant="warning">
           {t("resetPassword.missingToken")}
-        </div>
+        </AuthFormAlert>
       ) : null}
 
       <div className="space-y-1">
@@ -106,7 +96,7 @@ export function ResetPasswordForm({
           }
           aria-invalid={Boolean(formik.touched.password && formik.errors.password)}
           autoComplete="new-password"
-          className={authInputClassName}
+          className={AUTH_INPUT_CLASS_NAME}
           id="password"
           leadingIcon={LockKeyhole}
           name="password"
@@ -134,7 +124,7 @@ export function ResetPasswordForm({
             formik.touched.confirmPassword && formik.errors.confirmPassword
           )}
           autoComplete="new-password"
-          className={authInputClassName}
+          className={AUTH_INPUT_CLASS_NAME}
           id="confirmPassword"
           leadingIcon={LockKeyhole}
           name="confirmPassword"

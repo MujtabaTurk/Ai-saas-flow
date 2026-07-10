@@ -32,7 +32,7 @@ export const metadata = {
 };
 
 const selectClassName =
-  "flex h-11 w-full rounded-2xl border border-input bg-white px-4 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "flex h-11 w-full rounded-2xl border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:shadow-none";
 
 function buildDirectoryHref(filters, updates = {}) {
   const nextFilters = {
@@ -94,7 +94,7 @@ function formatPlanPrice(plan, language) {
 function RatingPill({ summary }) {
   if (!summary?.total) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
+      <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
         <Star className="size-3.5" aria-hidden="true" />
         New
       </span>
@@ -102,7 +102,7 @@ function RatingPill({ summary }) {
   }
 
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+    <span className="inline-flex items-center gap-1 rounded-full bg-[hsl(var(--warning-bg))] px-3 py-1 text-xs font-semibold text-[hsl(var(--warning-foreground))]">
       <Star className="size-3.5 fill-current" aria-hidden="true" />
       {summary.averageRating} ({summary.total})
     </span>
@@ -114,11 +114,11 @@ function DirectoryFilters({ facets, filters }) {
     filters.q || filters.industry || filters.city || filters.sort !== "recommended";
 
   return (
-    <Card className="border-slate-200 bg-white">
+    <Card className="border-growth-border bg-card">
       <CardContent className="p-5">
         <form action="/businesses" className="grid gap-3 xl:grid-cols-[1.2fr_0.8fr_0.8fr_0.7fr_auto]">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <Input
               className="pl-11"
               defaultValue={filters.q}
@@ -190,7 +190,7 @@ function DirectoryFilters({ facets, filters }) {
 
 function BusinessCard({ business, language }) {
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg">
+    <article className="flex h-full flex-col rounded-2xl border border-growth-border bg-card p-5 text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg dark:shadow-none">
       <div className="flex items-start gap-4">
         {business.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -225,11 +225,11 @@ function BusinessCard({ business, language }) {
       </div>
 
       {business.description ? (
-        <p className="mt-4 line-clamp-3 text-sm leading-6 text-slate-600">
+        <p className="mt-4 line-clamp-3 text-sm leading-6 text-muted-foreground">
           {business.description}
         </p>
       ) : (
-        <p className="mt-4 text-sm leading-6 text-slate-500">
+        <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Service business accepting online discovery through ServiceFlow.
         </p>
       )}
@@ -294,7 +294,7 @@ function Pagination({ filters, pagination }) {
   return (
     <nav
       aria-label="Businesses pagination"
-      className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row"
+      className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-growth-border bg-card p-4 sm:flex-row"
     >
       <p className="text-sm text-muted-foreground">
         Page {pagination.page} of {pagination.totalPages}
@@ -336,8 +336,8 @@ export default async function BusinessesDirectoryPage({ searchParams }) {
     await getBusinessDirectory(resolvedSearchParams);
 
   return (
-    <main className="min-h-screen bg-slate-50 text-growth-sidebar">
-      <section className="border-b border-slate-200 bg-white px-4 py-8 sm:px-6">
+    <main className="min-h-screen bg-background text-foreground">
+      <section className="border-b border-growth-border bg-card px-4 py-8 sm:px-6">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Link
@@ -350,32 +350,32 @@ export default async function BusinessesDirectoryPage({ searchParams }) {
             <h1 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
               Discover businesses
             </h1>
-            <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
+            <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
               Search active service businesses, compare services and ratings,
               then book from the same public booking flow.
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4">
               <Building2 className="size-5 text-primary" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">{pagination.totalItems}</p>
-              <p className="text-xs font-semibold uppercase text-slate-500">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">
                 Businesses
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-              <SlidersHorizontal className="size-5 text-sky-600" aria-hidden="true" />
+            <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4">
+              <SlidersHorizontal className="size-5 text-primary" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">{facets.industries.length}</p>
-              <p className="text-xs font-semibold uppercase text-slate-500">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">
                 Industries
               </p>
             </div>
-            <div className="hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:block">
-              <CalendarCheck2 className="size-5 text-amber-600" aria-hidden="true" />
+            <div className="hidden rounded-2xl border border-growth-border bg-growth-dashboard p-4 sm:block">
+              <CalendarCheck2 className="size-5 text-[hsl(var(--warning-foreground))]" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">
                 {businesses.filter((business) => business.acceptingBookings).length}
               </p>
-              <p className="text-xs font-semibold uppercase text-slate-500">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">
                 Bookable now
               </p>
             </div>

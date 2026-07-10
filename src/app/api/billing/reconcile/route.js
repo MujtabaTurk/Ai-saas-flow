@@ -10,7 +10,7 @@ import {
 import { checkoutReconciliationSchema } from "@/features/billing/validation/billing-schema";
 import { fail, ok } from "@/lib/api/api-response";
 import { handleApiError } from "@/lib/api/handle-api-error";
-import { validateRequest } from "@/lib/api/validate-request";
+import { validateJsonRequest } from "@/lib/api/request";
 import { requireCurrentUser } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
@@ -22,10 +22,9 @@ export async function POST(request) {
   try {
     const user = await requireCurrentUser();
     userId = user.id;
-    const payload = await request.json().catch(() => null);
-    const { data, errors } = await validateRequest(
-      checkoutReconciliationSchema,
-      payload || {}
+    const { data, errors } = await validateJsonRequest(
+      request,
+      checkoutReconciliationSchema
     );
 
     if (errors) {

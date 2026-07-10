@@ -1,40 +1,34 @@
 "use client";
 
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowRight,
-  BarChart3,
-  BriefcaseBusiness,
-  Building2,
-  CalendarCheck,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
-  CreditCard,
-  Dumbbell,
-  GraduationCap,
-  HeartPulse,
-  Instagram,
   Layers3,
-  Linkedin,
-  MousePointerClick,
-  Rocket,
-  Scissors,
+  Menu,
   Search,
-  Send,
-  Settings2,
-  Smartphone,
-  Sparkles,
   Star,
-  Stethoscope,
-  Twitter,
-  Users,
-  Wrench,
-  Youtube
+  X
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { FeaturedBusinessesCarousel } from "@/components/marketing/featured-businesses-carousel";
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
+import {
+  bookingRouteConfig,
+  categoryConfig,
+  faqKeys,
+  featureConfig,
+  footerGroups,
+  footerHrefs,
+  navLinks,
+  planOrder,
+  publishStepConfig,
+  socialLinks,
+  testimonialKeys
+} from "@/components/marketing/home-page-config";
 import {
   Accordion,
   AccordionContent,
@@ -44,80 +38,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-
-const navLinks = [
-  { key: "discover", href: "/businesses" },
-  { key: "featured", href: "#featured-businesses" },
-  { key: "features", href: "#features" },
-  { key: "pricing", href: "#pricing" },
-  { key: "login", href: "/login" }
-];
-
-const categoryConfig = [
-  { key: "salons", icon: Scissors, accent: "bg-rose-50 text-rose-600" },
-  { key: "gyms", icon: Dumbbell, accent: "bg-orange-50 text-orange-600" },
-  { key: "clinics", icon: Stethoscope, accent: "bg-sky-50 text-sky-600" },
-  { key: "consultants", icon: BriefcaseBusiness, accent: "bg-indigo-50 text-indigo-600" },
-  { key: "coaching", icon: GraduationCap, accent: "bg-amber-50 text-amber-600" },
-  { key: "repair", icon: Wrench, accent: "bg-slate-100 text-slate-700" },
-  { key: "wellness", icon: HeartPulse, accent: "bg-emerald-50 text-emerald-600" }
-];
-
-const featureConfig = [
-  { key: "bookingPages", icon: CalendarCheck, accent: "bg-indigo-50 text-[#3525cd]" },
-  { key: "customerProfiles", icon: Users, accent: "bg-sky-50 text-sky-600" },
-  { key: "payments", icon: CreditCard, accent: "bg-emerald-50 text-emerald-600" },
-  { key: "memberships", icon: Sparkles, accent: "bg-amber-50 text-amber-600" },
-  { key: "analytics", icon: BarChart3, accent: "bg-cyan-50 text-cyan-600" },
-  { key: "mobile", icon: Smartphone, accent: "bg-rose-50 text-rose-600" }
-];
-
-const bookingRouteConfig = [
-  { key: "visit", icon: MousePointerClick },
-  { key: "service", icon: Layers3 },
-  { key: "slot", icon: Clock3 },
-  { key: "confirm", icon: CheckCircle2 },
-  { key: "confirmation", icon: Send }
-];
-
-const publishStepConfig = [
-  { key: "business", icon: Building2 },
-  { key: "services", icon: Settings2 },
-  { key: "availability", icon: CalendarDays },
-  { key: "publish", icon: Rocket },
-  { key: "bookings", icon: CalendarCheck }
-];
-
-const planOrder = ["TRIAL", "BASIC", "PRO"];
-const testimonialKeys = ["maya", "daniel", "aisha", "leo"];
-const faqKeys = ["booking", "staff", "online", "memberships", "payments", "analytics"];
-const footerGroups = [
-  { key: "product", links: ["discover", "featured", "features", "pricing", "memberships"] },
-  { key: "company", links: ["about", "contact", "careers"] },
-  { key: "resources", links: ["help", "docs", "faqs"] },
-  { key: "legal", links: ["privacy", "terms"] }
-];
-const footerHrefs = {
-  about: "#",
-  careers: "#",
-  contact: "#",
-  discover: "/businesses",
-  docs: "#",
-  faqs: "#faq",
-  featured: "#featured-businesses",
-  features: "#features",
-  help: "#",
-  memberships: "#features",
-  pricing: "#pricing",
-  privacy: "#",
-  terms: "#"
-};
-const socialLinks = [
-  { key: "twitter", href: "#", icon: Twitter },
-  { key: "linkedin", href: "#", icon: Linkedin },
-  { key: "instagram", href: "#", icon: Instagram },
-  { key: "youtube", href: "#", icon: Youtube }
-];
 
 function formatPrice(cents, language) {
   return new Intl.NumberFormat(language, {
@@ -131,7 +51,7 @@ function PrimaryLink({ children, className, href }) {
   return (
     <Link
       className={cn(
-        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] bg-[#3525cd] px-7 text-sm font-semibold text-white shadow-[0px_10px_15px_-3px_rgba(53,37,205,0.2),0px_4px_6px_-4px_rgba(53,37,205,0.2)] transition-colors hover:bg-[#2f22b6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/40 sm:w-auto",
+        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] bg-[#3525cd] px-7 text-sm font-semibold text-white shadow-[0px_10px_15px_-3px_rgba(53,37,205,0.2),0px_4px_6px_-4px_rgba(53,37,205,0.2)] transition-colors hover:bg-[#2f22b6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/40 dark:shadow-none sm:w-auto",
         className
       )}
       href={href}
@@ -185,6 +105,11 @@ function SectionHeader({ align = "center", description, inverse = false, title }
 
 function SiteNav() {
   const { t } = useTranslation(["public", "common"]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  function closeMobileMenu() {
+    setIsMobileMenuOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-[#c7c4d8] bg-[#f8f9ff]/90 backdrop-blur-[6px]">
@@ -215,12 +140,88 @@ function SiteNav() {
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="hidden shrink-0 items-center gap-2 md:flex">
           <LanguageSwitcher />
-          <PrimaryLink className="hidden min-h-11 rounded-[8px] px-5 sm:inline-flex" href="/register">
+          <ThemeSwitcher />
+          <PrimaryLink className="min-h-11 rounded-[8px] px-5" href="/register">
             {t("landing.nav.cta")}
           </PrimaryLink>
         </div>
+
+        <DialogPrimitive.Root
+          open={isMobileMenuOpen}
+          onOpenChange={setIsMobileMenuOpen}
+        >
+          <DialogPrimitive.Trigger asChild>
+            <button
+              aria-expanded={isMobileMenuOpen}
+              aria-haspopup="dialog"
+              aria-label={t("navigation.openSidebar", { ns: "common" })}
+              className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg border border-[#c7c4d8] bg-white text-[#0b1c30] shadow-sm transition-colors hover:border-[#3525cd]/35 hover:bg-[#eef4ff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 dark:shadow-none md:hidden"
+              type="button"
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </button>
+          </DialogPrimitive.Trigger>
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-[#0b1c30]/35 backdrop-blur-sm md:hidden" />
+            <DialogPrimitive.Content className="fixed inset-y-0 end-0 z-[80] flex w-[min(22rem,calc(100vw-2rem))] flex-col border-s border-[#c7c4d8] bg-[#f8f9ff] shadow-2xl outline-none md:hidden">
+              <DialogPrimitive.Title className="sr-only">
+                {t("landing.nav.ariaLabel")}
+              </DialogPrimitive.Title>
+              <div className="flex items-center justify-between gap-4 border-b border-[#c7c4d8] px-5 py-4">
+                <Link
+                  aria-label={t("landing.nav.home")}
+                  className="flex min-w-0 items-center gap-3 text-lg font-bold text-[#0b1c30]"
+                  href="/"
+                  onClick={closeMobileMenu}
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-[#3525cd] text-white">
+                    <Layers3 className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="truncate">{t("common:app.shortName")}</span>
+                </Link>
+                <DialogPrimitive.Close asChild>
+                  <button
+                    aria-label={t("navigation.closeSidebar", { ns: "common" })}
+                    className="inline-flex size-10 shrink-0 items-center justify-center rounded-lg text-[#464555] transition-colors hover:bg-[#eef4ff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+                    type="button"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </DialogPrimitive.Close>
+              </div>
+
+              <div className="flex min-h-0 flex-1 flex-col justify-between gap-8 overflow-y-auto px-5 py-6">
+                <div className="space-y-2">
+                  {navLinks.map((item) => (
+                    <Link
+                      className="flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold text-[#464555] transition-colors hover:bg-[#eef4ff] hover:text-[#3525cd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30"
+                      href={item.href}
+                      key={item.key}
+                      onClick={closeMobileMenu}
+                    >
+                      {t(`landing.nav.links.${item.key}`)}
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="border-t border-[#c7c4d8] pt-5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <LanguageSwitcher align="start" />
+                    <ThemeSwitcher align="start" />
+                  </div>
+                  <PrimaryLink
+                    className="mt-4 min-h-11 w-full rounded-[8px] px-5"
+                    href="/register"
+                  >
+                    {t("landing.nav.cta")}
+                  </PrimaryLink>
+                </div>
+              </div>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       </nav>
     </header>
   );

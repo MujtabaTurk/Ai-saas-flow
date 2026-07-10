@@ -11,12 +11,42 @@ export const metadata = {
   description: "AI-assisted booking and subscription platform for service businesses."
 };
 
+const themeScript = `
+  (function () {
+    try {
+      var storedTheme = window.localStorage.getItem("serviceflow:theme");
+      var themePreference =
+        storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
+          ? storedTheme
+          : "system";
+      var systemTheme =
+        window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      var theme = themePreference === "system" ? systemTheme : themePreference;
+      var root = document.documentElement;
+
+      root.classList.toggle("dark", theme === "dark");
+      root.dataset.theme = theme;
+      root.dataset.themePreference = themePreference;
+      root.style.colorScheme = theme;
+    } catch (error) {
+      document.documentElement.dataset.theme = "light";
+      document.documentElement.dataset.themePreference = "system";
+      document.documentElement.style.colorScheme = "light";
+    }
+  })();
+`;
+
 export default async function RootLayout({ children }) {
   const language = await resolveRequestLanguage();
   const direction = getLanguageDirection(language);
 
   return (
     <html lang={language} dir={direction} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className="font-sans" data-language={language}>
         <AppProviders initialLanguage={language}>{children}</AppProviders>
       </body>
