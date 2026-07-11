@@ -4,6 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const modalSizes = {
   sm: "max-w-md",
@@ -101,9 +102,13 @@ function Modal({
               </button>
             </DialogPrimitive.Close>
           </div>
-          <div className="flex-1 overflow-y-auto px-5 py-5 sm:px-6">
+          <ScrollArea
+            className="min-h-0 flex-1"
+            viewportClassName="px-5 py-5 sm:px-6"
+            viewportProps={{ tabIndex: 0 }}
+          >
             {children}
-          </div>
+          </ScrollArea>
           {footer ? (
             <div className="border-t border-growth-border bg-muted/80 px-5 py-4 sm:px-6">
               {footer}

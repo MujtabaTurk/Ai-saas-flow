@@ -320,47 +320,34 @@ function SidebarBrand({
   onNavigate,
   workspaceLabel
 }) {
-  const { i18n, t } = useTranslation("common");
-  const tooltipSide = i18n.dir() === "rtl" ? "left" : "right";
+  const { t } = useTranslation("common");
+
+  if (collapsed) {
+    return null;
+  }
 
   if (isLoading) {
     return (
       <div
-        className={cn("space-y-2", collapsed && "flex flex-col items-center")}
+        className="space-y-2"
         role="status"
         aria-label={t("loading.workspace")}
       >
         <span className="sr-only">{t("loading.workspace")}</span>
-        <div
-          className={cn(
-            "animate-pulse rounded-xl bg-primary-mist",
-            collapsed ? "size-10" : "h-6 w-36"
-          )}
-        />
-        {!collapsed ? <div className="h-3 w-24 animate-pulse rounded-xl bg-primary-mist" /> : null}
+        <div className="h-6 w-36 animate-pulse rounded-xl bg-primary-mist" />
+        <div className="h-3 w-24 animate-pulse rounded-xl bg-primary-mist" />
       </div>
     );
   }
 
   const brand = (
     <Link
-      aria-label={collapsed ? workspaceLabel : undefined}
-      className={cn(
-        "flex min-w-0 items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        collapsed && "justify-center"
-      )}
+      className="flex min-w-0 items-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       href={homeHref}
       onClick={onNavigate}
     >
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Sparkles className="size-5" aria-hidden="true" />
-      </span>
       <span
-        aria-hidden={collapsed}
-        className={cn(
-          "min-w-0 overflow-hidden transition-[max-width,opacity,transform] duration-200",
-          collapsed ? "max-w-0 -translate-x-1 opacity-0" : "max-w-[11rem] translate-x-0 opacity-100"
-        )}
+        className="min-w-0 max-w-[11rem] overflow-hidden"
       >
         <span className="block truncate text-xl font-bold leading-7 text-primary">
           {workspaceLabel}
@@ -372,13 +359,7 @@ function SidebarBrand({
     </Link>
   );
 
-  return collapsed ? (
-    <Tooltip content={workspaceLabel} side={tooltipSide}>
-      {brand}
-    </Tooltip>
-  ) : (
-    brand
-  );
+  return brand;
 }
 
 function SidebarToggle({ isCollapsed, label, onToggle, tooltipSide }) {

@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { BillingManagement } from "@/features/billing/components/billing-management";
 import { requireDashboardPageSession } from "@/lib/auth/dashboard-page";
 
@@ -11,7 +10,7 @@ export default async function BillingPage({ searchParams }) {
   const resolvedSearchParams = await searchParams;
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">
@@ -38,6 +37,6 @@ export default async function BillingPage({ searchParams }) {
           }
         />
       </div>
-    </AppShell>
+    </>
   );
 }

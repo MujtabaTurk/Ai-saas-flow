@@ -23,6 +23,7 @@ import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   TableSkeleton,
   useDelayedVisibility
@@ -294,7 +295,7 @@ export function BusinessMembershipDashboard({
                 </Button>
               </div>
             ) : (
-                <div className="sf-dashboard-table-wrap">
+                <HorizontalScrollArea className="sf-dashboard-table-wrap">
                   <table className="sf-dashboard-table min-w-[840px]">
                     <thead>
                     <tr>
@@ -355,7 +356,7 @@ export function BusinessMembershipDashboard({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             )}
           </CardContent>
           </Card>
@@ -402,7 +403,7 @@ export function BusinessMembershipDashboard({
                 <h3 className="text-lg font-bold text-growth-sidebar">No members found</h3>
               </div>
             ) : (
-              <div className="sf-dashboard-table-wrap">
+              <HorizontalScrollArea className="sf-dashboard-table-wrap">
                 <table className="sf-dashboard-table min-w-[900px]">
                   <thead>
                     <tr>
@@ -446,7 +447,7 @@ export function BusinessMembershipDashboard({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </HorizontalScrollArea>
             )}
           </CardContent>
           </Card>
@@ -483,7 +484,7 @@ export function BusinessMembershipDashboard({
                   </div>
                 </div>
 
-                <div className="sf-dashboard-table-wrap">
+                <HorizontalScrollArea className="sf-dashboard-table-wrap">
                   <table className="sf-dashboard-table min-w-[700px]">
                     <thead>
                       <tr>
@@ -522,7 +523,7 @@ export function BusinessMembershipDashboard({
                       ))}
                     </tbody>
                   </table>
-                </div>
+                </HorizontalScrollArea>
               </>
             ) : null}
           </CardContent>

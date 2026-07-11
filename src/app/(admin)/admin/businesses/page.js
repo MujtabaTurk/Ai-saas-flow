@@ -1,5 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { adminNavigation } from "@/config/navigation";
 import { BusinessManagement } from "@/features/admin/components/business-management";
 import { requireSuperAdminPageSession } from "@/features/admin/page-access";
 
@@ -11,7 +9,7 @@ export default async function AdminBusinessesPage() {
   await requireSuperAdminPageSession();
 
   return (
-    <AppShell navigation={adminNavigation} workspaceLabel="ServiceFlow Admin">
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">
@@ -27,6 +25,6 @@ export default async function AdminBusinessesPage() {
         </div>
         <BusinessManagement />
       </div>
-    </AppShell>
+    </>
   );
 }

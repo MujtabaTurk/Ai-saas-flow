@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { AvailabilityManagement } from "@/features/availability/components/availability-management";
 import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
@@ -18,7 +17,7 @@ export default async function AvailabilityPage() {
   });
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">{business.name}</p>
@@ -36,6 +35,6 @@ export default async function AvailabilityPage() {
           }
         />
       </div>
-    </AppShell>
+    </>
   );
 }

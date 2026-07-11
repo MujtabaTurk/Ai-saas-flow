@@ -1,18 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Layers3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 function BrandMark() {
   return (
     <Link
       aria-label="ServiceFlow home"
-      className="inline-flex items-center gap-3"
+      className="inline-flex items-center"
       href="/"
     >
-      <span className="grid size-9 place-items-center rounded-[8px] bg-[#3525cd] text-white ring-1 ring-[#3525cd]/10 sm:size-10 sm:rounded-[10px]">
-        <Layers3 className="size-5" aria-hidden="true" />
-      </span>
       <span className="text-xl font-bold leading-8 tracking-tight text-[#0b1c30] sm:text-[22px]">
         ServiceFlow
       </span>
@@ -63,39 +60,45 @@ export function AuthLayout({
   return (
     <main className="min-h-dvh w-full overflow-x-hidden bg-white text-[#0b1c30] lg:h-dvh lg:min-h-0 lg:overflow-hidden">
       <div className="grid min-h-dvh w-full min-w-0 grid-cols-[minmax(0,1fr)] lg:h-full lg:min-h-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="flex min-h-dvh w-full min-w-0 flex-col items-center justify-start overflow-y-auto px-5 py-7 sm:px-8 sm:py-8 lg:h-full lg:min-h-0 lg:px-8 lg:py-6 xl:px-10">
-          <div
-            className={cn(
-              "my-auto w-full min-w-0 max-w-[calc(100vw-2.5rem)] sm:max-w-[430px]",
-              className
-            )}
-          >
-            <BrandMark />
-            <div className="mt-5 sm:mt-6">
-              <div className="mb-5 space-y-1.5 lg:mb-4">
-                {eyebrow ? (
-                  <p className="text-sm font-semibold text-[#3525cd]">
-                    {eyebrow}
-                  </p>
-                ) : null}
-                <h1 className="text-[30px] font-bold leading-[1.08] tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[34px]">
-                  {title}
-                </h1>
-                {description ? (
-                  <p className="text-sm leading-6 text-[#586377] sm:text-base lg:text-sm">
-                    {description}
-                  </p>
-                ) : null}
+        <ScrollArea
+          className="min-h-dvh w-full min-w-0 lg:h-full lg:min-h-0"
+          viewportClassName="px-5 py-7 [&>div]:!block [&>div]:min-h-full sm:px-8 sm:py-8 lg:px-8 lg:py-6 xl:px-10"
+          viewportProps={{ tabIndex: 0 }}
+        >
+          <div className="flex min-h-full w-full items-center justify-center">
+            <div
+              className={cn(
+                "w-full min-w-0 max-w-[calc(100vw-2.5rem)] sm:max-w-[430px]",
+                className
+              )}
+            >
+              <BrandMark />
+              <div className="mt-5 sm:mt-6">
+                <div className="mb-5 space-y-1.5 lg:mb-4">
+                  {eyebrow ? (
+                    <p className="text-sm font-semibold text-[#3525cd]">
+                      {eyebrow}
+                    </p>
+                  ) : null}
+                  <h1 className="text-[30px] font-bold leading-[1.08] tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[34px]">
+                    {title}
+                  </h1>
+                  {description ? (
+                    <p className="text-sm leading-6 text-[#586377] sm:text-base lg:text-sm">
+                      {description}
+                    </p>
+                  ) : null}
+                </div>
               </div>
+              {children}
+              {footer ? (
+                <div className="mt-5 text-center text-sm text-[#586377] lg:mt-4">
+                  {footer}
+                </div>
+              ) : null}
             </div>
-            {children}
-            {footer ? (
-              <div className="mt-5 text-center text-sm text-[#586377] lg:mt-4">
-                {footer}
-              </div>
-            ) : null}
           </div>
-        </section>
+        </ScrollArea>
         <AuthVisualPanel />
       </div>
     </main>

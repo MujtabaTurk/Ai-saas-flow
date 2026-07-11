@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { ReviewManagement } from "@/features/reviews/components/review-management";
 import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
@@ -19,7 +18,7 @@ export default async function ReviewsPage() {
   });
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">{business.name}</p>
@@ -39,6 +38,6 @@ export default async function ReviewsPage() {
           }
         />
       </div>
-    </AppShell>
+    </>
   );
 }

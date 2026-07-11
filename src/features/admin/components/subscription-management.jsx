@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   MetricCardsSkeleton,
   Skeleton,
@@ -152,7 +153,7 @@ export function SubscriptionManagement() {
               description="No subscription matches the current filters."
             />
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-growth-border">
+            <HorizontalScrollArea className="rounded-2xl border border-growth-border">
               <table className="w-full min-w-[1150px] border-collapse text-start text-sm">
                 <thead className="bg-growth-mint/50 text-growth-sidebar">
                   <tr>
@@ -243,7 +244,7 @@ export function SubscriptionManagement() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
 
           <AdminPagination

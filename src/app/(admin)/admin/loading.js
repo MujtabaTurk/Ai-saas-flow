@@ -1,10 +1,5 @@
-import { AppShell, AppShellPageSkeleton } from "@/components/layout/app-shell";
-import { adminNavigation } from "@/config/navigation";
+import { AppShellPageSkeleton } from "@/components/layout/app-shell";
 
 export default function Loading() {
-  return (
-    <AppShell isLoading navigation={adminNavigation} workspaceLabel="ServiceFlow Admin">
-      <AppShellPageSkeleton />
-    </AppShell>
-  );
+  return <AppShellPageSkeleton />;
 }

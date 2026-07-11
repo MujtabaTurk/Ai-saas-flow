@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   MetricCardsSkeleton,
   TableSkeleton,
@@ -247,7 +248,7 @@ export function CustomerManagement({
               }
             />
           ) : (
-            <div className="sf-dashboard-table-wrap">
+            <HorizontalScrollArea className="sf-dashboard-table-wrap">
               <table className="sf-dashboard-table min-w-[900px]">
                 <thead>
                   <tr>
@@ -316,7 +317,7 @@ export function CustomerManagement({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
 
           {pagination && pagination.totalItems > 0 ? (

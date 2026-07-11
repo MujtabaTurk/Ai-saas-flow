@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Label } from "@/components/ui/label";
 import { Select } from "@/components/ui/select";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   MetricCardsSkeleton,
   Skeleton,
@@ -748,7 +749,7 @@ export function AiAssistantManagement({
               description="Your first generated draft will appear here."
             />
           ) : (
-            <div className="sf-dashboard-table-wrap">
+            <HorizontalScrollArea className="sf-dashboard-table-wrap">
               <table className="sf-dashboard-table min-w-[900px]">
                 <thead>
                   <tr>
@@ -821,7 +822,7 @@ export function AiAssistantManagement({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
         </CardContent>
       </Card>

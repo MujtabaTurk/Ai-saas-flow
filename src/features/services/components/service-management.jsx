@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
 import { Modal } from "@/components/ui/modal";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   TableSkeleton,
   useDelayedVisibility
@@ -233,7 +234,7 @@ export function ServiceManagement({
               </Button>
             </div>
           ) : (
-            <div className="sf-dashboard-table-wrap">
+            <HorizontalScrollArea className="sf-dashboard-table-wrap">
               <table className="sf-dashboard-table min-w-[760px]">
                 <thead>
                   <tr>
@@ -306,7 +307,7 @@ export function ServiceManagement({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
         </CardContent>
       </Card>

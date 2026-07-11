@@ -13,6 +13,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { EmailVerificationNotice } from "@/features/auth/components/email-verification-notice";
 import { UserProfileMenu } from "@/features/auth/components/user-profile-menu";
 import { cn } from "@/lib/utils";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 
 const customerNavigation = [
   {
@@ -100,7 +101,8 @@ export function CustomerPortalShell({
             </div>
 
             <div className="flex min-w-0 items-center justify-end gap-2">
-              <nav className="flex flex-1 gap-1 overflow-x-auto lg:hidden">
+              <HorizontalScrollArea className="flex-1 lg:hidden" viewportClassName="pb-1">
+                <nav className="flex gap-1">
                 {customerNavigation.map((item) => {
                   const Icon = item.icon;
                   const isActive =
@@ -124,7 +126,8 @@ export function CustomerPortalShell({
                     </Tooltip>
                   );
                 })}
-              </nav>
+                </nav>
+              </HorizontalScrollArea>
               <ThemeSwitcher compact />
               <UserProfileMenu
                 callbackUrl="/customer/login"

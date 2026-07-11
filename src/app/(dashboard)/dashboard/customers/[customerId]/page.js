@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { CustomerProfile } from "@/features/customers/components/customer-profile";
 import { getCurrentSession } from "@/lib/auth/session";
@@ -40,7 +39,7 @@ export default async function CustomerProfilePage({ params }) {
   }
 
   return (
-    <AppShell>
+    <>
       <CustomerProfile
         businessId={business.id}
         businessLocale={business.locale}
@@ -50,6 +49,6 @@ export default async function CustomerProfilePage({ params }) {
           business.status !== "ACTIVE" && !isSuperAdmin(session.user)
         }
       />
-    </AppShell>
+    </>
   );
 }

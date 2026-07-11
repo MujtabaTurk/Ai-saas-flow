@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   MetricCardsSkeleton,
   Skeleton,
@@ -313,7 +314,7 @@ function RecentCustomers({ customers, isLoading, timezone }) {
   }
 
   return (
-    <div className="sf-dashboard-table-wrap rounded-none border-0">
+    <HorizontalScrollArea className="sf-dashboard-table-wrap rounded-none border-0">
       <table className="sf-dashboard-table min-w-[620px]">
         <thead>
           <tr>
@@ -362,7 +363,7 @@ function RecentCustomers({ customers, isLoading, timezone }) {
           })}
         </tbody>
       </table>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 

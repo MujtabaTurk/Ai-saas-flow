@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 
 const premiumEase = [0.22, 1, 0.36, 1];
 
@@ -269,8 +270,11 @@ function PublishBookingJourney() {
 
 function JourneyStepRail({ activeIndex, activeStep, reduceMotion }) {
   return (
-    <div className="overflow-x-auto rounded-[8px] border border-serviceflow-border bg-serviceflow-canvas p-3 lg:overflow-visible">
-      <div className="flex min-w-max gap-2 lg:min-w-0 lg:flex-col">
+    <HorizontalScrollArea
+      className="rounded-[8px] border border-serviceflow-border bg-serviceflow-canvas lg:overflow-visible"
+      viewportClassName="p-3 lg:overflow-visible"
+    >
+      <div className="flex min-w-max gap-2 pb-2 lg:min-w-0 lg:flex-col lg:pb-0">
         {journeySteps.map((step, index) => {
           const Icon = step.icon;
           const isActive = index === activeIndex;
@@ -332,7 +336,7 @@ function JourneyStepRail({ activeIndex, activeStep, reduceMotion }) {
           );
         })}
       </div>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 

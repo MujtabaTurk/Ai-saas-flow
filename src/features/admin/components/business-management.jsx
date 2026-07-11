@@ -11,6 +11,7 @@ import { ErrorState } from "@/components/ui/error-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   MetricCardsSkeleton,
   Skeleton,
@@ -289,7 +290,7 @@ export function BusinessManagement() {
               description="No tenant matches the current filters."
             />
           ) : (
-            <div className="overflow-x-auto rounded-2xl border border-growth-border">
+            <HorizontalScrollArea className="rounded-2xl border border-growth-border">
               <table className="w-full min-w-[1100px] border-collapse text-start text-sm">
                 <thead className="bg-growth-mint/50 text-growth-sidebar">
                   <tr>
@@ -382,7 +383,7 @@ export function BusinessManagement() {
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
 
           <AdminPagination

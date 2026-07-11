@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
-import { adminNavigation } from "@/config/navigation";
 import { SuperAdminDashboard } from "@/features/admin/components/super-admin-dashboard";
 import { getSuperAdminMetrics } from "@/features/admin/metrics";
 import { isSuperAdmin } from "@/features/auth/permissions";
@@ -24,7 +22,7 @@ export default async function AdminPage() {
   const metrics = await getSuperAdminMetrics();
 
   return (
-    <AppShell navigation={adminNavigation} workspaceLabel="ServiceFlow Admin">
+    <>
       <div className="space-y-6">
         <div>
           <div>
@@ -38,6 +36,6 @@ export default async function AdminPage() {
 
         <SuperAdminDashboard metrics={metrics} />
       </div>
-    </AppShell>
+    </>
   );
 }

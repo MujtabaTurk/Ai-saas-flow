@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { BusinessMembershipDashboard } from "@/features/memberships/components/business-membership-dashboard";
 import { resolveRequestLanguage } from "@/i18n/server";
 import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
@@ -22,7 +21,7 @@ export default async function MembershipsPage() {
   const language = await resolveRequestLanguage(business.locale);
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">{business.name}</p>
@@ -42,6 +41,6 @@ export default async function MembershipsPage() {
           language={language}
         />
       </div>
-    </AppShell>
+    </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 
 function useDelayedVisibility(isVisible, delay = 180) {
   const [shouldShow, setShouldShow] = useState(false);
@@ -27,7 +28,7 @@ function useDelayedVisibility(isVisible, delay = 180) {
 
 function Skeleton({ className, ...props }) {
   return (
-    <div
+    <HorizontalScrollArea
       className={cn(
         "animate-pulse rounded-lg bg-gradient-to-r from-[hsl(var(--sf-skeleton-from))] via-[hsl(var(--sf-skeleton-via))] to-[hsl(var(--sf-skeleton-to))] bg-[length:240%_100%]",
         className
@@ -66,9 +67,9 @@ function TableSkeleton({
   className
 }) {
   return (
-    <div
+    <HorizontalScrollArea
       className={cn(
-        "overflow-x-auto rounded-xl border border-growth-border bg-card",
+        "rounded-xl border border-growth-border bg-card",
         className
       )}
       role="status"
@@ -105,7 +106,7 @@ function TableSkeleton({
           ))}
         </tbody>
       </table>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 

@@ -222,12 +222,11 @@ function renderCta({ actionUrl, actionLabel }) {
   `;
 }
 
-function renderLogo() {
+function renderBrand() {
   return `
     <table role="presentation" cellspacing="0" cellpadding="0" style="border-collapse:collapse">
       <tr>
-        <td width="44" height="44" align="center" valign="middle" style="width:44px;height:44px;border-radius:12px;background:${theme.brand};color:#FFFFFF;font-family:'Plus Jakarta Sans','Inter','Segoe UI',Arial,sans-serif;font-size:20px;font-weight:900;line-height:44px;text-align:center">S</td>
-        <td style="padding-left:12px">
+        <td>
           <p class="sf-brand" style="margin:0;color:${theme.ink};font-family:'Plus Jakarta Sans','Inter','Segoe UI',Arial,sans-serif;font-size:20px;font-weight:900;line-height:1.1">${PRODUCT_NAME}</p>
           <p style="margin:4px 0 0;color:${theme.muted};font-family:'Plus Jakarta Sans','Inter','Segoe UI',Arial,sans-serif;font-size:11px;font-weight:800;line-height:1.2;text-transform:uppercase;letter-spacing:.06em">${PRODUCT_TAGLINE}</p>
         </td>
@@ -326,7 +325,7 @@ function renderLayout({
           <table role="presentation" class="sf-container" width="620" cellspacing="0" cellpadding="0" style="width:620px;max-width:620px;border-collapse:collapse">
             <tr>
               <td class="sf-header" style="padding:0 4px 18px">
-                ${renderLogo()}
+                ${renderBrand()}
               </td>
             </tr>
             <tr>

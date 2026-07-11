@@ -6,7 +6,6 @@ import { useState } from "react";
 import {
   ArrowRight,
   CheckCircle2,
-  Layers3,
   Menu,
   Search,
   Star,
@@ -37,6 +36,7 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 function formatPrice(cents, language) {
@@ -122,9 +122,6 @@ function SiteNav() {
           className="flex min-w-0 items-center gap-3 text-xl font-bold text-[#0b1c30]"
           href="/"
         >
-          <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-[#3525cd] text-white">
-            <Layers3 className="size-5" aria-hidden="true" />
-          </span>
           <span className="truncate">{t("common:app.shortName")}</span>
         </Link>
 
@@ -176,9 +173,6 @@ function SiteNav() {
                   href="/"
                   onClick={closeMobileMenu}
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-[10px] bg-[#3525cd] text-white">
-                    <Layers3 className="size-5" aria-hidden="true" />
-                  </span>
                   <span className="truncate">{t("common:app.shortName")}</span>
                 </Link>
                 <DialogPrimitive.Close asChild>
@@ -192,7 +186,7 @@ function SiteNav() {
                 </DialogPrimitive.Close>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col justify-between gap-8 overflow-y-auto px-5 py-6">
+              <ScrollArea className="min-h-0 flex-1" viewportClassName="flex min-h-full flex-col justify-between gap-8 px-5 py-6" viewportProps={{ tabIndex: 0 }}>
                 <div className="space-y-2">
                   {navLinks.map((item) => (
                     <Link
@@ -218,7 +212,7 @@ function SiteNav() {
                     {t("landing.nav.cta")}
                   </PrimaryLink>
                 </div>
-              </div>
+              </ScrollArea>
             </DialogPrimitive.Content>
           </DialogPrimitive.Portal>
         </DialogPrimitive.Root>
@@ -313,7 +307,7 @@ function DiscoverySearchSection() {
   );
 }
 
-function FeaturedBusinessesSection({ businesses }) {
+function FeaturedBusinessesSection() {
   const { t } = useTranslation("public");
 
   return (
@@ -345,7 +339,7 @@ function FeaturedBusinessesSection({ businesses }) {
       </div>
 
       <div className="mt-14">
-        <FeaturedBusinessesCarousel businesses={businesses} />
+        <FeaturedBusinessesCarousel />
       </div>
     </section>
   );
@@ -724,9 +718,6 @@ function SiteFooter() {
               className="flex items-center gap-3 text-xl font-bold text-[#0b1c30]"
               href="/"
             >
-              <span className="grid size-10 place-items-center rounded-[10px] bg-[#3525cd] text-white">
-                <Layers3 className="size-5" aria-hidden="true" />
-              </span>
               {t("common:app.shortName")}
             </Link>
             <p className="mt-4 max-w-[360px] text-sm leading-6 text-[#464555]">
@@ -781,13 +772,13 @@ function SiteFooter() {
   );
 }
 
-export function MarketingHomePage({ featuredBusinesses = [] }) {
+export function MarketingHomePage() {
   return (
     <main className="min-h-screen bg-[#f8fafc] text-[#0b1c30]">
       <SiteNav />
       <HeroSection />
       <DiscoverySearchSection />
-      <FeaturedBusinessesSection businesses={featuredBusinesses} />
+      <FeaturedBusinessesSection />
       <CategoriesSection />
       <FeaturesSection />
       <BookingWorkflowSection />

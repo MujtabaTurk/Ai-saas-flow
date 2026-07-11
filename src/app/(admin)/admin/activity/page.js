@@ -1,5 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
-import { adminNavigation } from "@/config/navigation";
 import { ActivityManagement } from "@/features/admin/components/activity-management";
 import { requireSuperAdminPageSession } from "@/features/admin/page-access";
 
@@ -11,7 +9,7 @@ export default async function AdminActivityPage() {
   await requireSuperAdminPageSession();
 
   return (
-    <AppShell navigation={adminNavigation} workspaceLabel="ServiceFlow Admin">
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">
@@ -26,6 +24,6 @@ export default async function AdminActivityPage() {
         </div>
         <ActivityManagement />
       </div>
-    </AppShell>
+    </>
   );
 }

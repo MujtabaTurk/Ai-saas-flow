@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AppShell } from "@/components/layout/app-shell";
 import { ChangePasswordForm } from "@/features/auth/components/change-password-form";
 import { getCurrentSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -34,7 +33,7 @@ export default async function SettingsPage() {
   });
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">
@@ -90,6 +89,6 @@ export default async function SettingsPage() {
           </Card>
         </div>
       </div>
-    </AppShell>
+    </>
   );
 }

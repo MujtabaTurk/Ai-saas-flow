@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { ANALYTICS_PERIOD_OPTIONS } from "@/features/analytics/constants";
 import { OverviewDashboard } from "@/features/analytics/components/overview-dashboard";
 import { isSuperAdmin } from "@/features/auth/permissions";
@@ -72,7 +71,7 @@ export default async function OverviewPage({ searchParams }) {
   );
 
   return (
-    <AppShell planLabel={formatPlanLabel(entitlement)}>
+    <>
       <OverviewDashboard
         businessCurrency={business.currency}
         businessId={business.id}
@@ -86,6 +85,6 @@ export default async function OverviewPage({ searchParams }) {
           entitlement
         )}
       />
-    </AppShell>
+    </>
   );
 }

@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
 import { Tooltip } from "@/components/ui/tooltip";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   ChartSkeleton,
   MetricCardsSkeleton,
@@ -400,7 +401,7 @@ function ServicePerformance({ services, currency }) {
   }
 
   return (
-    <div className="sf-dashboard-table-wrap">
+    <HorizontalScrollArea className="sf-dashboard-table-wrap">
       <table className="sf-dashboard-table min-w-[760px]">
         <thead>
           <tr>
@@ -433,7 +434,7 @@ function ServicePerformance({ services, currency }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 
@@ -448,7 +449,7 @@ function TeamWorkload({ workload, currency }) {
   }
 
   return (
-    <div className="sf-dashboard-table-wrap">
+    <HorizontalScrollArea className="sf-dashboard-table-wrap">
       <table className="sf-dashboard-table min-w-[700px]">
         <thead>
           <tr>
@@ -484,7 +485,7 @@ function TeamWorkload({ workload, currency }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 
@@ -505,7 +506,7 @@ function MembershipPlanTable({ analytics, businessCurrency }) {
   }
 
   return (
-    <div className="sf-dashboard-table-wrap">
+    <HorizontalScrollArea className="sf-dashboard-table-wrap">
       <table className="sf-dashboard-table min-w-[700px]">
         <thead>
           <tr>
@@ -540,7 +541,7 @@ function MembershipPlanTable({ analytics, businessCurrency }) {
           ))}
         </tbody>
       </table>
-    </div>
+    </HorizontalScrollArea>
   );
 }
 
@@ -882,8 +883,10 @@ export function OverviewDashboard({
                 Estimated booked value by appointment date.
               </p>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent className="p-0">
+              <HorizontalScrollArea viewportClassName="px-6 pb-6">
               <RevenueTrend currency={currency} trend={report.trend} />
+              </HorizontalScrollArea>
             </CardContent>
           </Card>
 
@@ -937,8 +940,10 @@ export function OverviewDashboard({
                 completed bookings.
               </p>
             </CardHeader>
-            <CardContent className="overflow-x-auto">
+            <CardContent className="p-0">
+              <HorizontalScrollArea viewportClassName="px-6 pb-6">
               <BookingTrend trend={report.trend} />
+              </HorizontalScrollArea>
             </CardContent>
           </Card>
 

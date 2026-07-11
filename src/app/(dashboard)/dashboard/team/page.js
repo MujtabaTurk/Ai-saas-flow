@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { TeamManagement } from "@/features/team/components/team-management";
 import { requireDashboardPageBusiness } from "@/lib/auth/dashboard-page";
 
@@ -15,7 +14,7 @@ export default async function TeamPage() {
   });
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">{business.name}</p>
@@ -29,6 +28,6 @@ export default async function TeamPage() {
         </div>
         <TeamManagement businessId={business.id} />
       </div>
-    </AppShell>
+    </>
   );
 }

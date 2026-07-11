@@ -5,7 +5,14 @@ import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 import { cn } from "@/lib/utils";
 
 const ScrollArea = React.forwardRef(
-  ({ className, children, viewportClassName, ...props }, ref) => (
+  ({
+    className,
+    children,
+    orientation = "vertical",
+    viewportClassName,
+    viewportProps,
+    ...props
+  }, ref) => (
     <ScrollAreaPrimitive.Root
       ref={ref}
       className={cn("relative overflow-hidden", className)}
@@ -13,11 +20,15 @@ const ScrollArea = React.forwardRef(
     >
       <ScrollAreaPrimitive.Viewport
         className={cn("h-full w-full scroll-smooth rounded-[inherit]", viewportClassName)}
+        {...viewportProps}
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
-      <ScrollBar />
-      <ScrollAreaPrimitive.Corner />
+      {orientation !== "horizontal" ? <ScrollBar /> : null}
+      {orientation !== "vertical" ? <ScrollBar orientation="horizontal" /> : null}
+      {orientation === "both" ? (
+        <ScrollAreaPrimitive.Corner className="bg-transparent" />
+      ) : null}
     </ScrollAreaPrimitive.Root>
   )
 );
@@ -29,17 +40,30 @@ const ScrollBar = React.forwardRef(
       ref={ref}
       orientation={orientation}
       className={cn(
-        "flex touch-none select-none transition-colors",
-        orientation === "vertical" && "h-full w-2.5 border-l border-l-transparent p-[2px]",
-        orientation === "horizontal" && "h-2.5 flex-col border-t border-t-transparent p-[2px]",
+        "z-10 flex touch-none select-none p-0.5 transition-colors duration-200",
+        orientation === "vertical" && "h-full w-2.5",
+        orientation === "horizontal" && "h-2.5 flex-col",
         className
       )}
       {...props}
     >
-      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-border/70 transition-colors hover:bg-primary/45" />
+      <ScrollAreaPrimitive.Thumb className="relative flex-1 rounded-full bg-foreground/20 transition-colors duration-200 hover:bg-foreground/35 active:bg-foreground/45" />
     </ScrollAreaPrimitive.Scrollbar>
   )
 );
 ScrollBar.displayName = ScrollAreaPrimitive.Scrollbar.displayName;
 
-export { ScrollArea, ScrollBar };
+const HorizontalScrollArea = React.forwardRef(
+  ({ viewportClassName, viewportProps, ...props }, ref) => (
+    <ScrollArea
+      orientation="horizontal"
+      ref={ref}
+      viewportClassName={viewportClassName}
+      viewportProps={{ tabIndex: 0, ...viewportProps }}
+      {...props}
+    />
+  )
+);
+HorizontalScrollArea.displayName = "HorizontalScrollArea";
+
+export { HorizontalScrollArea, ScrollArea, ScrollBar };

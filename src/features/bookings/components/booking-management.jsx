@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Modal } from "@/components/ui/modal";
 import { Select } from "@/components/ui/select";
+import { HorizontalScrollArea } from "@/components/ui/scroll-area";
 import {
   CardListSkeleton,
   FormSkeleton,
@@ -542,7 +543,7 @@ export function BookingManagement({
               </p>
             </div>
           ) : (
-            <div className="sf-dashboard-table-wrap">
+            <HorizontalScrollArea className="sf-dashboard-table-wrap">
               <table className="sf-dashboard-table min-w-[1080px]">
                 <thead>
                   <tr>
@@ -691,7 +692,7 @@ export function BookingManagement({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </HorizontalScrollArea>
           )}
           {pagination && pagination.totalItems > 0 ? (
             <div className="mt-5 flex flex-col justify-between gap-3 border-t border-growth-border pt-4 sm:flex-row sm:items-center">

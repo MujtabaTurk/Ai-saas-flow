@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { AppShell } from "@/components/layout/app-shell";
 import { AiAssistantManagement } from "@/features/ai/components/ai-assistant-management";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { getCurrentSession } from "@/lib/auth/session";
@@ -44,7 +43,7 @@ export default async function AiAssistantPage() {
   }
 
   return (
-    <AppShell>
+    <>
       <div className="space-y-6">
         <div>
           <p className="text-sm font-semibold text-primary">{business.name}</p>
@@ -64,6 +63,6 @@ export default async function AiAssistantPage() {
           }
         />
       </div>
-    </AppShell>
+    </>
   );
 }

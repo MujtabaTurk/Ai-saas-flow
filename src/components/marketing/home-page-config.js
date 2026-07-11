@@ -26,7 +26,7 @@ import {
 export const navLinks = [
   { key: "discover", href: "/businesses" },
   { key: "featured", href: "#featured-businesses" },
-  { key: "features", href: "#features" },
+  { key: "businesses", href: "/businesses" },
   { key: "pricing", href: "#pricing" },
   { key: "login", href: "/login" }
 ];

@@ -12,6 +12,7 @@ export * from "./label";
 export * from "./loading-state";
 export * from "./modal";
 export * from "./select";
+export * from "./scroll-area";
 export * from "./skeleton";
 export * from "./textarea";
 export * from "./tooltip";

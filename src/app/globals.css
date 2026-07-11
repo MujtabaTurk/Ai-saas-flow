@@ -171,7 +171,7 @@
   }
 
   .sf-dashboard-table-wrap {
-    @apply overflow-x-auto rounded-xl border border-growth-border bg-card;
+    @apply rounded-xl border border-growth-border bg-card;
   }
 
   .sf-dashboard-table {
