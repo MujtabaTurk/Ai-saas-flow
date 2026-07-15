@@ -9,7 +9,6 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const PLAN_CODES = ["ALL", "TRIAL", "BASIC", "PRO"];
 const SUBSCRIPTION_STATUSES = [
   "ALL",
   "TRIALING",
@@ -39,7 +38,7 @@ export async function GET(request) {
       return fail("Search must be 100 characters or fewer.", 422);
     }
 
-    if (!PLAN_CODES.includes(planCode)) {
+    if (planCode !== "ALL" && !/^[A-Z0-9_-]+$/.test(planCode)) {
       return fail("Choose a valid subscription plan.", 422);
     }
 
@@ -72,7 +71,9 @@ export async function GET(request) {
     }
 
     const where = {
-      ...(planCode !== "ALL" ? { planCode } : {}),
+      ...(planCode !== "ALL"
+        ? { OR: [{ planCode }, { platformPlan: { is: { code: planCode } } }] }
+        : {}),
       ...(status !== "ALL" ? { status } : {}),
       ...(matchingBusinessIds ? { businessId: { in: matchingBusinessIds } } : {})
     };

@@ -11,7 +11,7 @@
     --sf-panel-elevated: 0 0% 100%;
     --sf-panel-soft: 222 100% 97%;
     --sf-hover: 222 100% 98%;
-    --sf-border: 249 20% 81%;
+    --sf-border: 249 18% 88%;
     --sf-border-soft: 223 44% 89%;
     --sf-ink: 212 63% 12%;
     --sf-muted: 244 10% 30%;
@@ -64,7 +64,7 @@
     --sf-panel-elevated: 222 30% 14%;
     --sf-panel-soft: 222 28% 16%;
     --sf-hover: 222 25% 18%;
-    --sf-border: 225 21% 24%;
+    --sf-border: 225 18% 21%;
     --sf-border-soft: 225 18% 20%;
     --sf-ink: 220 38% 96%;
     --sf-muted: 220 18% 78%;
@@ -167,7 +167,7 @@
   }
 
   .sf-dashboard-subpanel {
-    @apply rounded-lg border border-growth-border bg-growth-dashboard;
+    @apply rounded-lg bg-growth-dashboard;
   }
 
   .sf-dashboard-table-wrap {

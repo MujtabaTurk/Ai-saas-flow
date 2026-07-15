@@ -14,12 +14,17 @@ import {
   getBillingRequestId,
   logBillingEvent
 } from "@/features/billing/logging";
-import { getStripe } from "@/features/billing/stripe";
+import {
+  getStripe,
+  getStripeConfiguration,
+  getStripeWebhookSecret
+} from "@/features/billing/stripe";
 import { notifySubscriptionEvent } from "@/features/notifications/events";
 import { fail, ok } from "@/lib/api/api-response";
 import { AppError } from "@/lib/api/errors";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { prisma } from "@/lib/prisma";
+import { reconcileBookingCheckoutSession } from "@/features/bookings/payment";
 
 export const runtime = "nodejs";
 const PROCESSING_LEASE_MS = 5 * 60 * 1000;
@@ -200,6 +205,16 @@ async function syncInvoiceSubscription(invoice, paymentField, context = {}) {
 }
 
 async function handleCheckoutSessionCompleted(session, context = {}) {
+  if (session.metadata?.flow === "BOOKING") {
+    return reconcileBookingCheckoutSession({ sessionId: session.id, businessId: session.metadata.businessId, bookingId: session.metadata.bookingId });
+  }
+  const bookingPayment = await prisma.bookingPayment.findFirst({
+    where: { stripeCheckoutSessionId: session.id },
+    select: { bookingId: true, businessId: true }
+  });
+  if (bookingPayment) {
+    return reconcileBookingCheckoutSession({ sessionId: session.id, businessId: bookingPayment.businessId, bookingId: bookingPayment.bookingId });
+  }
   const businessId = session.metadata?.businessId || session.client_reference_id;
   const customerId = getStripeId(session.customer);
   const subscriptionId = getStripeId(session.subscription);
@@ -377,6 +392,33 @@ async function handleStripeEvent(event, context = {}) {
   }
 
   switch (event.type) {
+    case "payment_intent.succeeded": {
+      const payment = await prisma.bookingPayment.findFirst({
+        where: { stripePaymentIntentId: object.id }
+      });
+      if (payment) {
+        const now = new Date();
+        await prisma.bookingPayment.update({ where: { id: payment.id }, data: { status: "SUCCEEDED", paidAt: now } });
+        await prisma.booking.update({ where: { id: payment.bookingId }, data: { status: "CONFIRMED", confirmedAt: now } });
+      }
+      break;
+    }
+    case "payment_intent.payment_failed":
+    case "payment_intent.canceled": {
+      const payment = await prisma.bookingPayment.findFirst({ where: { stripePaymentIntentId: object.id } });
+      if (payment) {
+        await prisma.bookingPayment.update({ where: { id: payment.id }, data: { status: "FAILED", failedAt: new Date() } });
+      }
+      break;
+    }
+    case "charge.refunded": {
+      const paymentIntentId = getStripeId(object.payment_intent);
+      if (paymentIntentId) {
+        const payment = await prisma.bookingPayment.findFirst({ where: { stripePaymentIntentId: paymentIntentId } });
+        if (payment) await prisma.bookingPayment.update({ where: { id: payment.id }, data: { status: "REFUNDED" } });
+      }
+      break;
+    }
     case "checkout.session.completed":
       subscription = await handleCheckoutSessionCompleted(object, context);
       break;
@@ -450,8 +492,13 @@ export async function POST(request) {
   const signature = request.headers.get("stripe-signature");
   let requestId = request.headers.get("stripe-request-id");
 
-  if (!process.env.STRIPE_WEBHOOK_SECRET) {
-    return fail("Stripe webhook secret is not configured.", 500);
+  let webhookSecret;
+  let stripeMode;
+  try {
+    ({ mode: stripeMode } = getStripeConfiguration());
+    webhookSecret = getStripeWebhookSecret();
+  } catch (error) {
+    return handleApiError(error);
   }
 
   if (!signature) {
@@ -467,10 +514,14 @@ export async function POST(request) {
       event = stripe.webhooks.constructEvent(
         rawBody,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET
+        webhookSecret
       );
     } catch {
       throw new AppError("Invalid Stripe webhook signature.", 400);
+    }
+
+    if (event.livemode !== (stripeMode === "live")) {
+      throw new AppError("Stripe webhook mode does not match the configured Stripe keys.", 400);
     }
 
     requestId = getBillingRequestId(

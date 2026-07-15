@@ -171,7 +171,7 @@ export async function POST(request) {
       throw new AppError("Manage your current subscription from the billing portal.", 409);
     }
 
-    const priceId = getCheckoutPriceId(data.planCode);
+    const priceId = await getCheckoutPriceId(data.planCode);
     const stripe = getStripe();
     const customerId = await ensureStripeCustomerForBusiness(business, {
       context: {

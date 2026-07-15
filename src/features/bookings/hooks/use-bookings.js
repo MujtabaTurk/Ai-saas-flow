@@ -13,6 +13,7 @@ import {
   updateBookingSettings,
   updateBookingAssignment,
   updateBookingNotes,
+  updateBookingPayment,
   updateBookingStatus
 } from "@/features/bookings/api";
 import { bookingQueryKeys } from "@/features/bookings/query-keys";
@@ -53,6 +54,14 @@ export function useUpdateBookingStatus(businessId) {
       queryClient.invalidateQueries({
         queryKey: bookingQueryKeys.listRoot(businessId)
       })
+  });
+}
+
+export function useUpdateBookingPayment(businessId) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ bookingId, values }) => updateBookingPayment({ businessId, bookingId, values }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: bookingQueryKeys.listRoot(businessId) })
   });
 }
 
@@ -142,10 +151,10 @@ export function useCreatePublicBooking(businessSlug) {
   });
 }
 
-export function usePublicBooking(businessSlug, bookingNumber, token) {
+export function usePublicBooking(businessSlug, bookingNumber, token, sessionId = "") {
   return useQuery({
     queryKey: bookingQueryKeys.publicBooking(businessSlug, bookingNumber, token),
-    queryFn: () => fetchPublicBooking(businessSlug, bookingNumber, token),
+    queryFn: () => fetchPublicBooking(businessSlug, bookingNumber, token, sessionId),
     enabled: Boolean(businessSlug && bookingNumber && token)
   });
 }

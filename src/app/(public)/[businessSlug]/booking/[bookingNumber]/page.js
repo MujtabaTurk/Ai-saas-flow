@@ -10,7 +10,7 @@ export const metadata = {
 
 export default async function PublicBookingPage({ params, searchParams }) {
   const { businessSlug, bookingNumber } = await params;
-  const { token } = await searchParams;
+  const { token, session_id: sessionId } = await searchParams;
   let business;
 
   try {
@@ -35,6 +35,7 @@ export default async function PublicBookingPage({ params, searchParams }) {
             businessSlug={businessSlug}
             bookingNumber={bookingNumber}
             token={typeof token === "string" ? token : ""}
+            sessionId={typeof sessionId === "string" ? sessionId : ""}
           />
         </div>
       </main>

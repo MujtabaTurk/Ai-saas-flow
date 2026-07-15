@@ -45,7 +45,7 @@ function Modal({
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[hsl(var(--sf-overlay)/0.45)] backdrop-blur-sm" />
         <DialogPrimitive.Content
           className={cn(
-            "modal-content fixed z-50 flex max-h-[calc(100dvh-2rem)] w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-card text-card-foreground shadow-2xl outline-none",
+            "modal-content fixed z-50 flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] min-h-0 w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-card text-card-foreground shadow-2xl outline-none",
             modalSizes[size] || modalSizes.md,
             className
           )}

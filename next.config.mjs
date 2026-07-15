@@ -51,6 +51,23 @@ function validateServiceFlowEnvironment() {
   const smtpPort = Number(smtpPortValue);
   const smtpFrom = process.env.SMTP_FROM?.trim();
   const senderAddress = getSenderAddress(smtpFrom);
+  const stripeSecretKey = process.env.STRIPE_SECRET_KEY?.trim();
+  const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim();
+  const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
+
+  const missingStripeVariables = [
+    ["STRIPE_SECRET_KEY", stripeSecretKey],
+    ["NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY", stripePublishableKey],
+    ["STRIPE_WEBHOOK_SECRET", stripeWebhookSecret]
+  ]
+    .filter(([, value]) => !value)
+    .map(([name]) => name);
+
+  if (missingStripeVariables.length > 0) {
+    (isStrictProduction ? failures : warnings).push(
+      `Stripe configuration is missing: ${missingStripeVariables.join(", ")}.`
+    );
+  }
 
   if (!nextAuthUrl) {
     (isStrictProduction ? failures : warnings).push(
@@ -101,6 +118,26 @@ function validateServiceFlowEnvironment() {
   if (smtpFrom && !EMAIL_ADDRESS_PATTERN.test(senderAddress)) {
     failures.push(
       "SMTP_FROM must be an email address or a display name with an email address."
+    );
+  }
+
+  if (stripeSecretKey && !/^sk_(test|live)_/.test(stripeSecretKey)) {
+    failures.push(
+      "STRIPE_SECRET_KEY must be a Stripe secret key (sk_test_* or sk_live_*), never a publishable key."
+    );
+  }
+
+  if (stripePublishableKey && !/^pk_(test|live)_/.test(stripePublishableKey)) {
+    failures.push(
+      "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a Stripe publishable key (pk_test_* or pk_live_*)."
+    );
+  }
+
+  const secretMode = stripeSecretKey?.match(/^sk_(test|live)_/)?.[1];
+  const publishableMode = stripePublishableKey?.match(/^pk_(test|live)_/)?.[1];
+  if (secretMode && publishableMode && secretMode !== publishableMode) {
+    failures.push(
+      `Stripe keys must use the same mode: STRIPE_SECRET_KEY is ${secretMode} but NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is ${publishableMode}.`
     );
   }
 

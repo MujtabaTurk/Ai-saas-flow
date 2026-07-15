@@ -1,9 +1,8 @@
 import * as Yup from "yup";
-import { BILLING_PLAN_CODES } from "@/features/billing/plan-catalog";
-
 export const checkoutSessionSchema = Yup.object({
   planCode: Yup.string()
-    .oneOf(BILLING_PLAN_CODES, "Choose a valid paid plan.")
+    .trim()
+    .matches(/^[A-Z0-9_-]+$/, "Choose a valid paid plan.")
     .required("Plan is required."),
   idempotencyKey: Yup.string()
     .trim()

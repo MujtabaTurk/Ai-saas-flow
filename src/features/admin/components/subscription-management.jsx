@@ -20,7 +20,7 @@ import {
   adminStatusVariant,
   formatAdminDate
 } from "@/features/admin/components/admin-shared";
-import { useAdminSubscriptions } from "@/features/admin/hooks/use-admin";
+import { useAdminPlans, useAdminSubscriptions } from "@/features/admin/hooks/use-admin";
 
 export function SubscriptionManagement() {
   const [search, setSearch] = useState("");
@@ -39,6 +39,7 @@ export function SubscriptionManagement() {
     [deferredSearch, page, planCode, status]
   );
   const subscriptionsQuery = useAdminSubscriptions(filters);
+  const plansQuery = useAdminPlans();
   const showSubscriptionsSkeleton = useDelayedVisibility(
     subscriptionsQuery.isLoading
   );
@@ -123,9 +124,9 @@ export function SubscriptionManagement() {
               value={planCode}
             >
               <option value="ALL">All plans</option>
-              <option value="TRIAL">Trial</option>
-              <option value="BASIC">Basic</option>
-              <option value="PRO">Pro</option>
+              {(plansQuery.data?.plans || []).map((plan) => (
+                <option key={plan.code} value={plan.code}>{plan.name}</option>
+              ))}
             </AdminSelect>
             <AdminSelect
               onChange={(event) => {

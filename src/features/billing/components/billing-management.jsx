@@ -253,7 +253,7 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
           <CardContent className="space-y-4 text-sm text-muted-foreground">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-lg font-bold text-growth-sidebar">
-                {currentPlanCode}
+                {subscription?.planName || currentPlanCode}
               </span>
               {subscription?.status ? (
                 <Badge variant={getSubscriptionStatusVariant(subscription.status)}>

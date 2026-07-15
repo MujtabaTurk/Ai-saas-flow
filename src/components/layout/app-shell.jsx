@@ -323,7 +323,16 @@ function SidebarBrand({
   const { t } = useTranslation("common");
 
   if (collapsed) {
-    return null;
+    return (
+      <Link
+        aria-label={workspaceLabel}
+        className="mx-auto flex size-10 items-center justify-center rounded-xl bg-primary text-lg font-extrabold text-primary-foreground shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        href={homeHref}
+        onClick={onNavigate}
+      >
+        <span aria-hidden="true">S</span>
+      </Link>
+    );
   }
 
   if (isLoading) {
@@ -635,7 +644,7 @@ export function AppShell({
         />
       </aside>
       <main className="app-shell-main">
-        <header className="app-shell-header sticky top-0 h-16 border-b border-growth-border bg-background/80 px-4 shadow-sm backdrop-blur-[6px] sm:px-6 lg:px-8">
+        <header className="app-shell-header sticky top-0 h-16 bg-background/80 px-4 backdrop-blur-[6px] sm:px-6 lg:px-8">
           <div className="flex h-full w-full items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <MobileSidebarDrawer
@@ -703,7 +712,7 @@ export function AppShell({
         {homeHref.startsWith("/dashboard") ? (
           <Link
             aria-label={t("navigation.quickBooking")}
-            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] transition hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none"
+            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-[background-color,box-shadow,opacity] hover:bg-primary-hover hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none dark:hover:shadow-none"
             href="/dashboard/bookings"
             title={t("navigation.quickBooking")}
           >

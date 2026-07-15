@@ -48,7 +48,7 @@ function MetricCardsSkeleton({ count = 4, className }) {
     >
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-xl border border-growth-border bg-card p-4 shadow-sm"
+          className="rounded-xl bg-card p-4 shadow-sm"
           key={index}
         >
           <Skeleton className="h-3 w-24" />
@@ -115,7 +115,7 @@ function CardListSkeleton({ count = 4, className }) {
     <div className={cn("space-y-3", className)} role="status" aria-label="Loading records">
       {Array.from({ length: count }).map((_, index) => (
         <div
-          className="rounded-xl border border-growth-border bg-card p-4 shadow-sm"
+          className="rounded-xl bg-card p-4 shadow-sm"
           key={index}
         >
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
@@ -142,7 +142,7 @@ function ChartSkeleton({ className, bars = 18 }) {
   return (
     <div
       className={cn(
-        "rounded-xl border border-growth-border bg-card p-5",
+        "rounded-xl bg-card p-5 shadow-sm",
         className
       )}
       role="status"

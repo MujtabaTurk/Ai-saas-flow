@@ -10,12 +10,12 @@ function getPeriodStart(now) {
   return new Date(now.getTime() - ADMIN_PERIOD_DAYS * DAY_MS);
 }
 
-function isPaidPlan(planCode) {
-  return planCode === "BASIC" || planCode === "PRO";
+function isPaidPlan(planCode, planPrices) {
+  return planCode !== "TRIAL" && planPrices.has(planCode);
 }
 
-function getMonthlyPriceCents(planCode) {
-  return PLAN_CATALOG[planCode]?.monthlyPriceCents || 0;
+function getMonthlyPriceCents(planCode, planPrices) {
+  return planPrices.get(planCode) ?? (PLAN_CATALOG[planCode]?.monthlyPriceCents || 0);
 }
 
 function getLatestSubscriptionsByBusiness(subscriptions) {
@@ -58,31 +58,31 @@ function getStatusDistribution(subscriptions) {
   return counts;
 }
 
-function getRevenueMetrics(subscriptions, periodStart) {
+function getRevenueMetrics(subscriptions, periodStart, planPrices) {
   const activePaidSubscriptions = subscriptions.filter(
     (subscription) =>
-      isPaidPlan(subscription.planCode) &&
+      isPaidPlan(subscription.planCode, planPrices) &&
       ACTIVE_REVENUE_STATUSES.includes(subscription.status)
   );
   const mrrCents = activePaidSubscriptions.reduce(
-    (total, subscription) => total + getMonthlyPriceCents(subscription.planCode),
+    (total, subscription) => total + getMonthlyPriceCents(subscription.planCode, planPrices),
     0
   );
   const newMrrCents = activePaidSubscriptions
     .filter((subscription) => subscription.createdAt >= periodStart)
     .reduce(
-      (total, subscription) => total + getMonthlyPriceCents(subscription.planCode),
+      (total, subscription) => total + getMonthlyPriceCents(subscription.planCode, planPrices),
       0
     );
   const churnedMrrCents = subscriptions
     .filter(
       (subscription) =>
-        isPaidPlan(subscription.planCode) &&
+        isPaidPlan(subscription.planCode, planPrices) &&
         subscription.status === "CANCELED" &&
         (subscription.canceledAt || subscription.updatedAt) >= periodStart
     )
     .reduce(
-      (total, subscription) => total + getMonthlyPriceCents(subscription.planCode),
+      (total, subscription) => total + getMonthlyPriceCents(subscription.planCode, planPrices),
       0
     );
   const failedPaymentCount = subscriptions.filter(
@@ -102,19 +102,21 @@ function getRevenueMetrics(subscriptions, periodStart) {
   };
 }
 
-function getSubscriptionMetrics(subscriptions) {
+function getSubscriptionMetrics(subscriptions, planPrices) {
   const statusDistribution = getStatusDistribution(subscriptions);
   const planDistribution = getPlanDistribution(subscriptions);
   const activePaidCount = subscriptions.filter(
     (subscription) =>
-      isPaidPlan(subscription.planCode) &&
+      isPaidPlan(subscription.planCode, planPrices) &&
       ACTIVE_REVENUE_STATUSES.includes(subscription.status)
   ).length;
   const trialingCount = statusDistribution.TRIALING || 0;
+  const activeSubscriptions = (statusDistribution.ACTIVE || 0) + trialingCount;
   const conversionPool = activePaidCount + trialingCount;
 
   return {
     activePaidCount,
+    activeSubscriptions,
     trialingCount,
     pastDueCount: statusDistribution.PAST_DUE || 0,
     canceledCount: statusDistribution.CANCELED || 0,
@@ -134,41 +136,15 @@ export async function getSuperAdminMetrics() {
   const periodStart = getPeriodStart(now);
 
   const [
-    users,
-    activeSessions,
-    customers,
     businesses,
     bookingBusinessIds,
     totalBookings,
     totalServices,
     allSubscriptions,
-    activeMemberships,
+    platformPlans,
     failedWebhookEvents,
     recentBusinesses
   ] = await Promise.all([
-    prisma.user.findMany({
-      select: {
-        id: true,
-        platformRole: true,
-        createdAt: true
-      }
-    }),
-    prisma.session.findMany({
-      where: {
-        expires: {
-          gt: now
-        }
-      },
-      select: {
-        userId: true
-      }
-    }),
-    prisma.customer.findMany({
-      select: {
-        id: true,
-        userId: true
-      }
-    }),
     prisma.business.findMany({
       select: {
         id: true,
@@ -203,14 +179,7 @@ export async function getSuperAdminMetrics() {
         updatedAt: true
       }
     }),
-    prisma.businessMembership.findMany({
-      where: {
-        isActive: true
-      },
-      select: {
-        userId: true
-      }
-    }),
+    prisma.platformPlan.findMany({ select: { code: true, monthlyPriceCents: true, status: true } }),
     prisma.stripeWebhookEvent.count({
       where: {
         status: "FAILED"
@@ -249,6 +218,7 @@ export async function getSuperAdminMetrics() {
   ]);
 
   const latestSubscriptions = getLatestSubscriptionsByBusiness(allSubscriptions);
+  const planPrices = new Map(platformPlans.map((plan) => [plan.code, plan.monthlyPriceCents]));
   const businessStatusCounts = businesses.reduce(
     (counts, business) => {
       incrementCount(counts, business.status);
@@ -263,26 +233,11 @@ export async function getSuperAdminMetrics() {
   const businessesWithBookings = countUnique(
     bookingBusinessIds.map((booking) => booking.businessId)
   );
-  const businessOwnerCount = countUnique(businesses.map((business) => business.ownerId));
-
   return {
     generatedAt: now,
     periodLabel: `Last ${ADMIN_PERIOD_DAYS} days`,
-    revenue: getRevenueMetrics(latestSubscriptions, periodStart),
-    subscriptions: getSubscriptionMetrics(latestSubscriptions),
-    users: {
-      totalUsers: users.length,
-      newUsers: users.filter((user) => user.createdAt >= periodStart).length,
-      activeUsers: countUnique(activeSessions.map((session) => session.userId)),
-      superAdmins: users.filter((user) => user.platformRole === "SUPER_ADMIN").length,
-      platformAdmins: users.filter((user) => user.platformRole === "ADMIN").length,
-      businessOwners: businessOwnerCount,
-      customerProfiles: customers.length,
-      linkedCustomerUsers: countUnique(customers.map((customer) => customer.userId)),
-      staffUsers: countUnique(
-        activeMemberships.map((membership) => membership.userId)
-      )
-    },
+    revenue: getRevenueMetrics(latestSubscriptions, periodStart, planPrices),
+    subscriptions: getSubscriptionMetrics(latestSubscriptions, planPrices),
     businesses: {
       totalBusinesses: businesses.length,
       newBusinesses: businesses.filter((business) => business.createdAt >= periodStart)
@@ -299,9 +254,9 @@ export async function getSuperAdminMetrics() {
     },
     risk: {
       suspendedBusinesses: businessStatusCounts.SUSPENDED || 0,
-      failedPayments: getRevenueMetrics(latestSubscriptions, periodStart).failedPaymentCount,
+      failedPayments: getRevenueMetrics(latestSubscriptions, periodStart, planPrices).failedPaymentCount,
       failedWebhookEvents,
-      pastDueSubscriptions: getSubscriptionMetrics(latestSubscriptions).pastDueCount
+      pastDueSubscriptions: getSubscriptionMetrics(latestSubscriptions, planPrices).pastDueCount
     }
   };
 }

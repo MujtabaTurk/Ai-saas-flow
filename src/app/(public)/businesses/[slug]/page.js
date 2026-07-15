@@ -104,7 +104,7 @@ function ServiceList({ business, language }) {
       <div className="grid gap-4 md:grid-cols-2">
         {business.services.map((service) => (
           <article
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-5 shadow-sm"
             key={service.id}
           >
             <div className="flex items-start justify-between gap-4">
@@ -154,7 +154,7 @@ function MembershipPlanList({ business, language }) {
       <div className="grid gap-4 md:grid-cols-2">
         {business.membershipPlans.map((plan) => (
           <article
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+            className="rounded-2xl bg-white p-5 shadow-sm"
             key={plan.id}
           >
             <div className="flex items-start justify-between gap-4">
@@ -211,7 +211,7 @@ function TeamMembers({ members }) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {members.map((member) => (
           <div
-            className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            className="flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm"
             key={member.id}
           >
             <div className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-growth-mint font-bold text-growth-sidebar">
@@ -241,7 +241,7 @@ function Availability({ business, language }) {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {business.upcomingSlots.map((slot) => (
             <Link
-              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-primary hover:bg-growth-dashboard"
+              className="rounded-2xl bg-white p-4 shadow-sm transition-[background-color,box-shadow,opacity] duration-200 hover:bg-growth-dashboard hover:shadow-md"
               href="#book"
               key={`${slot.serviceId}-${slot.startsAt}`}
             >
@@ -266,7 +266,7 @@ function Availability({ business, language }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-growth-border bg-white p-5 text-sm text-muted-foreground">
+        <div className="rounded-2xl bg-white p-5 text-sm text-muted-foreground shadow-sm">
           No public slots are available in the current booking window.
         </div>
       )}
@@ -275,7 +275,7 @@ function Availability({ business, language }) {
         <div className="grid gap-3 md:grid-cols-2">
           {business.availability.map((day) => (
             <div
-              className="rounded-2xl border border-slate-200 bg-white p-4"
+              className="rounded-2xl bg-white p-4 shadow-sm"
               key={day.value}
             >
               <p className="font-bold text-growth-sidebar">{day.label}</p>
@@ -308,7 +308,7 @@ function Reviews({ business }) {
           title="Customer feedback"
         />
         {business.reviewSummary.total > 0 ? (
-          <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+          <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 shadow-sm">
             <ReviewStars rating={Math.round(business.reviewSummary.averageRating)} />
             <span className="text-sm font-semibold text-growth-sidebar">
               {business.reviewSummary.averageRating} from{" "}
@@ -322,7 +322,7 @@ function Reviews({ business }) {
         <div className="grid gap-4 md:grid-cols-2">
           {business.reviews.map((review) => (
             <article
-              className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+              className="rounded-2xl bg-white p-5 shadow-sm"
               key={review.id}
             >
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -342,7 +342,7 @@ function Reviews({ business }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-dashed border-growth-border bg-white p-5 text-sm text-muted-foreground">
+        <div className="rounded-2xl bg-white p-5 text-sm text-muted-foreground shadow-sm">
           This business has not published customer reviews yet.
         </div>
       )}
@@ -491,11 +491,13 @@ export default async function BusinessDiscoveryDetailPage({ params }) {
                   <PublicBookingForm
                     business={{
                       name: business.name,
+                      logoUrl: business.logoUrl,
                       slug: business.slug,
                       timezone: business.timezone,
                       bookingWindowDays: business.settings.bookingWindowDays
                     }}
                     services={business.services}
+                    language={language}
                   />
                 </div>
               ) : null}

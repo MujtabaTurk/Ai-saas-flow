@@ -6,9 +6,10 @@ import {
   fetchAdminBusinesses,
   fetchAdminPlans,
   fetchAdminSubscriptions,
-  fetchAdminUsers,
-  updateAdminBusinessStatus,
-  updateAdminUserRole
+  createAdminPlan,
+  deleteAdminPlan,
+  updateAdminPlan,
+  updateAdminBusinessStatus
 } from "@/features/admin/api";
 import { adminQueryKeys } from "@/features/admin/query-keys";
 
@@ -31,25 +32,6 @@ export function useUpdateAdminBusinessStatus() {
   });
 }
 
-export function useAdminUsers(filters) {
-  return useQuery({
-    queryKey: adminQueryKeys.users(filters),
-    queryFn: () => fetchAdminUsers(filters)
-  });
-}
-
-export function useUpdateAdminUserRole() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: updateAdminUserRole,
-    onSuccess: () =>
-      queryClient.invalidateQueries({
-        queryKey: adminQueryKeys.usersRoot()
-      })
-  });
-}
-
 export function useAdminSubscriptions(filters) {
   return useQuery({
     queryKey: adminQueryKeys.subscriptions(filters),
@@ -62,6 +44,16 @@ export function useAdminPlans() {
     queryKey: adminQueryKeys.plans(),
     queryFn: fetchAdminPlans
   });
+}
+
+export function useAdminPlanMutations() {
+  const queryClient = useQueryClient();
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: adminQueryKeys.plans() });
+  return {
+    create: useMutation({ mutationFn: createAdminPlan, onSuccess: invalidate }),
+    update: useMutation({ mutationFn: ({ planId, input }) => updateAdminPlan(planId, input), onSuccess: invalidate }),
+    remove: useMutation({ mutationFn: deleteAdminPlan, onSuccess: invalidate })
+  };
 }
 
 export function useAdminActivity(filters) {

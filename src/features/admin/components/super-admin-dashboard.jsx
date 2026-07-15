@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle, Building2, CreditCard, Users } from "lucide-react";
+import { AlertTriangle, Building2, CalendarDays, CreditCard, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -90,30 +90,42 @@ export function SuperAdminDashboard({ metrics }) {
 
   return (
     <div className="space-y-8">
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <MetricCard
           icon={CreditCard}
-          label="Estimated MRR"
+          label="Monthly Revenue"
           value={formatMoney(metrics.revenue.mrrCents)}
           helper="Based on active paid plan codes"
         />
         <MetricCard
-          icon={CreditCard}
-          label="Estimated ARR"
-          value={formatMoney(metrics.revenue.arrCents)}
-          helper="MRR multiplied by 12"
+          icon={Building2}
+          label="Total Businesses"
+          value={metrics.businesses.totalBusinesses}
+          helper={`${metrics.businesses.newBusinesses} new in ${metrics.periodLabel.toLowerCase()}`}
         />
         <MetricCard
           icon={Building2}
           label="Active Businesses"
           value={metrics.businesses.activeBusinesses}
-          helper={`${metrics.businesses.newBusinesses} new in ${metrics.periodLabel.toLowerCase()}`}
+          helper="Businesses currently operating"
         />
         <MetricCard
-          icon={Users}
-          label="Active Users"
-          value={metrics.users.activeUsers}
-          helper="Users with unexpired sessions"
+          icon={CreditCard}
+          label="Active Subscriptions"
+          value={metrics.subscriptions.activeSubscriptions}
+          helper="Active and trialing subscriptions"
+        />
+        <MetricCard
+          icon={CalendarDays}
+          label="Bookings"
+          value={metrics.businesses.totalBookings}
+          helper="All business bookings"
+        />
+        <MetricCard
+          icon={Wrench}
+          label="Services"
+          value={metrics.businesses.totalServices}
+          helper="All configured services"
         />
       </section>
 
@@ -167,20 +179,6 @@ export function SuperAdminDashboard({ metrics }) {
             ))}
           </CardContent>
         </Card>
-      </section>
-
-      <section className="space-y-4">
-        <SectionHeader eyebrow="Users" title="User Metrics">
-          Active users are measured from live sessions. Team users are counted
-          from active business memberships.
-        </SectionHeader>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          <MetricCard label="Total Users" value={metrics.users.totalUsers} helper={`${metrics.users.newUsers} new in ${metrics.periodLabel.toLowerCase()}`} />
-          <MetricCard label="Business Owners" value={metrics.users.businessOwners} helper="Unique non-archived business owners" />
-          <MetricCard label="Customer Profiles" value={metrics.users.customerProfiles} helper={`${metrics.users.linkedCustomerUsers} linked to users`} />
-          <MetricCard label="Platform Admins" value={metrics.users.superAdmins + metrics.users.platformAdmins} helper={`${metrics.users.superAdmins} super admins`} />
-          <MetricCard label="Team Users" value={metrics.users.staffUsers} helper="Unique active business members" />
-        </div>
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">

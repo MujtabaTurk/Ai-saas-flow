@@ -190,13 +190,13 @@ function DirectoryFilters({ facets, filters }) {
 
 function BusinessCard({ business, language }) {
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-growth-border bg-card p-5 text-card-foreground shadow-sm transition hover:-translate-y-0.5 hover:border-primary hover:shadow-lg dark:shadow-none">
+    <article className="flex h-full flex-col rounded-2xl bg-card p-5 text-card-foreground shadow-sm transition-[background-color,box-shadow,opacity] duration-200 hover:bg-accent/25 hover:shadow-md dark:shadow-none dark:hover:bg-accent/35">
       <div className="flex items-start gap-4">
         {business.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             alt=""
-            className="size-14 rounded-2xl border border-growth-border object-cover"
+            className="size-14 rounded-2xl object-cover"
             src={business.logoUrl}
           />
         ) : (
@@ -237,7 +237,7 @@ function BusinessCard({ business, language }) {
       <div className="mt-5 space-y-3">
         {business.services.map((service) => (
           <div
-            className="rounded-2xl border border-growth-border bg-growth-dashboard p-3"
+            className="rounded-2xl bg-growth-dashboard p-3"
             key={service.id}
           >
             <div className="flex items-start justify-between gap-3">
@@ -254,7 +254,7 @@ function BusinessCard({ business, language }) {
         ))}
         {business.membershipPlans.map((plan) => (
           <div
-            className="rounded-2xl border border-growth-border bg-growth-dashboard p-3"
+            className="rounded-2xl bg-growth-dashboard p-3"
             key={plan.id}
           >
             <div className="flex items-start justify-between gap-3">
@@ -294,7 +294,7 @@ function Pagination({ filters, pagination }) {
   return (
     <nav
       aria-label="Businesses pagination"
-      className="flex flex-col items-center justify-between gap-3 rounded-2xl border border-growth-border bg-card p-4 sm:flex-row"
+      className="flex flex-col items-center justify-between gap-3 rounded-2xl bg-card p-4 shadow-sm sm:flex-row"
     >
       <p className="text-sm text-muted-foreground">
         Page {pagination.page} of {pagination.totalPages}
@@ -356,21 +356,21 @@ export default async function BusinessesDirectoryPage({ searchParams }) {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4">
+            <div className="rounded-2xl bg-growth-dashboard p-4">
               <Building2 className="size-5 text-primary" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">{pagination.totalItems}</p>
               <p className="text-xs font-semibold uppercase text-muted-foreground">
                 Businesses
               </p>
             </div>
-            <div className="rounded-2xl border border-growth-border bg-growth-dashboard p-4">
+            <div className="rounded-2xl bg-growth-dashboard p-4">
               <SlidersHorizontal className="size-5 text-primary" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">{facets.industries.length}</p>
               <p className="text-xs font-semibold uppercase text-muted-foreground">
                 Industries
               </p>
             </div>
-            <div className="hidden rounded-2xl border border-growth-border bg-growth-dashboard p-4 sm:block">
+            <div className="hidden rounded-2xl bg-growth-dashboard p-4 sm:block">
               <CalendarCheck2 className="size-5 text-[hsl(var(--warning-foreground))]" aria-hidden="true" />
               <p className="mt-2 text-2xl font-bold">
                 {businesses.filter((business) => business.acceptingBookings).length}

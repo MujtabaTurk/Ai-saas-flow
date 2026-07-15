@@ -40,6 +40,29 @@ export const bookingListSelect = {
   servicePriceCentsSnapshot: true,
   serviceCurrencySnapshot: true,
   paymentRequiredSnapshot: true,
+  payment: {
+    select: {
+      id: true,
+      method: true,
+      status: true,
+      amountCents: true,
+      currency: true,
+      paidAt: true,
+      failedAt: true,
+      audits: {
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        select: {
+          action: true,
+          paymentStatus: true,
+          paymentMethod: true,
+          notes: true,
+          createdAt: true,
+          actor: { select: { id: true, name: true, email: true } }
+        }
+      }
+    }
+  },
   startsAt: true,
   endsAt: true,
   timezone: true,
@@ -110,6 +133,7 @@ export async function getBusinessForBooking(businessLocator) {
       slug: true,
       name: true,
       description: true,
+      industry: true,
       logoUrl: true,
       email: true,
       phone: true,

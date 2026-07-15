@@ -51,27 +51,6 @@ export async function updateAdminBusinessStatus({
   return parseResponse(response, "Could not update the business.");
 }
 
-export async function fetchAdminUsers(filters) {
-  const response = await fetch(`/api/admin/users${buildQuery(filters)}`);
-  return parseResponse(response, "Could not load users.");
-}
-
-export async function updateAdminUserRole({
-  userId,
-  platformRole,
-  reason
-}) {
-  const response = await fetch(`/api/admin/users/${userId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ platformRole, reason })
-  });
-
-  return parseResponse(response, "Could not update the platform role.");
-}
-
 export async function fetchAdminSubscriptions(filters) {
   const response = await fetch(
     `/api/admin/subscriptions${buildQuery(filters)}`
@@ -80,8 +59,29 @@ export async function fetchAdminSubscriptions(filters) {
 }
 
 export async function fetchAdminPlans() {
-  const response = await fetch("/api/admin/plans");
+  const response = await fetch("/api/admin/plans", { cache: "no-store" });
   return parseResponse(response, "Could not load plan configuration.");
+}
+
+async function mutateAdminPlan(url, method, body) {
+  const response = await fetch(url, {
+    method,
+    headers: { "content-type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  return parseResponse(response, "Could not update plan configuration.");
+}
+
+export function createAdminPlan(input) {
+  return mutateAdminPlan("/api/admin/plans", "POST", input);
+}
+
+export function updateAdminPlan(planId, input) {
+  return mutateAdminPlan(`/api/admin/plans/${planId}`, "PATCH", input);
+}
+
+export function deleteAdminPlan(planId) {
+  return mutateAdminPlan(`/api/admin/plans/${planId}`, "DELETE");
 }
 
 export async function fetchAdminActivity(filters) {

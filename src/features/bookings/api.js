@@ -72,6 +72,15 @@ export async function updateBookingStatus({
   return parseResponse(response, "Could not update booking status.");
 }
 
+export async function updateBookingPayment({ businessId, bookingId, values }) {
+  const response = await fetch(withBusinessId(`/api/bookings/${bookingId}/payment`, businessId), {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(values)
+  });
+  return parseResponse(response, "Could not update booking payment.");
+}
+
 export async function updateBookingNotes({
   businessId,
   bookingId,
@@ -152,8 +161,9 @@ export async function createPublicBooking(businessSlug, values) {
   return parseResponse(response, "Could not create booking.");
 }
 
-export async function fetchPublicBooking(businessSlug, bookingNumber, token) {
+export async function fetchPublicBooking(businessSlug, bookingNumber, token, sessionId = "") {
   const params = new URLSearchParams({ token });
+  if (sessionId) params.set("session_id", sessionId);
   const response = await fetch(
     `/api/public/businesses/${businessSlug}/bookings/${bookingNumber}?${params.toString()}`
   );

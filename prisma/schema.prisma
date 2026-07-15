@@ -82,6 +82,23 @@ enum BookingSource {
   AI_ASSISTANT
 }
 
+enum BookingPaymentMethod {
+  CARD
+  BUSINESS_LOCATION
+}
+
+enum BookingPaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum BookingPaymentAuditAction {
+  CONFIRMED
+  MARKED_UNPAID
+}
+
 enum ServiceType {
   BOOKING
   MEMBERSHIP
@@ -115,10 +132,10 @@ enum MembershipPaymentProvider {
   STRIPE
 }
 
-enum PlanCode {
-  TRIAL
-  BASIC
-  PRO
+enum PlatformPlanStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
 }
 
 enum SubscriptionStatus {
@@ -174,6 +191,7 @@ enum NotificationDeliveryStatus {
 
 enum AuditAction {
   BUSINESS_STATUS_CHANGED
+  SUPER_ADMIN_CREATED
   USER_PLATFORM_ROLE_CHANGED
   TEAM_INVITATION_SENT
   TEAM_INVITATION_REVOKED
@@ -221,6 +239,7 @@ model User {
   customerProfiles        Customer[]           @relation("CustomerUser")
   createdBookings         Booking[]            @relation("BookingCreatedBy")
   auditLogs               AuditLog[]           @relation("AuditActor")
+  bookingPaymentAudits    BookingPaymentAudit[] @relation("BookingPaymentAuditActor")
   businessMemberships     BusinessMembership[] @relation("MembershipUser")
   invitedMemberships      BusinessMembership[] @relation("MembershipInvitedBy")
   sentTeamInvitations     TeamInvitation[]     @relation("TeamInvitationInvitedBy")
@@ -324,6 +343,8 @@ model Business {
   customerMemberships     CustomerMembership[]
   membershipPayments      MembershipPayment[]
   bookings                Booking[]
+  bookingPayments         BookingPayment[]
+  bookingPaymentAudits    BookingPaymentAudit[]
   bookingOccupancies      BookingOccupancy[]
   customers               Customer[]
   availabilities          Availability[]
@@ -412,6 +433,7 @@ model Customer {
   business       Business  @relation(fields: [businessId], references: [id])
   user           User?     @relation("CustomerUser", fields: [userId], references: [id])
   bookings       Booking[]
+  bookingPayments BookingPayment[]
   memberships    CustomerMembership[]
   membershipPayments MembershipPayment[]
   reviews        Review[]
@@ -566,6 +588,8 @@ model Booking {
   canceledAt                 DateTime?
   confirmedAt                DateTime?
   completedAt                DateTime?
+  payment                   BookingPayment?
+  paymentAudits             BookingPaymentAudit[]
   business                   Business            @relation(fields: [businessId], references: [id])
   service                    Service             @relation(fields: [serviceId], references: [id])
   customer                   Customer            @relation(fields: [customerId], references: [id])
@@ -591,6 +615,54 @@ model Booking {
   @@index([customerId])
   @@index([assignedMemberId])
   @@index([businessId, assignedMemberId, startsAt])
+}
+
+model BookingPayment {
+  id                    String                @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId             String                @unique @db.ObjectId
+  businessId            String                @db.ObjectId
+  customerId            String                @db.ObjectId
+  amountCents           Int
+  currency              String                @default("usd")
+  method                BookingPaymentMethod
+  status                BookingPaymentStatus @default(PENDING)
+  stripePaymentIntentId String?
+  stripeCheckoutSessionId String?
+  paidAt                DateTime?
+  failedAt              DateTime?
+  metadata              Json?
+  audits                BookingPaymentAudit[]
+  booking               Booking               @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  business              Business              @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  customer              Customer              @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  @@index([businessId, status, createdAt])
+  @@index([customerId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+}
+
+model BookingPaymentAudit {
+  id                String                   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId         String                   @db.ObjectId
+  bookingPaymentId  String                   @db.ObjectId
+  businessId        String                   @db.ObjectId
+  actorUserId       String                   @db.ObjectId
+  action            BookingPaymentAuditAction
+  paymentStatus     BookingPaymentStatus
+  paymentMethod     BookingPaymentMethod
+  notes             String?
+  booking           Booking                  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  bookingPayment    BookingPayment            @relation(fields: [bookingPaymentId], references: [id], onDelete: Cascade)
+  business          Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  actor             User                     @relation("BookingPaymentAuditActor", fields: [actorUserId], references: [id])
+  createdAt         DateTime                 @default(now())
+
+  @@index([bookingId, createdAt])
+  @@index([businessId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 model BusinessMembership {
@@ -804,7 +876,8 @@ model UnavailableDate {
 model Subscription {
   id                   String             @id @default(auto()) @map("_id") @db.ObjectId
   businessId           String             @db.ObjectId
-  planCode             PlanCode           @default(TRIAL)
+  platformPlanId       String?            @db.ObjectId
+  planCode             String?            // Legacy compatibility; new writes use platformPlanId.
   status               SubscriptionStatus @default(TRIALING)
   stripeCustomerId     String?
   stripeSubscriptionId String?
@@ -819,11 +892,13 @@ model Subscription {
   lastPaymentAt        DateTime?
   lastPaymentFailedAt  DateTime?
   business             Business           @relation(fields: [businessId], references: [id])
+  platformPlan         PlatformPlan?      @relation(fields: [platformPlanId], references: [id], onDelete: Restrict)
   notifications        Notification[]
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
 
   @@index([businessId])
+  @@index([platformPlanId])
   @@index([businessId, createdAt])
   @@index([planCode])
   @@index([status])
@@ -831,6 +906,29 @@ model Subscription {
   @@index([planCode, status, updatedAt])
   @@index([stripeCustomerId])
   @@index([stripeSubscriptionId])
+}
+
+model PlatformPlan {
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  code             String            @unique
+  name             String
+  monthlyPriceCents Int              @default(0)
+  yearlyPriceCents  Int?
+  description      String?
+  features         Json?
+  trialDays        Int               @default(0)
+  limits           Json?
+  aiFeatures       Json?
+  prioritySupport  Boolean           @default(false)
+  stripePriceId    String?
+  stripeProductId  String?
+  status           PlatformPlanStatus @default(ACTIVE)
+  sortOrder        Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  subscriptions    Subscription[]
+
+  @@index([status, sortOrder])
 }
 
 model Notification {

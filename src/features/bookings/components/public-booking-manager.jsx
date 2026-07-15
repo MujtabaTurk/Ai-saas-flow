@@ -23,12 +23,12 @@ function formatStatus(status, t) {
   return t(`bookings:statuses.${key}`);
 }
 
-export function PublicBookingManager({ businessSlug, bookingNumber, token }) {
+export function PublicBookingManager({ businessSlug, bookingNumber, token, sessionId = "" }) {
   const { t, i18n } = useTranslation(["public", "bookings"]);
   const language = i18n.resolvedLanguage || i18n.language;
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState(null);
-  const bookingQuery = usePublicBooking(businessSlug, bookingNumber, token);
+  const bookingQuery = usePublicBooking(businessSlug, bookingNumber, token, sessionId);
   const reviewQuery = usePublicBookingReview(
     businessSlug,
     bookingNumber,
@@ -78,9 +78,12 @@ export function PublicBookingManager({ businessSlug, bookingNumber, token }) {
         <div className="flex flex-wrap items-center gap-2">
           <CardTitle>{booking.serviceNameSnapshot}</CardTitle>
           <Badge>{formatStatus(booking.status, t)}</Badge>
+          {booking.payment ? <Badge variant={booking.payment.status === "SUCCEEDED" ? "success" : "warning"}>Payment: {booking.payment.status === "SUCCEEDED" ? "Paid" : booking.payment.status === "PENDING" ? "Pending" : booking.payment.status}</Badge> : null}
         </div>
       </CardHeader>
       <CardContent className="space-y-4 text-sm text-muted-foreground">
+        {booking.status === "CONFIRMED" && booking.payment?.method === "BUSINESS_LOCATION" ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800"><p className="font-semibold">Booking Confirmed</p><p className="mt-1">Payment will be collected at the business location.</p></div> : null}
+        {booking.status === "CONFIRMED" && booking.payment?.method === "CARD" && booking.payment?.status === "SUCCEEDED" ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800"><p className="font-semibold">Booking Confirmed</p><p className="mt-1">Payment Received</p></div> : null}
         {message ? <div className="rounded-2xl bg-growth-dashboard p-4">{message}</div> : null}
         <p>
           {t("booking.reference")}: {booking.bookingNumber}

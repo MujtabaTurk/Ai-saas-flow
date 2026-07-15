@@ -29,7 +29,7 @@ export default async function AdminPage() {
             <p className="text-sm font-semibold text-primary">Platform workspace</p>
             <h1 className="text-3xl font-bold tracking-tight text-growth-sidebar">Super Admin</h1>
             <p className="text-muted-foreground">
-              Manage tenants, subscriptions, platform users, and operational activity.
+              Manage businesses, subscriptions, plans, and operational activity.
             </p>
           </div>
         </div>

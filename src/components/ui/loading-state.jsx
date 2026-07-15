@@ -9,7 +9,7 @@ function LoadingState({
   return (
     <div
       className={cn(
-        "flex min-h-40 flex-col items-center justify-center rounded-xl border border-growth-border bg-card p-8 text-center",
+        "flex min-h-40 flex-col items-center justify-center rounded-xl bg-card p-8 text-center shadow-sm",
         className
       )}
       role="status"

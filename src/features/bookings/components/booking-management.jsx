@@ -24,6 +24,7 @@ import {
   useBookingSettings,
   useUpdateBookingAssignment,
   useUpdateBookingNotes,
+  useUpdateBookingPayment,
   useUpdateBookingSettings,
   useUpdateBookingStatus
 } from "@/features/bookings/hooks/use-bookings";
@@ -74,6 +75,7 @@ export function BookingManagement({
   const teamQuery = useTeam(businessId);
   const statusMutation = useUpdateBookingStatus(businessId);
   const notesMutation = useUpdateBookingNotes(businessId);
+  const paymentMutation = useUpdateBookingPayment(businessId);
   const assignmentMutation = useUpdateBookingAssignment(businessId);
   const settingsMutation = useUpdateBookingSettings(businessId);
   const showBookingsSkeleton = useDelayedVisibility(bookingsQuery.isLoading);
@@ -216,6 +218,17 @@ export function BookingManagement({
         details: actionError.message,
         title: "Assignment update failed"
       });
+    }
+  }
+
+  async function changePayment(booking, action) {
+    const notes = window.prompt(action === "CONFIRM" ? "Optional payment note" : "Reason for marking unpaid (optional)", "");
+    if (notes === null) return;
+    try {
+      const result = await paymentMutation.mutateAsync({ bookingId: booking.id, values: { action, notes } });
+      showToast({ title: result.message, variant: "success" });
+    } catch (actionError) {
+      setActionError({ description: "We could not update this payment.", details: actionError.message, title: "Payment update failed" });
     }
   }
 
@@ -628,8 +641,10 @@ export function BookingManagement({
                           <Badge variant={statusVariant(booking.status)}>
                             {booking.status.replace("_", " ")}
                           </Badge>
-                          {booking.paymentRequiredSnapshot ? (
-                            <Badge variant="warning">Payment required</Badge>
+                          {booking.payment ? (
+                            <Badge variant={booking.payment.status === "SUCCEEDED" ? "success" : booking.payment.status === "FAILED" ? "destructive" : "warning"}>
+                              Payment: {booking.payment.status === "SUCCEEDED" ? "Paid" : booking.payment.status === "PENDING" ? "Pending" : booking.payment.status === "FAILED" ? "Failed" : "Refunded"}
+                            </Badge>
                           ) : null}
                         </div>
                       </td>
@@ -662,6 +677,12 @@ export function BookingManagement({
                                 No-show
                               </Button>
                             </>
+                          ) : null}
+                          {booking.payment?.method === "BUSINESS_LOCATION" && booking.payment.status !== "SUCCEEDED" ? (
+                            <Button disabled={paymentMutation.isPending} size="sm" onClick={() => changePayment(booking, "CONFIRM")}>Confirm payment</Button>
+                          ) : null}
+                          {booking.payment?.status === "SUCCEEDED" ? (
+                            <Button disabled={paymentMutation.isPending} size="sm" variant="outline" onClick={() => changePayment(booking, "UNPAID")}>Mark unpaid</Button>
                           ) : null}
                           {["PENDING", "CONFIRMED"].includes(booking.status) ? (
                             <Button

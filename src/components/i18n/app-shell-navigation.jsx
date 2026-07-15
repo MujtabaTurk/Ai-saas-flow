@@ -1,11 +1,44 @@
 "use client";
 
 import Link from "next/link";
+import {
+  Activity,
+  Bell,
+  Bot,
+  Building2,
+  CalendarClock,
+  CalendarDays,
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  Star,
+  UserRoundCog,
+  UsersRound,
+  Wrench
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+
+const navigationIcons = {
+  Activity,
+  Bell,
+  Bot,
+  Building2,
+  CalendarClock,
+  CalendarDays,
+  CreditCard,
+  LayoutDashboard,
+  Settings,
+  Sparkles,
+  Star,
+  UserRoundCog,
+  UsersRound,
+  Wrench
+};
 
 function NavigationSkeleton({ className, collapsed = false }) {
   const { t } = useTranslation("common");
@@ -92,7 +125,7 @@ export function AppShellNavigation({
           {groupIndex > 0 ? <div className="pb-1" /> : null}
           <div className="space-y-1">
             {group.map((item) => {
-              const Icon = item.icon;
+              const Icon = navigationIcons[item.iconName];
               const label = item.labelKey
                 ? t(item.labelKey, item.label)
                 : item.label;

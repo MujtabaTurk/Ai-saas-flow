@@ -316,7 +316,8 @@ export async function getBillingBusinessForUser(
         orderBy: {
           createdAt: "desc"
         },
-        take: 1
+        take: 1,
+        include: { platformPlan: true }
       }
     }
   });
@@ -687,6 +688,8 @@ export function serializeSubscription(subscription) {
   return {
     id: subscription.id,
     planCode: subscription.planCode,
+    planId: subscription.platformPlanId,
+    planName: subscription.platformPlan?.name || null,
     status: subscription.status,
     stripeCustomerId: subscription.stripeCustomerId,
     stripeSubscriptionId: subscription.stripeSubscriptionId,
@@ -701,9 +704,42 @@ export function serializeSubscription(subscription) {
   };
 }
 
-export function buildBillingState({ business, serviceCount, bookingCount }) {
+async function getManagedBillingPlans(currentPlanCode) {
+  const plans = await prisma.platformPlan.findMany({
+    where: {
+      OR: [
+        { status: { in: ["ACTIVE", "INACTIVE"] } },
+        ...(currentPlanCode ? [{ code: currentPlanCode }] : [])
+      ]
+    },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }]
+  });
+
+  if (plans.length === 0) {
+    return getPlanCatalog();
+  }
+
+  return plans.map((plan) => ({
+    code: plan.code,
+    name: plan.name,
+    monthlyPriceCents: plan.monthlyPriceCents,
+    yearlyPriceCents: plan.yearlyPriceCents,
+    description: plan.description,
+    features: Array.isArray(plan.features) ? plan.features : [],
+    trialDays: plan.trialDays,
+    limits: plan.limits || {},
+    aiFeatures: plan.aiFeatures || {},
+    prioritySupport: plan.prioritySupport,
+    highlighted: false,
+    status: plan.status,
+    stripePriceId: plan.stripePriceId
+  }));
+}
+
+export async function buildBillingState({ business, serviceCount, bookingCount }) {
   const subscription = business.subscriptions[0] || null;
   const priceConfiguration = getStripePriceConfigurationStatus();
+  const managedPlans = await getManagedBillingPlans(subscription?.planCode);
   const stripeSecretConfigured = Boolean(process.env.STRIPE_SECRET_KEY);
   const webhookConfigured = Boolean(process.env.STRIPE_WEBHOOK_SECRET);
   const missingConfiguration = [
@@ -728,16 +764,19 @@ export function buildBillingState({ business, serviceCount, bookingCount }) {
       services: serviceCount,
       bookings: bookingCount
     },
-    plans: getPlanCatalog().map((plan) => ({
+    plans: managedPlans.map((plan) => ({
       ...plan,
       stripeConfigured:
-        plan.code === "TRIAL" ? true : Boolean(priceConfiguration[plan.code]),
+        plan.code === "TRIAL"
+          ? true
+          : Boolean(plan.stripePriceId || priceConfiguration[plan.code]),
       checkoutConfigured:
         plan.code === "TRIAL"
           ? false
           : stripeSecretConfigured &&
             webhookConfigured &&
-            Boolean(priceConfiguration[plan.code])
+            Boolean(plan.stripePriceId || priceConfiguration[plan.code]) &&
+            plan.status === "ACTIVE"
     })),
     billingConfigured: missingConfiguration.length === 0,
     stripeSecretConfigured,
@@ -825,7 +864,7 @@ export async function findReusableCheckoutSession({
   return session || null;
 }
 
-export function getCheckoutPriceId(planCode) {
+export async function getCheckoutPriceId(planCode) {
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
     throw new AppError(
       "Stripe webhooks must be configured before starting subscription checkout.",
@@ -833,7 +872,14 @@ export function getCheckoutPriceId(planCode) {
     );
   }
 
-  const priceId = getStripePriceIdForPlan(planCode);
+  const managedPlan = await prisma.platformPlan.findUnique({
+    where: { code: planCode },
+    select: { status: true, stripePriceId: true }
+  });
+  if (managedPlan && managedPlan.status !== "ACTIVE") {
+    throw new AppError("This plan is not available for new subscriptions.", 409);
+  }
+  const priceId = managedPlan?.stripePriceId || getStripePriceIdForPlan(planCode);
 
   if (!priceId) {
     throw new AppError(`Stripe price is not configured for the ${planCode} plan.`, 503);
@@ -909,6 +955,15 @@ export async function syncStripeSubscription(
   }
 
   if (!planCode || !["TRIAL", "BASIC", "PRO"].includes(planCode)) {
+    const dynamicPlan = planCode ? await prisma.platformPlan.findUnique({ where: { code: planCode }, select: { id: true } }) : null;
+    if (!dynamicPlan) throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
+  }
+
+  const platformPlan = await prisma.platformPlan.findUnique({
+    where: { code: planCode },
+    select: { id: true }
+  });
+  if (!platformPlan) {
     throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
   }
 
@@ -949,6 +1004,7 @@ export async function syncStripeSubscription(
 
   const data = {
     businessId,
+    platformPlanId: platformPlan.id,
     planCode,
     status: STRIPE_TO_LOCAL_STATUS[subscription.status] || "INCOMPLETE",
     stripeCustomerId: customerId,
