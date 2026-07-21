@@ -69,6 +69,10 @@ export async function getServerTranslator(language, namespace = "common") {
     nonExplicitSupportedLngs: true,
     returnEmptyString: false,
     returnNull: false,
+    missingKeyHandler: (languageCode, namespaceName, key) => {
+      console.warn(`[i18n] Missing translation: ${languageCode}/${namespaceName}:${key}`);
+    },
+    parseMissingKeyHandler: (key, defaultValue) => defaultValue || "",
     supportedLngs: Object.keys(resources),
     ns: namespaces,
     defaultNS: namespace,

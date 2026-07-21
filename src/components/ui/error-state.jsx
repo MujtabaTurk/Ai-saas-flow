@@ -1,5 +1,9 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { translateLegacyText } from "@/i18n/legacy";
 
 function ErrorState({
   title = "Something went wrong",
@@ -9,6 +13,11 @@ function ErrorState({
   action,
   className
 }) {
+  const { i18n } = useTranslation("legacy");
+  const localizedTitle = translateLegacyText(i18n, title);
+  const localizedDescription = translateLegacyText(i18n, description);
+  const localizedActionLabel = translateLegacyText(i18n, actionLabel);
+
   return (
     <div
       className={cn(
@@ -20,17 +29,17 @@ function ErrorState({
       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-card text-lg font-bold text-[hsl(var(--error-foreground))]">
         !
       </div>
-      <h3 className="text-lg font-bold">{title}</h3>
-      {description ? (
+      <h3 className="text-lg font-bold">{localizedTitle}</h3>
+      {localizedDescription ? (
         <p className="mx-auto mt-2 max-w-md text-sm text-[hsl(var(--error-foreground))]">
-          {description}
+          {localizedDescription}
         </p>
       ) : null}
       {action ? (
         <div className="mt-5">{action}</div>
       ) : onAction ? (
         <Button className="mt-5" onClick={onAction}>
-          {actionLabel}
+          {localizedActionLabel}
         </Button>
       ) : null}
     </div>

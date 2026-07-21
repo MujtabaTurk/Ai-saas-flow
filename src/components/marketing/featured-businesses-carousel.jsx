@@ -147,21 +147,21 @@ function FeaturedBusinessCard({ business, index, isDuplicate = false }) {
       {hasImage ? (
         <img
           alt={t("featuredBusinesses.coverAlt", { name: business.name })}
-          className="h-full w-full object-cover transition duration-700 group-hover/card:scale-[1.045]"
+          className="h-full w-full object-cover"
           draggable={false}
           onError={() => setImageFailed(true)}
           src={business.imageUrl}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,#eef4ff_0%,#d8e6ff_48%,#ecfdf5_100%)] text-5xl font-bold text-[#3525cd]">
+        <div className="flex h-full w-full items-center justify-center bg-[#eef4ff] text-5xl font-bold text-[#3525cd]">
           {getInitials(business.name)}
         </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#06121f]/80 via-[#06121f]/16 to-transparent" />
+      <div className="absolute inset-0 bg-[#06121f]/20" />
       <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
-        <div className="mb-3 h-px w-10 bg-white/70 transition-all duration-300 group-hover/card:w-16" />
+        <div className="mb-3 h-px w-10 bg-white/70" />
         <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-white/15 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#dbe4ff] backdrop-blur">
+          <span className="rounded-full bg-[#06121f]/35 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-[#dbe4ff]">
             {business.category}
           </span>
           {business.rating ? (
@@ -245,9 +245,6 @@ export function FeaturedBusinessesCarousel({ businesses = [] }) {
       aria-label={t("featuredBusinesses.ariaLabel")}
       className="business-showcase overflow-hidden py-2"
     >
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 hidden w-28 bg-gradient-to-r from-[#f4f7ff] to-transparent sm:block" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 hidden w-28 bg-gradient-to-l from-[#f4f7ff] to-transparent sm:block" />
-
       <MarqueeRow businesses={visibleBusinesses} />
       <MarqueeRow
         businesses={reverseBusinesses}

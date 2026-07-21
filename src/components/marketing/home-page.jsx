@@ -2,25 +2,32 @@
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
+  ArrowUpRight,
+  BarChart3,
+  Bell,
+  CalendarDays,
   CheckCircle2,
+  Clock3,
+  CreditCard,
   Menu,
   Search,
   Star,
+  UserRound,
+  Users,
+  WalletCards,
   X
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/i18n/language-switcher";
 import { FeaturedBusinessesCarousel } from "@/components/marketing/featured-businesses-carousel";
-import { PublishBookingJourney } from "@/components/marketing/publish-booking-journey";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import {
   bookingRouteConfig,
   categoryConfig,
   faqKeys,
-  featureConfig,
   footerGroups,
   footerHrefs,
   navLinks,
@@ -51,7 +58,7 @@ function PrimaryLink({ children, className, href }) {
   return (
     <Link
       className={cn(
-        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] bg-[#3525cd] px-7 text-sm font-semibold text-white shadow-[0px_10px_15px_-3px_rgba(53,37,205,0.2),0px_4px_6px_-4px_rgba(53,37,205,0.2)] transition-colors hover:bg-[#2f22b6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/40 dark:shadow-none sm:w-auto",
+        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] bg-[#3525cd] px-7 text-sm font-semibold text-white transition-[background-color,opacity] duration-150 ease-out hover:bg-[#2f22b6] hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 sm:w-auto",
         className
       )}
       href={href}
@@ -65,7 +72,7 @@ function SecondaryLink({ children, className, href }) {
   return (
     <Link
       className={cn(
-        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] border border-[#c7c4d8] bg-white px-7 text-sm font-semibold text-[#0b1c30] transition-colors hover:bg-[#eef4ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/30 sm:w-auto",
+        "inline-flex min-h-14 w-full items-center justify-center rounded-[12px] border border-[#c7c4d8] bg-white px-7 text-sm font-semibold text-[#0b1c30] transition-[background-color,border-color,color] duration-150 ease-out hover:border-[#b7b1f5] hover:bg-[#f8f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3525cd]/25 sm:w-auto",
         className
       )}
       href={href}
@@ -112,7 +119,7 @@ function SiteNav() {
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#c7c4d8] bg-[#f8f9ff]/90 backdrop-blur-[6px]">
+    <header className="sticky top-0 z-50 border-b border-[#c7c4d8] bg-[#f8f9ff]">
       <nav
         aria-label={t("landing.nav.ariaLabel")}
         className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-4 px-6 lg:px-8"
@@ -161,8 +168,8 @@ function SiteNav() {
             </button>
           </DialogPrimitive.Trigger>
           <DialogPrimitive.Portal>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-[#0b1c30]/35 backdrop-blur-sm md:hidden" />
-            <DialogPrimitive.Content className="fixed inset-y-0 end-0 z-[80] flex w-[min(22rem,calc(100vw-2rem))] flex-col border-s border-[#c7c4d8] bg-[#f8f9ff] shadow-2xl outline-none md:hidden">
+            <DialogPrimitive.Overlay className="fixed inset-0 z-[70] bg-[#0b1c30]/35 md:hidden" />
+            <DialogPrimitive.Content className="fixed inset-y-0 end-0 z-[80] flex w-[min(22rem,calc(100vw-2rem))] flex-col border-s border-[#c7c4d8] bg-[#f8f9ff] shadow-sm outline-none md:hidden">
               <DialogPrimitive.Title className="sr-only">
                 {t("landing.nav.ariaLabel")}
               </DialogPrimitive.Title>
@@ -224,37 +231,52 @@ function SiteNav() {
 function HeroSection() {
   const { t } = useTranslation("public");
   const stats = t("landing.hero.stats", { returnObjects: true });
+  const activity = [
+    [CalendarDays, "New booking", "Liam Carter · Deep tissue massage", "Just now", "violet"],
+    [Clock3, "Calendar updated", "Tuesday, Jun 18 · 10:30 AM", "1m ago", "blue"],
+    [CreditCard, "Payment received", "Visa ending in 4242 · $120.00", "2m ago", "green"],
+    [Bell, "Customer notified", "Confirmation sent to liam@email.com", "2m ago", "amber"],
+    [Users, "Team assignment", "Assigned to Mia Williams", "3m ago", "slate"]
+  ];
 
   return (
-    <section className="relative overflow-hidden bg-[#f8f9ff] pb-16 pt-20 sm:pb-20 sm:pt-24">
-      <div className="mx-auto flex max-w-[1280px] flex-col items-center px-8 text-center">
-        <h1 className="max-w-[920px] text-[42px] font-bold leading-[1.02] text-[#0b1c30] sm:text-[56px] lg:text-[64px]">
+    <section className="relative overflow-hidden bg-[#f8f9ff] pb-16 pt-16 sm:pb-24 sm:pt-24">
+      <div className="mx-auto grid max-w-[1280px] items-center gap-14 px-6 lg:grid-cols-[0.88fr_1.12fr] lg:gap-16 lg:px-8">
+        <div className="relative z-10 max-w-[590px] text-center lg:text-start">
+          <h1 className="max-w-[600px] text-[44px] font-bold tracking-[-0.045em] leading-[1.03] text-[#0b1c30] sm:text-[58px] lg:text-[68px]">
           {t("landing.hero.title")}{" "}
-          <span className="text-[#3525cd]">{t("landing.hero.titleAccent")}</span>
-        </h1>
+            <span className="text-[#5145cd]">{t("landing.hero.titleAccent")}</span>
+          </h1>
 
-        <p className="mt-6 max-w-[690px] text-base leading-7 text-[#464555] sm:text-lg">
-          {t("landing.hero.description")}
-        </p>
+          <p className="mt-7 max-w-[530px] text-base leading-7 text-[#586377] sm:text-lg">{t("landing.hero.description")}</p>
 
-        <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
-          <PrimaryLink href="/register">
+          <div className="mt-9 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row lg:justify-start">
+          <PrimaryLink className="min-h-12 rounded-[9px] px-6" href="/register">
             {t("landing.hero.primaryCta")}
             <ArrowRight className="ms-2 size-4" aria-hidden="true" />
           </PrimaryLink>
-          <SecondaryLink href="/businesses">{t("landing.hero.secondaryCta")}</SecondaryLink>
-        </div>
+          <SecondaryLink className="min-h-12 rounded-[9px] px-6" href="/businesses">{t("landing.hero.secondaryCta")}</SecondaryLink>
+          </div>
 
-        <dl className="mt-12 grid w-full max-w-[820px] divide-y divide-[#d8dff0] border-y border-[#d8dff0] py-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <dl className="mt-11 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 border-t border-[#d8dff0] pt-5 text-start lg:justify-start">
           {stats.map((stat) => (
-            <div className="px-5 py-4" key={stat.label}>
-              <dt className="text-2xl font-bold text-[#0b1c30]">{stat.value}</dt>
-              <dd className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#586377]">
-                {stat.label}
-              </dd>
+            <div className="flex items-baseline gap-2" key={stat.label}>
+              <dt className="text-lg font-bold text-[#0b1c30]">{stat.value}</dt>
+              <dd className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#778196]">{stat.label}</dd>
             </div>
           ))}
         </dl>
+        </div>
+
+        <div className="relative z-10 min-w-0 lg:pt-4">
+          <div className="relative mx-auto max-w-[720px] rounded-[18px] border border-[#d9dceb] bg-white p-2 shadow-sm sm:p-3">
+            <div className="overflow-hidden rounded-[12px] border border-[#e6e8f0] bg-[#fbfcff]">
+              <div className="flex h-11 items-center justify-between border-b border-[#e8eaf0] bg-white px-4 sm:px-5"><div className="flex items-center gap-2.5"><div className="grid size-6 place-items-center rounded-[7px] bg-[#5145cd] text-[10px] font-bold text-white">S</div><span className="text-xs font-bold text-[#1a2540]">ServiceFlow</span><span className="hidden rounded-full bg-[#f1f2f7] px-2 py-1 text-[9px] font-semibold text-[#788197] sm:inline">Workspace</span></div><div className="flex items-center gap-2"><span className="hidden text-[10px] text-[#8992a5] sm:inline">Today, Jun 18</span><span className="size-6 rounded-full bg-[#d8dded]" /></div></div>
+              <div className="grid min-h-[330px] grid-cols-[76px_1fr] sm:grid-cols-[126px_1fr]"><aside className="border-e border-[#e8eaf0] bg-[#f7f8fc] p-3 sm:p-4"><p className="mb-5 text-[9px] font-bold uppercase tracking-[0.12em] text-[#9299aa]">Workspace</p>{["Overview", "Bookings", "Customers", "Team"].map((item, index) => <div className={cn("mb-2 rounded-[7px] px-2 py-2 text-[10px] font-semibold", index === 0 ? "bg-[#ecebff] text-[#5145cd]" : "text-[#8a93a6]")} key={item}>{item}</div>)}<div className="mt-10 border-t border-[#e4e6ed] pt-4"><p className="text-[9px] leading-4 text-[#a0a7b5]">All systems operational</p><span className="mt-2 inline-flex items-center gap-1 text-[9px] font-semibold text-[#23956b]"><span className="size-1.5 rounded-full bg-[#35b783]" /> Live</span></div></aside><div className="min-w-0 p-4 sm:p-6"><div className="flex items-end justify-between"><div><p className="text-[10px] font-semibold text-[#8992a5]">Tuesday, June 18</p><h2 className="mt-1 text-lg font-bold tracking-[-0.02em] text-[#1a2540] sm:text-xl">Good morning, Alex</h2></div><button className="hidden h-8 rounded-[7px] bg-[#5145cd] px-3 text-[10px] font-semibold text-white sm:block" type="button">New booking</button></div><div className="mt-5 grid gap-3 sm:grid-cols-3">{[["Today’s bookings","24","+12%"],["Revenue","2,840","+8%"],["Team online","8 / 10",""]].map(([label, value, change]) => <div className="rounded-[9px] border border-[#e9eaf1] bg-white p-3" key={label}><p className="text-[9px] font-semibold text-[#8992a5]">{label}</p><div className="mt-2 flex items-baseline gap-1.5"><strong className="text-sm text-[#1a2540]">{value}</strong>{change && <span className="text-[9px] font-semibold text-[#2a9b70]">{change}</span>}</div></div>)}</div><div className="mt-5 rounded-[10px] border border-[#e9eaf1] bg-white p-3 sm:p-4"><div className="flex items-center justify-between"><p className="text-[11px] font-bold text-[#1a2540]">Live activity</p><span className="flex items-center gap-1 text-[9px] font-semibold text-[#8992a5]"><span className="size-1.5 animate-pulse rounded-full bg-[#35b783]" /> Updating</span></div><div className="mt-3 space-y-1">{activity.map(([Icon, label, detail, time, tone], index) => <div className={cn("hero-activity-row flex items-center gap-2.5 rounded-[8px] px-2 py-2.5", "hero-activity-row-" + (index + 1))} key={label}><span className={cn("grid size-7 shrink-0 place-items-center rounded-[7px]", { violet: "bg-[#eeecff] text-[#5145cd]", blue: "bg-[#eaf3ff] text-[#3a7bd5]", green: "bg-[#e8f8f1] text-[#24966b]", amber: "bg-[#fff5df] text-[#c48722]", slate: "bg-[#eef0f5] text-[#667085]" }[tone])}><Icon className="size-3.5" aria-hidden="true" /></span><div className="min-w-0 flex-1"><p className="truncate text-[10px] font-bold text-[#354057]">{label}</p><p className="truncate text-[9px] text-[#9299aa]">{detail}</p></div><span className="shrink-0 text-[9px] text-[#a0a7b5]">{time}</span></div>)}</div></div></div></div>
+            </div>
+          </div>
+          <p className="mt-4 text-center text-[11px] font-medium text-[#9299aa]">One calm view for every booking, payment, and customer moment.</p>
+        </div>
       </div>
     </section>
   );
@@ -312,10 +334,9 @@ function FeaturedBusinessesSection() {
 
   return (
     <section
-      className="relative overflow-hidden bg-[linear-gradient(180deg,#fbfcff_0%,#eef4ff_46%,#f8f9ff_100%)] py-24 sm:py-28"
+      className="relative overflow-hidden bg-[#f8f9ff] py-24 sm:py-28"
       id="featured-businesses"
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#c7c4d8] to-transparent" />
       <div className="mx-auto max-w-[1280px] px-8">
         <div className="grid gap-8 lg:grid-cols-[0.95fr_0.55fr] lg:items-end">
           <div>
@@ -407,21 +428,143 @@ function FeatureCard({ feature }) {
   );
 }
 
+const storySteps = {
+  bookings: [["Customer books service", "Deep tissue massage · Liam Carter"], ["Time selected", "Tuesday, Jun 18 · 10:30 AM"], ["Booking confirmed", "Booking #SF-2048 is locked in"], ["Business notified", "Mia Williams has been assigned"]],
+  team: [["New booking arrives", "Deep tissue massage · 60 min"], ["Best teammate found", "Mia Williams · 4.9 rating"], ["Assignment shared", "Mia has accepted the appointment"], ["Team stays aligned", "Calendar and customer record updated"]],
+  wallet: [["Payment initiated", "Visa ending in 4242 · $120.00"], ["Payment received", "Funds captured successfully"], ["Revenue categorized", "Booking revenue · June 18"], ["Balance ready", "Available to withdraw · $2,840"]],
+  analytics: [["Bookings are tracked", "24 appointments this week"], ["Signals become clear", "Tuesday is your strongest day"], ["Revenue is forecast", "$8,420 projected this month"], ["Action is obvious", "Open two more Tuesday slots"]],
+  customers: [["Customer returns", "Liam Carter booked again"], ["History is connected", "4 visits · 2 reviews · 1 membership"], ["Team sees context", "Last service and preferences surfaced"], ["Next visit is personal", "Send a tailored follow-up"]]
+};
+
+const storyMeta = {
+  bookings: { eyebrow: "Booking Management", title: "Turn every booking into a calm, confirmed experience.", description: "Give customers a frictionless path from service discovery to confirmation while your team always knows what happens next.", icon: CalendarDays, accent: "violet" },
+  team: { eyebrow: "Team Management", title: "Keep the right person in the loop.", description: "Route appointments to the right teammate, share context instantly, and keep a busy service team moving together.", icon: Users, accent: "blue" },
+  wallet: { eyebrow: "Wallet & Revenue", title: "Make every payment easy to follow.", description: "Connect deposits, completed bookings, and available balance so revenue never gets lost between the front desk and the books.", icon: WalletCards, accent: "green" },
+  analytics: { eyebrow: "Analytics", title: "See the signal before the week is over.", description: "Turn booking activity into clear decisions with a live view of demand, revenue, and the next best move.", icon: BarChart3, accent: "amber" },
+  customers: { eyebrow: "Customer Management", title: "Make the next visit feel considered.", description: "Keep every customer detail, visit, and preference in one place so your team can build relationships that last.", icon: UserRound, accent: "slate" }
+};
+
+function StoryCanvas({ storyKey, activeStep }) {
+  const meta = storyMeta[storyKey];
+  const steps = storySteps[storyKey];
+  const Icon = meta.icon;
+  const tone = { violet: "bg-[#eeecff] text-[#5145cd]", blue: "bg-[#eaf3ff] text-[#3a7bd5]", green: "bg-[#e8f8f1] text-[#24966b]", amber: "bg-[#fff5df] text-[#c48722]", slate: "bg-[#eef0f5] text-[#667085]" }[meta.accent];
+
+  return (
+    <div className="min-w-0 rounded-[12px] border border-[#dfe2ea] bg-white p-4 shadow-sm sm:p-5">
+      <div className="flex items-center justify-between gap-3 border-b border-[#edf0f4] pb-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className={cn("grid size-9 shrink-0 place-items-center rounded-[9px]", tone)}>
+            <Icon className="size-4" aria-hidden="true" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-[#1a2540]">ServiceFlow workspace</p>
+            <p className="text-[11px] font-semibold text-[#8992a5]">{meta.eyebrow}</p>
+          </div>
+        </div>
+        <span className="shrink-0 rounded-full bg-[#e8f8f1] px-2.5 py-1 text-[10px] font-bold text-[#23956b]">
+          Live
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-[0.72fr_1fr]">
+        <div className="rounded-[9px] border border-[#e8eaf0] bg-[#f8f9fc] p-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#9299aa]">
+            Booking workflow
+          </p>
+          <div className="mt-3 space-y-2">
+            {steps.map(([label, detail], index) => (
+              <div className="flex items-start gap-2.5" key={label}>
+                <span
+                  className={cn(
+                    "mt-0.5 grid size-5 shrink-0 place-items-center rounded-full text-[9px] font-bold",
+                    index <= activeStep
+                      ? "bg-[#5145cd] text-white"
+                      : "border border-[#d9ddea] bg-white text-[#8992a5]"
+                  )}
+                >
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <p className="truncate text-[11px] font-bold text-[#354057]">{label}</p>
+                  <p className="truncate text-[10px] leading-4 text-[#9299aa]">{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          <div className="rounded-[9px] border border-[#e8eaf0] bg-white p-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#9299aa]">Customer booking</p>
+                <p className="mt-1 text-sm font-bold text-[#1a2540]">Deep tissue massage</p>
+              </div>
+              <span className="rounded-full bg-[#eeecff] px-2 py-1 text-[10px] font-bold text-[#5145cd]">Confirmed</span>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-[10px] font-semibold text-[#687286]">
+              <span className="rounded-[7px] bg-[#f8f9fc] px-2.5 py-2">Liam Carter</span>
+              <span className="rounded-[7px] bg-[#f8f9fc] px-2.5 py-2">Tue · 10:30 AM</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[9px] border border-[#e8eaf0] bg-[#f8f9fc] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#9299aa]">Calendar</p>
+              <p className="mt-2 text-xs font-bold text-[#354057]">Slot updated</p>
+              <p className="mt-1 text-[10px] text-[#8992a5]">10:30 AM reserved</p>
+            </div>
+            <div className="rounded-[9px] border border-[#cfeedd] bg-[#effaf4] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-[#23956b]">Notification</p>
+              <p className="mt-2 text-xs font-bold text-[#267c5b]">Business notified</p>
+              <p className="mt-1 text-[10px] text-[#4f9878]">Team assignment shared</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductStory({ storyKey, reverse = false }) {
+  const [activeStep, setActiveStep] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const storyRef = useRef(null);
+  const meta = storyMeta[storyKey];
+  const Icon = meta.icon;
+  useEffect(() => {
+    const node = storyRef.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setIsVisible(entry.isIntersecting), { threshold: 0.35 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!isVisible) return undefined;
+    const timer = window.setInterval(() => setActiveStep((step) => (step + 1) % storySteps[storyKey].length), 1500);
+    return () => window.clearInterval(timer);
+  }, [isVisible, storyKey]);
+  return <article className={cn("product-story grid items-center gap-10 py-16 sm:py-24 lg:grid-cols-2 lg:gap-20", reverse && "lg:[&>div:first-child]:order-2")} ref={storyRef}><div className="max-w-[470px]"><span className={cn("grid size-11 place-items-center rounded-[11px]", { violet: "bg-[#eeecff] text-[#5145cd]", blue: "bg-[#eaf3ff] text-[#3a7bd5]", green: "bg-[#e8f8f1] text-[#24966b]", amber: "bg-[#fff5df] text-[#c48722]", slate: "bg-[#eef0f5] text-[#667085]" }[meta.accent])}><Icon className="size-5" aria-hidden="true" /></span><p className="mt-6 text-xs font-bold uppercase tracking-[0.14em] text-[#7f899b]">{meta.eyebrow}</p><h3 className="mt-3 text-3xl font-bold tracking-[-0.04em] leading-[1.08] text-[#0b1c30] sm:text-[42px]">{meta.title}</h3><p className="mt-5 text-base leading-7 text-[#687286]">{meta.description}</p></div><StoryCanvas activeStep={activeStep} storyKey={storyKey} /></article>;
+}
+
 function FeaturesSection() {
   const { t } = useTranslation("public");
 
   return (
-    <section className="bg-[#f8fafc] py-20" id="features">
-      <div className="mx-auto max-w-[1280px] px-8">
+    <section className="bg-[#f8fafc]" id="features">
+      <div className="mx-auto max-w-[1280px] px-6 sm:px-8">
         <SectionHeader
           title={t("landing.features.title")}
           description={t("landing.features.description")}
         />
 
-        <div className="mt-12 grid gap-x-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
-          {featureConfig.map((feature) => (
-            <FeatureCard feature={feature} key={feature.key} />
-          ))}
+        <div className="mt-4 divide-y divide-[#e1e4ec]">
+          <ProductStory storyKey="bookings" />
+          <ProductStory reverse storyKey="team" />
+          <ProductStory storyKey="wallet" />
+          <ProductStory reverse storyKey="analytics" />
+          <ProductStory storyKey="customers" />
         </div>
       </div>
     </section>
@@ -482,73 +625,67 @@ function BookingWorkflowSection() {
   );
 }
 
-function PublishSection() {
-  const { t } = useTranslation("public");
+const pricing = {
+  TRIAL: { monthly: 0, yearly: 0 },
+  BASIC: { monthly: 1900, yearly: 19380 },
+  PRO: { monthly: 4900, yearly: 49980 }
+};
 
-  return (
-    <section className="bg-[#f8fafc] py-20" id="publish">
-      <div className="mx-auto grid max-w-[1280px] gap-12 px-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-start">
-        <SectionHeader
-          align="left"
-          title={t("landing.publish.title")}
-          description={t("landing.publish.description")}
-        />
-
-        <PublishBookingJourney />
-      </div>
-    </section>
-  );
-}
-
-function PricingCard({ code }) {
+function PricingCard({ billingCycle, code }) {
   const { i18n, t } = useTranslation("public");
   const highlighted = code === "BASIC";
   const trial = code === "TRIAL";
   const features = t(`landing.pricing.plans.${code}.features`, { returnObjects: true });
-  const priceCents = code === "TRIAL" ? 0 : code === "BASIC" ? 1900 : 4900;
+  const priceCents = pricing[code][billingCycle];
+  const monthlyEquivalent = billingCycle === "yearly" && !trial ? Math.round(priceCents / 12) : priceCents;
+  const savings = trial || billingCycle === "monthly" ? 0 : pricing[code].monthly * 12 - pricing[code].yearly;
 
   return (
     <article
       className={cn(
-        "relative rounded-[8px] border bg-white p-8",
-        highlighted ? "border-2 border-[#3525cd] lg:scale-[1.03]" : "border-[#c7c4d8]"
+        "relative flex h-full flex-col rounded-[12px] border bg-white p-7 transition-[border-color,box-shadow] duration-200",
+        highlighted ? "border-[#5145cd]" : "border-[#dfe2ea]"
       )}
     >
       {highlighted ? (
-        <div className="absolute left-1/2 top-[-15px] -translate-x-1/2 rounded-full bg-[#3525cd] px-6 py-1 text-xs font-medium tracking-[0.02em] text-white">
+        <div className="absolute start-6 top-0 -translate-y-1/2 rounded-full bg-[#5145cd] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
           {t("landing.pricing.popular")}
         </div>
       ) : null}
-      <h3 className="text-2xl font-semibold leading-8 text-[#0b1c30]">
+      <h3 className="text-xl font-bold leading-8 text-[#0b1c30]">
         {t(`landing.pricing.plans.${code}.name`)}
       </h3>
-      <p className="mt-2 min-h-10 text-sm leading-5 text-[#464555]">
+      <p className="mt-1 min-h-10 text-sm leading-5 text-[#687286]">
         {t(`landing.pricing.plans.${code}.description`)}
       </p>
-      <div className="mt-4 flex items-end gap-2">
-        <span className="text-4xl font-bold leading-10 text-[#0b1c30]">
-          {formatPrice(priceCents, i18n.language)}
+      <div className="mt-6 flex items-end gap-1.5">
+        <span className="text-4xl font-bold leading-10 tracking-[-0.04em] text-[#0b1c30]">
+          {formatPrice(monthlyEquivalent, i18n.language)}
         </span>
-        <span className="pb-1 text-sm font-semibold text-[#464555]">
-          {trial ? t("landing.pricing.trialPeriod") : t("landing.pricing.monthPeriod")}
+        <span className="pb-1 text-sm font-semibold text-[#687286]">
+          {trial ? t("landing.pricing.trialPeriod") : "/ month"}
         </span>
       </div>
+      <p className="mt-1 min-h-5 text-xs text-[#8b94a5]">
+        {trial ? "No credit card required" : billingCycle === "yearly" ? `Billed ${formatPrice(priceCents, i18n.language)} yearly` : "Billed monthly"}
+      </p>
+      {savings > 0 ? <span className="mt-3 inline-flex w-fit rounded-full bg-[#e9f8f0] px-2.5 py-1 text-[11px] font-bold text-[#21855f]">Save {formatPrice(savings, i18n.language)} / year</span> : <span className="mt-3 block h-6" />}
 
-      <ul className="mt-8 space-y-3">
+      <ul className="mt-7 flex-1 space-y-3 border-t border-[#edf0f4] pt-6">
         {features.slice(0, 4).map((feature) => (
-          <li className="flex items-center gap-2 text-sm leading-5 text-[#0b1c30]" key={feature}>
-            <CheckCircle2 className="size-4 shrink-0 text-[#3525cd]" aria-hidden="true" />
+          <li className="flex items-start gap-2 text-sm leading-5 text-[#354057]" key={feature}>
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-[#5145cd]" aria-hidden="true" />
             {feature}
           </li>
         ))}
       </ul>
 
       {highlighted ? (
-        <PrimaryLink className="mt-8 min-h-[58px] w-full rounded-[8px]" href="/register">
+        <PrimaryLink className="mt-8 min-h-12 w-full rounded-[8px]" href="/register">
           {t("landing.pricing.choose", { plan: t(`landing.pricing.plans.${code}.name`) })}
         </PrimaryLink>
       ) : (
-        <SecondaryLink className="mt-8 min-h-[58px] w-full rounded-[8px] text-[#3525cd]" href="/register">
+        <SecondaryLink className="mt-8 min-h-12 w-full rounded-[8px] text-[#5145cd]" href="/register">
           {trial
             ? t("landing.pricing.startTrial")
             : t("landing.pricing.choose", { plan: t(`landing.pricing.plans.${code}.name`) })}
@@ -560,20 +697,42 @@ function PricingCard({ code }) {
 
 function PricingSection() {
   const { t } = useTranslation("public");
+  const [billingCycle, setBillingCycle] = useState("monthly");
 
   return (
-    <section className="bg-white py-20" id="pricing">
+    <section className="bg-white py-24" id="pricing">
       <div className="mx-auto max-w-[1280px] px-8">
         <SectionHeader
           title={t("landing.pricing.title")}
           description={t("landing.pricing.description")}
         />
 
-        <div className="mt-12 grid items-start gap-6 lg:grid-cols-3">
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <div className="inline-flex rounded-full border border-[#dfe2ea] bg-[#f7f8fb] p-1" role="group" aria-label="Billing frequency">
+            {["monthly", "yearly"].map((cycle) => (
+              <button
+                aria-pressed={billingCycle === cycle}
+                className={cn(
+                  "rounded-full px-4 py-2 text-xs font-bold transition-[background-color,color,box-shadow] duration-200",
+                  billingCycle === cycle ? "bg-white text-[#1a2540] shadow-sm" : "text-[#7c8698] hover:text-[#354057]"
+                )}
+                key={cycle}
+                onClick={() => setBillingCycle(cycle)}
+                type="button"
+              >
+                {cycle === "monthly" ? "Monthly" : "Yearly"}
+              </button>
+            ))}
+          </div>
+          <span className="rounded-full bg-[#e9f8f0] px-3 py-1.5 text-xs font-bold text-[#21855f]">Save 15% yearly</span>
+        </div>
+
+        <div className="mt-10 grid items-stretch gap-5 lg:grid-cols-3">
           {planOrder.map((code) => (
-            <PricingCard code={code} key={code} />
+            <PricingCard billingCycle={billingCycle} code={code} key={code} />
           ))}
         </div>
+        <p className="mt-7 text-center text-xs text-[#8b94a5]">Yearly pricing is shown as an equivalent monthly rate and billed upfront.</p>
       </div>
     </section>
   );
@@ -782,7 +941,6 @@ export function MarketingHomePage() {
       <CategoriesSection />
       <FeaturesSection />
       <BookingWorkflowSection />
-      <PublishSection />
       <PricingSection />
       <TestimonialsSection />
       <FaqSection />

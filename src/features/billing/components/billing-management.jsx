@@ -343,7 +343,7 @@ export function BillingManagement({ checkoutSessionId, checkoutStatus }) {
 
           return (
             <Card
-              className={plan.highlighted ? "border-primary shadow-md" : ""}
+              className={plan.highlighted ? "border-primary" : ""}
               key={plan.code}
             >
               <CardHeader>

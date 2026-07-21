@@ -74,7 +74,7 @@ function ToastProvider({ children }) {
           return (
             <div
               className={cn(
-                "flex gap-3 rounded-2xl border px-4 py-3 text-sm shadow-xl",
+                "flex gap-3 rounded-2xl border px-4 py-3 text-sm shadow-sm",
                 style.className
               )}
               key={toast.id}

@@ -24,7 +24,7 @@ function Tooltip({
           <TooltipPrimitive.Content
             align={align}
             className={cn(
-              "z-[80] max-w-xs rounded-xl border border-growth-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 dark:shadow-[hsl(var(--sf-shadow)/0.45)]",
+              "z-[80] max-w-xs rounded-xl border border-growth-border bg-card px-3 py-2 text-xs font-semibold text-foreground shadow-sm outline-none animate-in fade-in-0 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 duration-150",
               className
             )}
             side={side}

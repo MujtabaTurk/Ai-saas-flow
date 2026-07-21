@@ -1,11 +1,19 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { translateLegacyText } from "@/i18n/legacy";
 
 function LoadingState({
   title = "Loading",
   description = "Preparing your workspace...",
   className
 }) {
+  const { i18n } = useTranslation("legacy");
+  const localizedTitle = translateLegacyText(i18n, title);
+  const localizedDescription = translateLegacyText(i18n, description);
+
   return (
     <div
       className={cn(
@@ -19,10 +27,10 @@ function LoadingState({
         <Skeleton className="mx-auto h-5 w-32" />
         <Skeleton className="mx-auto h-3 w-56 max-w-full" />
       </div>
-      <h3 className="mt-4 text-lg font-bold text-growth-sidebar">{title}</h3>
-      {description ? (
+      <h3 className="mt-4 text-lg font-bold text-growth-sidebar">{localizedTitle}</h3>
+      {localizedDescription ? (
         <p className="mt-2 max-w-md text-sm text-muted-foreground">
-          {description}
+          {localizedDescription}
         </p>
       ) : null}
     </div>

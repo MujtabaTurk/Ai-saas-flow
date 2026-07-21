@@ -44,7 +44,9 @@ import urServices from "@/locales/ur/services.json";
 import urPublic from "@/locales/ur/public.json";
 import urLegacy from "@/locales/ur/legacy.json";
 
-const corruptedTranslationPattern = /\uFFFD|\?{2,}|[\u00c2\u00c3\u00d8\u00d9]/u;
+// Detect replacement characters and common UTF-8-as-Windows-1252/Latin-1
+// mojibake. Falling back to English is preferable to displaying corrupted UI.
+const corruptedTranslationPattern = /\uFFFD|\?{2,}|(?:[\u00d8\u00d9\u00da\u00db][^A-Za-z\s])/u;
 
 function isCorruptedTranslation(value) {
   return (

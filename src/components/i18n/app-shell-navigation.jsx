@@ -144,7 +144,7 @@ export function AppShellNavigation({
                   aria-label={collapsed ? label : undefined}
                   aria-current={isActive ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-[15px] font-medium text-serviceflow-muted transition-[background-color,color,box-shadow] duration-150 hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    "group relative flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-[15px] font-medium text-serviceflow-muted transition-colors duration-150 hover:bg-accent hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     collapsed &&
                       "mx-auto h-10 w-10 justify-center gap-0 px-0 py-0",
                     isActive && "bg-primary-soft text-serviceflow-subtle",
@@ -156,7 +156,7 @@ export function AppShellNavigation({
                   {Icon ? (
                     <Icon
                       className={cn(
-                        "size-[18px] shrink-0 transition-transform duration-200",
+                        "size-[18px] shrink-0 transition-colors duration-150 group-hover:text-primary",
                         collapsed && "size-5",
                       )}
                       aria-hidden="true"

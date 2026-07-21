@@ -203,7 +203,7 @@ function ProgressIndicator({
   onStepSelect
 }) {
   return (
-    <aside className="sticky top-4 z-10 rounded-2xl border border-growth-border bg-white/95 p-3 shadow-sm backdrop-blur lg:top-6 lg:p-4">
+    <aside className="sticky top-4 z-10 rounded-2xl border border-growth-border bg-white p-3 shadow-sm lg:top-6 lg:p-4">
       <div className="mb-3 hidden px-1 lg:block">
         <p className="text-xs font-semibold uppercase text-muted-foreground">
           Setup progress

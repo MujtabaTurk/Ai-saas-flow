@@ -140,7 +140,7 @@ function ThemeMenu({ currentTheme, onThemeChange, t }) {
       <DropdownMenuPrimitive.Portal>
         <DropdownMenuPrimitive.SubContent
           alignOffset={-4}
-          className="z-50 w-48 animate-stat-rise rounded-xl border border-growth-border bg-card p-2 text-foreground shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none dark:shadow-[hsl(var(--sf-shadow)/0.45)]"
+          className="z-50 w-48 animate-in fade-in-0 rounded-xl border border-growth-border bg-card p-2 text-foreground shadow-sm outline-none duration-150"
           sideOffset={8}
         >
           <DropdownMenuPrimitive.Label className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.08em] text-muted-foreground">
@@ -336,7 +336,7 @@ export function UserProfileMenu({
         <DropdownMenuPrimitive.Portal>
           <DropdownMenuPrimitive.Content
             align={menuAlign}
-            className="origin-top-inline-end z-50 w-[min(20rem,calc(100vw-2rem))] animate-stat-rise rounded-xl border border-growth-border bg-card p-2 shadow-xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none dark:shadow-[hsl(var(--sf-shadow)/0.45)]"
+          className="origin-top-inline-end z-50 w-[min(20rem,calc(100vw-2rem))] animate-in fade-in-0 rounded-xl border border-growth-border bg-card p-2 shadow-sm outline-none duration-150"
             side={menuSide}
             sideOffset={8}
           >

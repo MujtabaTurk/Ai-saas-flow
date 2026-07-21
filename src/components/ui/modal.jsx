@@ -42,10 +42,10 @@ function Modal({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[hsl(var(--sf-overlay)/0.45)] backdrop-blur-sm" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-[hsl(var(--sf-overlay)/0.45)] animate-in fade-in-0 duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0" />
         <DialogPrimitive.Content
           className={cn(
-            "modal-content fixed z-50 flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] min-h-0 w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-card text-card-foreground shadow-2xl outline-none",
+            "modal-content fixed z-50 flex h-[calc(100dvh-2rem)] max-h-[calc(100dvh-2rem)] min-h-0 w-auto flex-col overflow-hidden rounded-xl border border-growth-border bg-card text-card-foreground shadow-sm outline-none animate-in fade-in-0 duration-200 data-[state=closed]:animate-out data-[state=closed]:fade-out-0",
             modalSizes[size] || modalSizes.md,
             className
           )}

@@ -23,17 +23,9 @@ function AuthVisualPanel() {
       aria-hidden="true"
       className="relative isolate hidden min-h-0 overflow-hidden border-s border-[#d8dff0] bg-[#f8f9ff] lg:flex"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(135deg,#f8fbff_0%,#eef4ff_28%,#ecfdf5_62%,#f4f0ff_100%)]" />
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(53,37,205,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(53,37,205,0.052)_1px,transparent_1px)] bg-[size:48px_48px] opacity-55 [mask-image:linear-gradient(to_bottom,transparent,black_16%,black_84%,transparent)]" />
-      <div className="absolute -right-28 top-0 h-full w-[66%] bg-[linear-gradient(180deg,rgba(53,37,205,0.22),rgba(16,185,129,0.08)_58%,rgba(56,189,248,0.13))] [clip-path:polygon(26%_0,100%_0,100%_100%,0_100%)]" />
-      <div className="absolute -left-32 bottom-0 h-[52%] w-[70%] bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(53,37,205,0.05))] blur-3xl [clip-path:polygon(0_18%,100%_0,82%_100%,0_84%)]" />
-      <div className="absolute left-[11%] right-[8%] top-[31%] h-[34%] -skew-y-6 bg-[linear-gradient(90deg,rgba(53,37,205,0.18),rgba(56,189,248,0.16),rgba(16,185,129,0.14))] blur-3xl" />
-      <div className="absolute inset-x-10 top-10 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent" />
-      <div className="absolute inset-y-10 right-10 w-px bg-gradient-to-b from-transparent via-white/75 to-transparent" />
 
       <div className="relative z-10 mx-auto flex h-full w-full max-w-[780px] items-center justify-center px-8 py-12 xl:px-12 xl:py-14">
         <div className="relative flex h-[min(72dvh,680px)] w-[min(72%,520px)] min-w-[360px] items-center justify-center xl:h-[min(74dvh,720px)] xl:w-[min(68%,560px)]">
-          <div className="absolute inset-x-[5%] bottom-[7%] h-[11%] -skew-x-6 bg-[#3525cd]/16 blur-2xl" />
           <Image
             src="/auth/serviceflow-auth-network-cutout.png"
             alt=""
@@ -41,7 +33,7 @@ function AuthVisualPanel() {
             height={1432}
             priority
             sizes="(min-width: 1280px) 34vw, (min-width: 1024px) 38vw, 0px"
-            className="relative z-10 h-auto max-h-full w-auto max-w-full object-contain opacity-[0.96] drop-shadow-[0_24px_54px_rgba(53,37,205,0.24)]"
+            className="relative z-10 h-auto max-h-full w-auto max-w-full object-contain opacity-[0.96]"
           />
         </div>
       </div>

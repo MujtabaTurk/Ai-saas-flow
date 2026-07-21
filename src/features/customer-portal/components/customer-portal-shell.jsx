@@ -86,7 +86,7 @@ export function CustomerPortalShell({
       </aside>
 
       <div className="customer-portal-main">
-        <header className="sticky top-0 z-20 border-b border-growth-border bg-card/90 px-4 py-3 shadow-sm backdrop-blur sm:px-6">
+        <header className="sticky top-0 z-20 border-b border-growth-border bg-card px-4 py-3 shadow-sm sm:px-6">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <Link

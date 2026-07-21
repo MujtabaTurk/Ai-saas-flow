@@ -93,7 +93,7 @@ function Select({
       >
         <SelectPrimitive.Trigger
           className={cn(
-            "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-none",
+            "flex h-11 w-full items-center justify-between gap-2 rounded-lg border border-input bg-card px-4 py-2 text-sm text-foreground shadow-sm transition-[border-color,background-color] duration-200 ease-out hover:border-primary/25 focus-visible:border-primary/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/15 disabled:cursor-not-allowed disabled:opacity-50 dark:shadow-none",
             className
           )}
           id={id}
@@ -110,7 +110,7 @@ function Select({
         <SelectPrimitive.Portal>
           <SelectPrimitive.Content
             className={cn(
-              "z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-growth-border bg-card text-foreground shadow-2xl shadow-[hsl(var(--sf-shadow)/0.16)] outline-none animate-in fade-in-0 zoom-in-95 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1 dark:shadow-[hsl(var(--sf-shadow)/0.45)]",
+              "z-[60] max-h-72 min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-xl border border-growth-border bg-card text-foreground shadow-sm outline-none animate-in fade-in-0 duration-150 data-[side=bottom]:slide-in-from-top-1 data-[side=top]:slide-in-from-bottom-1",
               contentClassName
             )}
             position="popper"

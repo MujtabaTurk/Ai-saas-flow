@@ -57,7 +57,7 @@ export function TeamInvitationAcceptance({
   }).format(new Date(invitation.expiresAt));
 
   return (
-    <Card className="overflow-hidden border-[#c7c4d8] bg-white shadow-[0_20px_60px_-45px_rgba(11,28,48,0.45)]">
+    <Card className="overflow-hidden border-[#c7c4d8] bg-white">
       <CardHeader className="space-y-4 p-5 pb-4">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">

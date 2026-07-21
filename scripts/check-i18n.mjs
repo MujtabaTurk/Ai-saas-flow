@@ -9,7 +9,7 @@ const referenceLanguage = "en";
 const sourceRoots = ["src/app", "src/features", "src/components", "src/config"];
 const sourceExtensions = new Set([".js", ".jsx"]);
 const hardcodedSampleLimit = 25;
-const corruptedTranslationPattern = /\uFFFD|\?{2,}|[\u00c2\u00c3\u00d8\u00d9]/u;
+const corruptedTranslationPattern = /\uFFFD|\?{2,}|(?:[\u00d8\u00d9\u00da\u00db][^A-Za-z\s])/u;
 const encodingIssues = [];
 const intentionallySharedTerms = new Set([
   "Admin",
@@ -257,6 +257,8 @@ const report = {
   totalTranslationKeys: 0,
   missingTranslationsPerLanguage: {},
   likelyUntranslatedPerLanguage: {},
+  likelyUntranslatedKeysPerLanguage: {},
+  translationCoveragePercentage: {},
   corruptedTranslationsPerLanguage: {},
   encodingIssues: [],
   extraKeysPerLanguage: {},
@@ -328,6 +330,10 @@ for (const namespace of namespaces) {
       ) {
         report.likelyUntranslatedPerLanguage[language] =
           (report.likelyUntranslatedPerLanguage[language] || 0) + 1;
+        report.likelyUntranslatedKeysPerLanguage[language] ||= [];
+        report.likelyUntranslatedKeysPerLanguage[language].push(
+          `${namespace}:${key}`
+        );
       }
     }
 
@@ -384,6 +390,9 @@ report.hardcodedStrings = {
   coveredByLegacyNamespace: candidates.length - remainingHardcoded.length,
   remainingUncovered: remainingHardcoded.length,
   filesUsingLegacyCompatibility: filesUsingLegacyCompatibility.size,
+  filesWithRemainingHardcoded: [
+    ...new Set(remainingHardcoded.map((candidate) => candidate.file))
+  ].sort(),
   sampleRemaining: sample(
     remainingHardcoded.map(
       (candidate) =>
@@ -395,6 +404,11 @@ report.hardcodedStrings = {
 for (const language of configuredLanguages) {
   report.missingTranslationsPerLanguage[language] ||= 0;
   report.likelyUntranslatedPerLanguage[language] ||= 0;
+  report.likelyUntranslatedKeysPerLanguage[language] ||= [];
+  report.translationCoveragePercentage[language] = Number(
+    (((report.totalTranslationKeys - report.likelyUntranslatedPerLanguage[language]) /
+      report.totalTranslationKeys) * 100).toFixed(2)
+  );
   report.corruptedTranslationsPerLanguage[language] ||= 0;
   report.extraKeysPerLanguage[language] ||= 0;
   report.typeMismatchesPerLanguage[language] ||= 0;

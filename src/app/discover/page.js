@@ -27,7 +27,7 @@ export const metadata = {
 const controlClassName =
   "h-12 rounded-[8px] border-[#c7c4d8] text-[#0b1c30] shadow-none focus-visible:border-[#3525cd] focus-visible:ring-[#3525cd]/15";
 const selectContentClassName =
-  "rounded-[8px] border-[#c7c4d8] text-[#0b1c30] shadow-[0px_18px_45px_rgba(11,28,48,0.12)]";
+  "rounded-[8px] border-[#c7c4d8] text-[#0b1c30] shadow-sm";
 const selectItemClassName =
   "rounded-[8px] data-[highlighted]:bg-[#eef4ff] data-[highlighted]:text-[#0b1c30]";
 const selectIndicatorClassName = "text-[#3525cd]";

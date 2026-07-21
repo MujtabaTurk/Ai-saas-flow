@@ -114,7 +114,7 @@ function isUpcomingBooking(booking) {
 
 function MetricCard({ icon: Icon, label, meta, value }) {
   return (
-    <div className="rounded-[12px] border border-[#c7c4d8] bg-white p-5 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05),0px_4px_6px_0px_rgba(0,0,0,0.02)]">
+    <div className="rounded-[12px] border border-[#c7c4d8] bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm leading-6 text-[#464555]">{label}</p>
         <span className="grid size-7 place-items-center rounded-md bg-[#eef2ff] text-[#3525cd]">
@@ -133,7 +133,7 @@ function Panel({ children, className }) {
   return (
     <section
       className={cn(
-        "overflow-hidden rounded-[12px] border border-[#c7c4d8] bg-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.05),0px_4px_6px_0px_rgba(0,0,0,0.02)]",
+        "overflow-hidden rounded-[12px] border border-[#c7c4d8] bg-white shadow-sm",
         className
       )}
     >
@@ -179,7 +179,7 @@ function BookingTimelineItem({ booking, businessTimezone }) {
     <article className="relative pl-9">
       <span
         className={cn(
-          "absolute left-[-1px] top-1 grid size-6 place-items-center rounded-full border-2 bg-white shadow-[0px_0px_0px_4px_white]",
+          "absolute left-[-1px] top-1 grid size-6 place-items-center rounded-full border-2 bg-white",
           upcoming ? "border-[#3525cd] text-[#3525cd]" : "border-[#777587] text-[#777587]"
         )}
       >

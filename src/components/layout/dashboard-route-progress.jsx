@@ -87,7 +87,7 @@ export function DashboardRouteProgress() {
       )}
       aria-hidden="true"
     >
-      <div className="h-full w-1/3 animate-route-progress rounded-full bg-primary shadow-[0_0_18px_rgba(53,37,205,0.45)]" />
+      <div className="h-full w-1/3 animate-route-progress rounded-full bg-primary" />
     </div>
   );
 }

@@ -24,6 +24,10 @@ if (!i18n.isInitialized) {
       nonExplicitSupportedLngs: true,
       returnEmptyString: false,
       returnNull: false,
+      missingKeyHandler: (language, namespace, key) => {
+        console.warn(`[i18n] Missing translation: ${language}/${namespace}:${key}`);
+      },
+      parseMissingKeyHandler: (key, defaultValue) => defaultValue || "",
       supportedLngs: supportedLanguages.map((language) => language.code),
       ns: namespaces,
       defaultNS: "common",

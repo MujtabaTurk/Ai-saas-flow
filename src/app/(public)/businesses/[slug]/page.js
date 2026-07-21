@@ -241,7 +241,7 @@ function Availability({ business, language }) {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {business.upcomingSlots.map((slot) => (
             <Link
-              className="rounded-2xl bg-white p-4 shadow-sm transition-[background-color,box-shadow,opacity] duration-200 hover:bg-growth-dashboard hover:shadow-md"
+              className="rounded-2xl bg-white p-4 shadow-sm transition-colors duration-150 hover:bg-growth-dashboard"
               href="#book"
               key={`${slot.serviceId}-${slot.startsAt}`}
             >

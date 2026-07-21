@@ -190,7 +190,7 @@ function DirectoryFilters({ facets, filters }) {
 
 function BusinessCard({ business, language }) {
   return (
-    <article className="flex h-full flex-col rounded-2xl bg-card p-5 text-card-foreground shadow-sm transition-[background-color,box-shadow,opacity] duration-200 hover:bg-accent/25 hover:shadow-md dark:shadow-none dark:hover:bg-accent/35">
+    <article className="flex h-full flex-col rounded-2xl bg-card p-5 text-card-foreground shadow-sm transition-colors duration-150 hover:bg-accent/25 dark:hover:bg-accent/35">
       <div className="flex items-start gap-4">
         {business.logoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element

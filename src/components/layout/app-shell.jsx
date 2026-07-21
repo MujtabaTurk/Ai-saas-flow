@@ -239,7 +239,7 @@ function DashboardSearch() {
       />
 
       {showResultsPanel ? (
-        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-growth-border bg-card p-2 shadow-[0_24px_60px_-30px_hsl(var(--sf-shadow)/0.45)]">
+        <div className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-growth-border bg-card p-2 shadow-sm">
           {searchValue.trim().length < DASHBOARD_SEARCH_MIN_LENGTH ? (
             <p className="px-3 py-2 text-sm text-muted-foreground">
               {t("navigation.dashboardSearchMinLength")}
@@ -404,12 +404,12 @@ function SidebarToggle({ isCollapsed, label, onToggle, tooltipSide }) {
       <button
         aria-label={label}
         aria-pressed={isCollapsed}
-        className="app-shell-sidebar-toggle group hidden h-11 w-8 items-center justify-center rounded-full border border-growth-border/80 bg-card/80 text-primary shadow-[0_18px_35px_-24px_hsl(var(--sf-shadow)/0.65),0_0_0_1px_hsl(var(--sf-panel)/0.55)_inset] backdrop-blur-md hover:border-primary/35 hover:bg-background/95 hover:shadow-[0_18px_38px_-20px_hsl(var(--primary)/0.45),0_0_0_1px_hsl(var(--sf-panel)/0.7)_inset] active:border-primary/50 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none dark:hover:shadow-none md:inline-flex"
+        className="app-shell-sidebar-toggle group hidden h-11 w-8 items-center justify-center rounded-full border border-growth-border bg-card text-primary shadow-sm hover:border-primary/35 hover:bg-background active:border-primary/50 active:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background md:inline-flex"
         type="button"
         onClick={onToggle}
       >
         <span className="absolute inset-y-2 start-1 w-0.5 rounded-full bg-primary/40 opacity-70 transition-[opacity,background-color] duration-200 group-hover:bg-primary/70 group-hover:opacity-100" />
-        <span className="relative grid size-6 place-items-center rounded-md bg-primary-mist/80 shadow-[0_1px_0_hsl(var(--sf-panel)/0.85)_inset] transition-colors duration-200 group-hover:bg-primary-soft group-active:bg-primary-soft dark:shadow-none">
+        <span className="relative grid size-6 place-items-center rounded-md bg-primary-mist/80 transition-colors duration-200 group-hover:bg-primary-soft group-active:bg-primary-soft">
           <PanelLeftClose
             className={cn(
               "absolute size-3.5 transition-[opacity,transform] duration-200",
@@ -572,8 +572,8 @@ function MobileSidebarDrawer({
         </button>
       </DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="app-shell-mobile-overlay fixed inset-0 z-[80] bg-[hsl(var(--sf-overlay)/0.45)] backdrop-blur-sm md:hidden" />
-        <DialogPrimitive.Content className="app-shell-mobile-drawer fixed inset-y-0 z-[90] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden border-e border-growth-border bg-background shadow-2xl outline-none md:hidden">
+        <DialogPrimitive.Overlay className="app-shell-mobile-overlay fixed inset-0 z-[80] bg-[hsl(var(--sf-overlay)/0.45)] md:hidden" />
+        <DialogPrimitive.Content className="app-shell-mobile-drawer fixed inset-y-0 z-[90] flex w-[min(20rem,calc(100vw-2rem))] flex-col overflow-hidden border-e border-growth-border bg-background shadow-sm outline-none md:hidden">
           <DialogPrimitive.Title className="sr-only">
             {t("navigation.workspace", { workspace: workspaceLabel })}
           </DialogPrimitive.Title>
@@ -671,7 +671,7 @@ export function AppShell({
         />
       </aside>
       <main className="app-shell-main">
-        <header className="app-shell-header sticky top-0 h-16 bg-background/80 px-4 backdrop-blur-[6px] sm:px-6 lg:px-8">
+        <header className="app-shell-header sticky top-0 h-16 border-b border-growth-border/60 bg-background px-4 sm:px-6 lg:px-8">
           <div className="flex h-full w-full items-center justify-between gap-4">
             <div className="flex min-w-0 items-center gap-3">
               <MobileSidebarDrawer
@@ -731,7 +731,7 @@ export function AppShell({
         {homeHref.startsWith("/dashboard") ? (
           <Link
             aria-label={t("navigation.quickBooking")}
-            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition-[background-color,box-shadow,opacity] hover:bg-primary-hover hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:shadow-none dark:hover:shadow-none"
+            className="fixed bottom-6 end-6 z-40 flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-[background-color,opacity] hover:bg-primary-hover hover:opacity-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             href="/dashboard/bookings"
             title={t("navigation.quickBooking")}
           >
