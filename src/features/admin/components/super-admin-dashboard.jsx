@@ -130,6 +130,19 @@ export function SuperAdminDashboard({ metrics }) {
       </section>
 
       <section className="space-y-4">
+        <SectionHeader eyebrow="Treasury" title="Platform Treasury Wallet">
+          Collected funds and the platform&apos;s outstanding business liability.
+        </SectionHeader>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <MetricCard label="Current Treasury Balance" value={formatMoney(metrics.treasury.currentTreasuryBalance)} />
+          <MetricCard label="Total Collected" value={formatMoney(metrics.treasury.totalCollectedCredits)} />
+          <MetricCard label="Pending Liability" value={formatMoney(metrics.treasury.totalPendingLiability)} />
+          <MetricCard label="Available Liability" value={formatMoney(metrics.treasury.totalAvailableLiability)} />
+          <MetricCard label="Total Paid Out" value={formatMoney(metrics.treasury.totalPaidOutCredits)} />
+        </div>
+      </section>
+
+      <section className="space-y-4">
         <SectionHeader eyebrow="Revenue" title="Revenue Metrics">
           Revenue is estimated from local subscription records. Stripe invoices remain the billing source of truth.
         </SectionHeader>

@@ -186,7 +186,7 @@ function formatAppointment(value, timezone) {
 function bookingTypeForStatus(status) {
   return {
     CONFIRMED: "BOOKING_CONFIRMED",
-    CANCELED: "BOOKING_CANCELED",
+    CANCELED: "BOOKING_CANCELLED",
     COMPLETED: "BOOKING_COMPLETED",
     NO_SHOW: "BOOKING_NO_SHOW"
   }[status];
@@ -216,11 +216,187 @@ async function getBusinessNotificationRecipient(businessId) {
       email: true,
       owner: {
         select: {
+          id: true,
           email: true
         }
       }
     }
   });
+}
+
+export async function notifyWithdrawalEvent({ request, event }) {
+  const business = await getBusinessNotificationRecipient(request.businessId);
+  if (!business) return;
+
+  const admin = event === "CREATED"
+    ? await prisma.user.findFirst({ where: { platformRole: "SUPER_ADMIN" }, select: { id: true } })
+    : null;
+
+  const labels = {
+    CREATED: ["Withdrawal request submitted", `A ${request.requestedAmount}-credit withdrawal request from ${business.name} needs review.`],
+    APPROVED: ["Withdrawal request approved", `Your ${request.requestedAmount}-credit withdrawal request was approved.`],
+    REJECTED: ["Withdrawal request rejected", `Your ${request.requestedAmount}-credit withdrawal request was rejected.`],
+    PAID: ["Withdrawal paid", `Your ${request.requestedAmount}-credit withdrawal has been marked paid.`]
+  };
+  const [title, message] = labels[event] || labels.CREATED;
+  const audience = event === "CREATED" ? "ADMIN" : "BUSINESS";
+  const recipientEmail = event === "CREATED" ? null : business.owner?.email || business.email;
+  const type = {
+    CREATED: "WITHDRAW_REQUEST_CREATED",
+    APPROVED: "WITHDRAW_APPROVED",
+    REJECTED: "WITHDRAW_REJECTED",
+    PAID: "WITHDRAW_PAID"
+  }[event];
+
+  const notifications = [queueNotification({
+    businessId: request.businessId,
+    userId: admin?.id || business.owner?.id || null,
+    dedupeKey: `withdrawal:${request.id}:${event}:in-app`,
+    type,
+    audience,
+    channel: "IN_APP",
+    recipientEmail,
+    title,
+    message,
+    actionUrl: event === "CREATED" ? getAppUrl("/admin/finance") : getAppUrl("/dashboard/wallet"),
+    metadata: { withdrawalRequestId: request.id, event }
+  })];
+
+  if (event === "CREATED" && request.requestedAmount >= 10000) {
+    notifications.push(queueNotification({
+      businessId: request.businessId,
+      userId: admin?.id || null,
+      dedupeKey: `withdrawal:${request.id}:large-alert`,
+      type: "WITHDRAW_REQUEST_CREATED",
+      audience: "ADMIN",
+      channel: "IN_APP",
+      title: "Large withdrawal alert",
+      message: `${business.name} submitted a large ${request.requestedAmount}-credit withdrawal request.`,
+      actionUrl: getAppUrl("/admin/finance"),
+      metadata: { withdrawalRequestId: request.id, alert: "LARGE_WITHDRAWAL" }
+    }));
+  }
+
+  if (recipientEmail && event !== "CREATED") {
+    notifications.push(queueNotification({
+      businessId: request.businessId,
+      userId: business.owner?.id || null,
+      dedupeKey: `withdrawal:${request.id}:${event}:email`,
+      type,
+      audience: "BUSINESS",
+      channel: "EMAIL",
+      recipientEmail,
+      title,
+      message,
+      actionUrl: getAppUrl("/dashboard/wallet"),
+      metadata: { withdrawalRequestId: request.id, event }
+    }));
+  }
+
+  await Promise.all(notifications);
+}
+
+export async function notifyPaymentSucceeded({ booking, payment }) {
+  const business = await getBusinessNotificationRecipient(booking.businessId);
+  if (!business) return;
+
+  const ownerMessage = `Payment of ${payment.amountCents} credits was received for ${booking.serviceNameSnapshot}.`;
+  const notifications = [
+    queueNotification({
+      businessId: booking.businessId,
+      userId: business.owner?.id || null,
+      bookingId: booking.id,
+      dedupeKey: `payment:${payment.id}:owner:in-app`,
+      type: "PAYMENT_SUCCESS",
+      audience: "BUSINESS",
+      channel: "IN_APP",
+      title: "Payment received",
+      message: ownerMessage,
+      actionUrl: getAppUrl("/dashboard/wallet"),
+      metadata: { paymentId: payment.id, amountCents: payment.amountCents }
+    }),
+    queueNotification({
+      businessId: booking.businessId,
+      bookingId: booking.id,
+      dedupeKey: `payment:${payment.id}:customer:email`,
+      type: "PAYMENT_SUCCESS",
+      audience: "CUSTOMER",
+      channel: "EMAIL",
+      recipientEmail: booking.customerEmail,
+      title: "Payment successful",
+      message: `Your payment for ${booking.serviceNameSnapshot} was successful.`,
+      actionUrl: getAppUrl("/"),
+      metadata: { paymentId: payment.id, amountCents: payment.amountCents }
+    })
+  ];
+  if (payment.amountCents >= 10000) {
+    const admin = await prisma.user.findFirst({ where: { platformRole: "SUPER_ADMIN" }, select: { id: true } });
+    notifications.push(queueNotification({
+      businessId: booking.businessId,
+      userId: admin?.id || null,
+      bookingId: booking.id,
+      dedupeKey: `payment:${payment.id}:large-alert`,
+      type: "PAYMENT_SUCCESS",
+      audience: "ADMIN",
+      channel: "IN_APP",
+      title: "Large payment alert",
+      message: `A large payment of ${payment.amountCents} credits was received for ${business.name}.`,
+      actionUrl: getAppUrl("/admin/finance"),
+      metadata: { paymentId: payment.id, alert: "LARGE_PAYMENT" }
+    }));
+  }
+  await Promise.all(notifications);
+}
+
+export async function notifyCreditsSettled({ booking, amount }) {
+  const business = await getBusinessNotificationRecipient(booking.businessId);
+  if (!business) return;
+  await queueNotification({
+    businessId: booking.businessId,
+    userId: business.owner?.id || null,
+    bookingId: booking.id,
+    dedupeKey: `settlement:${booking.id}:credits-settled`,
+    type: "CREDITS_SETTLED",
+    audience: "BUSINESS",
+    channel: "IN_APP",
+    title: "Credits settled",
+    message: `${amount} credits from the completed booking are now available to withdraw.`,
+    actionUrl: getAppUrl("/dashboard/wallet"),
+    metadata: { amount }
+  });
+}
+
+export async function notifyBookingRescheduled({ booking }) {
+  const business = await getBusinessNotificationRecipient(booking.businessId);
+  if (!business) return;
+  const appointment = formatAppointment(booking.startsAt, booking.timezone);
+  await Promise.all([
+    queueNotification({
+      businessId: booking.businessId,
+      userId: business.owner?.id || null,
+      bookingId: booking.id,
+      dedupeKey: `booking:${booking.id}:rescheduled:business:in-app`,
+      type: "BOOKING_CREATED",
+      audience: "BUSINESS",
+      channel: "IN_APP",
+      title: "Booking rescheduled",
+      message: `${booking.customerName}'s ${booking.serviceNameSnapshot} booking was rescheduled to ${appointment}.`,
+      actionUrl: getAppUrl("/dashboard/bookings"),
+      metadata: { bookingNumber: booking.bookingNumber, status: "RESCHEDULED" }
+    }),
+    queueNotification({
+      businessId: booking.businessId,
+      bookingId: booking.id,
+      dedupeKey: `booking:${booking.id}:rescheduled:customer:email`,
+      type: "BOOKING_CREATED",
+      audience: "CUSTOMER",
+      channel: "EMAIL",
+      recipientEmail: booking.customerEmail,
+      title: "Your booking was rescheduled",
+      message: `Your ${booking.serviceNameSnapshot} appointment was rescheduled to ${appointment}.`,
+      metadata: { bookingNumber: booking.bookingNumber, status: "RESCHEDULED" }
+    })
+  ]);
 }
 
 async function getCustomerNotificationPreferences(customerId) {

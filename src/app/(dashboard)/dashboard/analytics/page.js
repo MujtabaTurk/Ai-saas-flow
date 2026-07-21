@@ -1,5 +1,6 @@
 import { ANALYTICS_PERIOD_OPTIONS } from "@/features/analytics/constants";
 import { AnalyticsDashboard } from "@/features/analytics/components/analytics-dashboard";
+import { BusinessIntelligencePanel } from "@/features/analytics/components/intelligence-panel";
 import { isSuperAdmin } from "@/features/auth/permissions";
 import { getSubscriptionEntitlement } from "@/features/billing/status";
 import { PLAN_LIMITS } from "@/features/businesses/plan-limits";
@@ -84,6 +85,7 @@ export default async function AnalyticsPage({ searchParams }) {
           entitlement
         )}
       />
+      <BusinessIntelligencePanel businessId={business.id} currency={business.currency} />
     </>
   );
 }

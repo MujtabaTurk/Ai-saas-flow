@@ -1,5 +1,7 @@
 import { verifyCustomerAccessToken } from "@/features/bookings/access-token";
 import { getAppBaseUrl, getStripe } from "@/features/billing/stripe";
+import { creditWalletForBookingPayment } from "@/features/wallet/crediting";
+import { notifyPaymentSucceeded } from "@/features/notifications/events";
 import { AppError } from "@/lib/api/errors";
 import { prisma } from "@/lib/prisma";
 
@@ -89,6 +91,30 @@ export async function reconcileBookingCheckoutSession({ sessionId, businessId, b
     update: { method: "CARD", status: "SUCCEEDED", stripeCheckoutSessionId: session.id, paidAt: now, failedAt: null }
   });
   const booking = await prisma.booking.update({ where: { id: bookingId }, data: { status: "CONFIRMED", confirmedAt: now } });
+  console.info(JSON.stringify({
+    event: "PAYMENT_SUCCEEDED",
+    paymentId: payment.id,
+    bookingId: booking.id,
+    businessId: booking.businessId,
+    amountCents: payment.amountCents
+  }));
+
+  try {
+    await creditWalletForBookingPayment({ booking, payment });
+  } catch (error) {
+    console.error("[wallet.credit] post-processing failed", {
+      bookingId,
+      paymentId: payment.id,
+      error: error?.message || "Unknown wallet credit error"
+    });
+  }
+
+  try {
+    await notifyPaymentSucceeded({ booking, payment });
+  } catch (notificationError) {
+    console.error("Could not queue payment-success notifications.", notificationError);
+  }
+
   return { booking, payment };
 }
 
@@ -134,6 +160,7 @@ export async function finalizeBookingCardPayment({ businessSlug, bookingNumber, 
     update: { method: "CARD", status: "SUCCEEDED", stripePaymentIntentId: intent.id, paidAt: now, failedAt: null }
   });
   const updatedBooking = await prisma.booking.update({ where: { id: booking.id }, data: { status: "CONFIRMED", confirmedAt: now } });
+  await creditWalletForBookingPayment({ booking: updatedBooking, payment });
   return { booking: updatedBooking, payment };
 }
 
@@ -166,6 +193,9 @@ export async function updateOwnerBookingPayment({ bookingId, businessId, actorUs
     });
     return payment;
   });
+  if (action === "CONFIRM") {
+    await creditWalletForBookingPayment({ booking, payment: updated });
+  }
   return { booking: await prisma.booking.findFirst({ where: { id: booking.id, businessId }, include: { payment: { include: { audits: { orderBy: { createdAt: "desc" }, take: 10, include: { actor: { select: { name: true, email: true } } } } } } } }), payment: updated };
 }
 

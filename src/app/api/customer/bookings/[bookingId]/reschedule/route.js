@@ -1,4 +1,5 @@
 import { rescheduleCustomerBooking } from "@/features/bookings/customer-actions";
+import { notifyBookingRescheduled } from "@/features/notifications/events";
 import { bookingRequestSchema } from "@/features/bookings/validation/booking-schema";
 import {
   customerPortalBookingSelect,
@@ -34,6 +35,11 @@ export async function PATCH(request, { params }) {
       startsAt: data.startsAt,
       select: customerPortalBookingSelect
     });
+    try {
+      await notifyBookingRescheduled({ booking: updatedBooking });
+    } catch (notificationError) {
+      console.error("Could not queue booking-rescheduled notifications.", notificationError);
+    }
 
     return ok({
       booking: updatedBooking,

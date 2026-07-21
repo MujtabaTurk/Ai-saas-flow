@@ -11,6 +11,8 @@ import {
   requireBookingContext
 } from "@/features/bookings/server";
 import { notifyBookingStatusChanged } from "@/features/notifications/events";
+import { settleWalletForCompletedBooking } from "@/features/wallet/settlement";
+import { notifyCreditsSettled } from "@/features/notifications/events";
 import { bookingStatusSchema } from "@/features/bookings/validation/booking-schema";
 import { fail, ok } from "@/lib/api/api-response";
 import { AppError } from "@/lib/api/errors";
@@ -45,7 +47,7 @@ export async function PATCH(request, { params }) {
 
     const now = new Date();
     assertBookingTransition(booking, data.status, now);
-    const updatedBooking = await prisma.$transaction(async (transaction) => {
+    const completionResult = await prisma.$transaction(async (transaction) => {
       const result = await transaction.booking.updateMany({
         where: {
           id: booking.id,
@@ -79,14 +81,42 @@ export async function PATCH(request, { params }) {
         });
       }
 
-      return transaction.booking.findFirst({
+      let settlement = null;
+      if (data.status === "COMPLETED") {
+        console.info(JSON.stringify({
+          event: "BOOKING_COMPLETED",
+          businessId: business.id,
+          bookingId: booking.id
+        }));
+        settlement = await settleWalletForCompletedBooking({
+          transaction,
+          booking: { ...booking, status: data.status }
+        });
+      }
+
+      return {
+        booking: await transaction.booking.findFirst({
         where: {
           id: booking.id,
           businessId: business.id
         },
         select: bookingSelect
-      });
+        }),
+        settlement
+      };
     });
+    const updatedBooking = completionResult.booking;
+
+    if (completionResult.settlement?.settled) {
+      try {
+        await notifyCreditsSettled({
+          booking: updatedBooking,
+          amount: completionResult.settlement.amount
+        });
+      } catch (notificationError) {
+        console.error("Could not queue credits-settled notification.", notificationError);
+      }
+    }
 
     try {
       await notifyBookingStatusChanged({

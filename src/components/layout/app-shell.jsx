@@ -371,6 +371,33 @@ function SidebarBrand({
   return brand;
 }
 
+function NotificationBell({ endpoint, href }) {
+  const { t } = useTranslation("common");
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(endpoint, { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload) => {
+        if (!cancelled) setUnread(payload?.data?.unread ?? payload?.data?.summary?.unread ?? 0);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [endpoint]);
+
+  return (
+    <Link
+      aria-label={t("navigation.notifications")}
+      className="relative inline-flex size-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      href={href}
+    >
+      <Bell className="size-4" aria-hidden="true" />
+      {unread > 0 ? <span className="absolute -right-1 -top-1 min-w-4 rounded-full bg-red-500 px-1 text-center text-[10px] font-bold leading-4 text-white">{unread > 99 ? "99+" : unread}</span> : null}
+    </Link>
+  );
+}
+
 function SidebarToggle({ isCollapsed, label, onToggle, tooltipSide }) {
   return (
     <Tooltip content={label} side={tooltipSide}>
@@ -684,16 +711,8 @@ export function AppShell({
                     {planLabel}
                   </span>
                 ) : null}
-                {homeHref.startsWith("/dashboard") ? (
-                  <Link
-                    aria-label={t("navigation.notifications")}
-                    className="relative inline-flex size-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    href="/dashboard/notifications"
-                  >
-                    <Bell className="size-4" aria-hidden="true" />
-                    <span className="absolute right-2 top-2 size-1.5 rounded-full bg-red-500" />
-                  </Link>
-                ) : null}
+                {homeHref.startsWith("/dashboard") ? <NotificationBell href="/dashboard/notifications" endpoint="/api/notifications/unread-count" /> : null}
+                {homeHref.startsWith("/admin") ? <NotificationBell href="/admin/notifications" endpoint="/api/admin/notifications?unreadOnly=true" /> : null}
                 <UserProfileMenu
                   className="md:hidden"
                   variant={homeHref.startsWith("/admin") ? "admin" : "workspace"}

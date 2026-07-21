@@ -169,12 +169,21 @@ enum NotificationType {
   TEAM_INVITATION
   TEAM_MEMBER_JOINED
   REVIEW_SUBMITTED
+  WITHDRAWAL_REQUEST
+  BOOKING_CANCELLED
+  PAYMENT_SUCCESS
+  CREDITS_SETTLED
+  WITHDRAW_REQUEST_CREATED
+  WITHDRAW_APPROVED
+  WITHDRAW_REJECTED
+  WITHDRAW_PAID
 }
 
 enum NotificationAudience {
   BUSINESS
   CUSTOMER
   TEAM
+  ADMIN
 }
 
 enum NotificationChannel {
@@ -205,6 +214,15 @@ enum AuditAction {
   AI_GENERATION_REQUESTED
   AI_GENERATION_REVIEWED
   AI_CONTENT_APPLIED
+  WITHDRAWAL_REQUEST_CREATED
+  WITHDRAWAL_REQUEST_APPROVED
+  WITHDRAWAL_REQUEST_REJECTED
+  WITHDRAWAL_REQUEST_PAID
+  NOTIFICATION_CREATED
+  TREASURY_CREDITED
+  TREASURY_SETTLED
+  TREASURY_PAYOUT
+  TREASURY_ADJUSTMENT
 }
 
 enum AuditTargetType {
@@ -215,6 +233,16 @@ enum AuditTargetType {
   BOOKING
   REVIEW
   AI_GENERATION
+  WITHDRAWAL_REQUEST
+  NOTIFICATION
+  PLATFORM_WALLET
+}
+
+enum WithdrawalRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PAID
 }
 
 model User {
@@ -239,6 +267,7 @@ model User {
   customerProfiles        Customer[]           @relation("CustomerUser")
   createdBookings         Booking[]            @relation("BookingCreatedBy")
   auditLogs               AuditLog[]           @relation("AuditActor")
+  processedWithdrawals    WithdrawalRequest[]  @relation("WithdrawalProcessedBy")
   bookingPaymentAudits    BookingPaymentAudit[] @relation("BookingPaymentAuditActor")
   businessMemberships     BusinessMembership[] @relation("MembershipUser")
   invitedMemberships      BusinessMembership[] @relation("MembershipInvitedBy")
@@ -247,6 +276,7 @@ model User {
   moderatedReviews        Review[]             @relation("ReviewModeratedBy")
   aiGenerations           AiGeneration[]       @relation("AiGenerationCreatedBy")
   reviewedAiGenerations   AiGeneration[]       @relation("AiGenerationReviewedBy")
+  receivedNotifications   Notification[]      @relation("NotificationRecipient")
   createdAt               DateTime             @default(now())
   updatedAt               DateTime             @updatedAt
 
@@ -358,6 +388,8 @@ model Business {
   staffAvailabilities     StaffAvailability[]
   reviews                 Review[]
   aiGenerations           AiGeneration[]
+  wallet                  Wallet?
+  withdrawalRequests      WithdrawalRequest[]
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 
@@ -368,6 +400,95 @@ model Business {
   @@index([status, createdAt])
   @@index([industry])
   @@index([createdAt])
+}
+
+model Wallet {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  businessId       String              @unique @db.ObjectId
+  availableCredits Int                 @default(0)
+  pendingCredits   Int                 @default(0)
+  holdCredits      Int                 @default(0)
+  withdrawnCredits Int                 @default(0)
+  lifetimeCredits  Int                 @default(0)
+  monthlyRevenue   Int                 @default(0)
+  currency         String              @default("USD")
+  business         Business             @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  transactions     WalletTransaction[]
+  withdrawalRequests WithdrawalRequest[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model WalletTransaction {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  walletId       String   @db.ObjectId
+  paymentId      String?  @db.ObjectId
+  type           String
+  status         String
+  amount         Int      @default(0)
+  credits        Int      @default(0)
+  referenceType  String?
+  referenceId    String?
+  idempotencyKey String   @unique
+  notes          String?
+  settledAt      DateTime?
+  wallet         Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@index([walletId, createdAt])
+  @@index([paymentId])
+  @@index([type, status, createdAt])
+}
+
+model PlatformWallet {
+  id                    String                    @id @default(auto()) @map("_id") @db.ObjectId
+  totalCollectedCredits Int                       @default(0)
+  totalPendingLiability Int                       @default(0)
+  totalAvailableLiability Int                     @default(0)
+  totalPaidOutCredits   Int                       @default(0)
+  currentTreasuryBalance Int                      @default(0)
+  key                   String                    @unique @default("PLATFORM")
+  transactions          PlatformWalletTransaction[]
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+}
+
+model PlatformWalletTransaction {
+  id                String        @id @default(auto()) @map("_id") @db.ObjectId
+  platformWalletId  String        @db.ObjectId
+  type              String
+  amount            Int
+  idempotencyKey    String        @unique
+  referenceType     String?
+  referenceId       String?
+  platformWallet    PlatformWallet @relation(fields: [platformWalletId], references: [id], onDelete: Cascade)
+  createdAt         DateTime      @default(now())
+
+  @@index([platformWalletId, createdAt])
+  @@index([type, createdAt])
+  @@index([referenceType, referenceId])
+}
+
+model WithdrawalRequest {
+  id                String                   @id @default(auto()) @map("_id") @db.ObjectId
+  businessId        String                   @db.ObjectId
+  walletId          String                   @db.ObjectId
+  requestedAmount   Int
+  status            WithdrawalRequestStatus  @default(PENDING)
+  notes             String?
+  idempotencyKey    String                   @unique
+  createdAt         DateTime                 @default(now())
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  paidAt            DateTime?
+  processedByUserId String?                  @db.ObjectId
+  business          Business                 @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  wallet            Wallet                   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  processedBy       User?                    @relation("WithdrawalProcessedBy", fields: [processedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([businessId, status, createdAt])
+  @@index([walletId, status, createdAt])
+  @@index([status, createdAt])
 }
 
 model BusinessSettings {
@@ -639,6 +760,8 @@ model BookingPayment {
   updatedAt             DateTime              @updatedAt
 
   @@index([businessId, status, createdAt])
+  @@index([businessId, status, paidAt])
+  @@index([status, paidAt])
   @@index([customerId])
   @@index([stripePaymentIntentId])
   @@index([stripeCheckoutSessionId])
@@ -933,6 +1056,7 @@ model PlatformPlan {
 
 model Notification {
   id             String                     @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String?                    @db.ObjectId
   businessId     String                     @db.ObjectId
   bookingId      String?                    @db.ObjectId
   subscriptionId String?                    @db.ObjectId
@@ -946,18 +1070,21 @@ model Notification {
   message        String
   actionUrl      String?
   metadata       Json?
+  isRead         Boolean                    @default(false)
   readAt         DateTime?
   sentAt         DateTime?
   lastAttemptAt  DateTime?
   attempts       Int                        @default(0)
   lastError      String?
   business       Business                   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user           User?                      @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: SetNull)
   booking        Booking?                   @relation(fields: [bookingId], references: [id], onDelete: SetNull)
   subscription   Subscription?              @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   createdAt      DateTime                   @default(now())
   updatedAt      DateTime                   @updatedAt
 
   @@index([businessId, createdAt])
+  @@index([userId, isRead, createdAt])
   @@index([businessId, audience, channel, createdAt])
   @@index([businessId, audience, channel, readAt, createdAt])
   @@index([businessId, channel, deliveryStatus, createdAt])
@@ -967,14 +1094,14 @@ model Notification {
 
 model AuditLog {
   id          String          @id @default(auto()) @map("_id") @db.ObjectId
-  actorUserId String          @db.ObjectId
+  actorUserId String?         @db.ObjectId
   businessId  String?         @db.ObjectId
   action      AuditAction
   targetType  AuditTargetType
   targetId    String
   reason      String?
   metadata    Json?
-  actor       User            @relation("AuditActor", fields: [actorUserId], references: [id])
+  actor       User?           @relation("AuditActor", fields: [actorUserId], references: [id])
   business    Business?       @relation(fields: [businessId], references: [id], onDelete: SetNull)
   createdAt   DateTime        @default(now())
 

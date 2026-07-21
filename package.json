@@ -13,6 +13,7 @@
     "prisma:migrate-booking-payments": "node scripts/migrate-booking-payment-methods.mjs",
     "prisma:push": "prisma db push",
     "prisma:migrate-platform-plans": "node scripts/migrate-subscriptions-to-platform-plans.mjs",
+    "wallet:settle-backfill": "node scripts/backfill-wallet-settlements.mjs",
     "prisma:studio": "prisma studio"
   },
   "dependencies": {

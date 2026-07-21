@@ -1,4 +1,5 @@
 import { PLAN_CATALOG } from "@/features/billing/plan-catalog";
+import { getTreasuryOverview } from "@/features/wallet/treasury";
 import { prisma } from "@/lib/prisma";
 
 const ADMIN_PERIOD_DAYS = 30;
@@ -143,6 +144,7 @@ export async function getSuperAdminMetrics() {
     allSubscriptions,
     platformPlans,
     failedWebhookEvents,
+    treasury,
     recentBusinesses
   ] = await Promise.all([
     prisma.business.findMany({
@@ -185,6 +187,7 @@ export async function getSuperAdminMetrics() {
         status: "FAILED"
       }
     }),
+    getTreasuryOverview(),
     prisma.business.findMany({
       orderBy: {
         createdAt: "desc"
@@ -257,6 +260,13 @@ export async function getSuperAdminMetrics() {
       failedPayments: getRevenueMetrics(latestSubscriptions, periodStart, planPrices).failedPaymentCount,
       failedWebhookEvents,
       pastDueSubscriptions: getSubscriptionMetrics(latestSubscriptions, planPrices).pastDueCount
+    },
+    treasury: treasury || {
+      currentTreasuryBalance: 0,
+      totalCollectedCredits: 0,
+      totalPendingLiability: 0,
+      totalAvailableLiability: 0,
+      totalPaidOutCredits: 0
     }
   };
 }

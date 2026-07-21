@@ -3,6 +3,7 @@
 import Link from "next/link";
 import {
   Activity,
+  BarChart3,
   Bell,
   Bot,
   Building2,
@@ -15,6 +16,7 @@ import {
   Star,
   UserRoundCog,
   UsersRound,
+  Wallet,
   Wrench
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -25,6 +27,7 @@ import { cn } from "@/lib/utils";
 
 const navigationIcons = {
   Activity,
+  BarChart3,
   Bell,
   Bot,
   Building2,
@@ -37,6 +40,7 @@ const navigationIcons = {
   Star,
   UserRoundCog,
   UsersRound,
+  Wallet,
   Wrench
 };
 

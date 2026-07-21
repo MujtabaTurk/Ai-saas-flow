@@ -25,6 +25,7 @@ import { AppError } from "@/lib/api/errors";
 import { handleApiError } from "@/lib/api/handle-api-error";
 import { prisma } from "@/lib/prisma";
 import { reconcileBookingCheckoutSession } from "@/features/bookings/payment";
+import { creditWalletForBookingPayment } from "@/features/wallet/crediting";
 
 export const runtime = "nodejs";
 const PROCESSING_LEASE_MS = 5 * 60 * 1000;
@@ -206,14 +207,16 @@ async function syncInvoiceSubscription(invoice, paymentField, context = {}) {
 
 async function handleCheckoutSessionCompleted(session, context = {}) {
   if (session.metadata?.flow === "BOOKING") {
-    return reconcileBookingCheckoutSession({ sessionId: session.id, businessId: session.metadata.businessId, bookingId: session.metadata.bookingId });
+    await reconcileBookingCheckoutSession({ sessionId: session.id, businessId: session.metadata.businessId, bookingId: session.metadata.bookingId });
+    return null;
   }
   const bookingPayment = await prisma.bookingPayment.findFirst({
     where: { stripeCheckoutSessionId: session.id },
     select: { bookingId: true, businessId: true }
   });
   if (bookingPayment) {
-    return reconcileBookingCheckoutSession({ sessionId: session.id, businessId: bookingPayment.businessId, bookingId: bookingPayment.bookingId });
+    await reconcileBookingCheckoutSession({ sessionId: session.id, businessId: bookingPayment.businessId, bookingId: bookingPayment.bookingId });
+    return null;
   }
   const businessId = session.metadata?.businessId || session.client_reference_id;
   const customerId = getStripeId(session.customer);
@@ -398,8 +401,10 @@ async function handleStripeEvent(event, context = {}) {
       });
       if (payment) {
         const now = new Date();
-        await prisma.bookingPayment.update({ where: { id: payment.id }, data: { status: "SUCCEEDED", paidAt: now } });
-        await prisma.booking.update({ where: { id: payment.bookingId }, data: { status: "CONFIRMED", confirmedAt: now } });
+        const updatedPayment = await prisma.bookingPayment.update({ where: { id: payment.id }, data: { status: "SUCCEEDED", paidAt: now } });
+        const booking = await prisma.booking.update({ where: { id: payment.bookingId }, data: { status: "CONFIRMED", confirmedAt: now } });
+        console.info(JSON.stringify({ event: "PAYMENT_SUCCEEDED", paymentId: updatedPayment.id, bookingId: booking.id, businessId: booking.businessId }));
+        await creditWalletForBookingPayment({ booking, payment: updatedPayment });
       }
       break;
     }

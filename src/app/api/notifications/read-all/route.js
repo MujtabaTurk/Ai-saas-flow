@@ -18,9 +18,10 @@ export async function POST(request) {
         businessId: business.id,
         audience: "BUSINESS",
         channel: "IN_APP",
-        readAt: null
+        OR: [{ isRead: false }, { readAt: null }]
       },
       data: {
+        isRead: true,
         readAt: new Date()
       }
     });

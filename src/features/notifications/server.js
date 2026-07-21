@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 export const notificationSelect = {
   id: true,
+  userId: true,
   businessId: true,
   bookingId: true,
   subscriptionId: true,
@@ -19,6 +20,7 @@ export const notificationSelect = {
   message: true,
   actionUrl: true,
   metadata: true,
+  isRead: true,
   readAt: true,
   sentAt: true,
   lastAttemptAt: true,
@@ -165,6 +167,7 @@ export async function queueNotification(input) {
       notification = await prisma.notification.create({
         data: {
           businessId: input.businessId,
+          userId: input.userId || null,
           bookingId: input.bookingId || null,
           subscriptionId: input.subscriptionId || null,
           dedupeKey: input.dedupeKey,
@@ -177,10 +180,28 @@ export async function queueNotification(input) {
           message: input.message,
           actionUrl: input.actionUrl || null,
           metadata: input.metadata || null,
+          isRead: false,
           sentAt: input.channel === "IN_APP" ? new Date() : null
         },
         select: notificationSelect
       });
+      try {
+        const actorUserId = input.actorUserId || (await prisma.business.findUnique({ where: { id: input.businessId }, select: { ownerId: true } }))?.ownerId;
+        if (actorUserId) {
+          await prisma.auditLog.create({
+            data: {
+              actorUserId,
+              businessId: input.businessId,
+              action: "NOTIFICATION_CREATED",
+              targetType: "NOTIFICATION",
+              targetId: notification.id,
+              metadata: { type: input.type, audience: input.audience, channel: input.channel }
+            }
+          });
+        }
+      } catch (auditError) {
+        console.error("Could not record notification audit entry.", auditError);
+      }
     } catch (error) {
       if (error?.code !== "P2002") {
         throw error;

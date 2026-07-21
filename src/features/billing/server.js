@@ -716,7 +716,11 @@ async function getManagedBillingPlans(currentPlanCode) {
   });
 
   if (plans.length === 0) {
-    return getPlanCatalog();
+    return getPlanCatalog().map((plan) => ({
+      ...plan,
+      status: "ACTIVE",
+      stripePriceId: plan.code === "TRIAL" ? null : getStripePriceIdForPlan(plan.code)
+    }));
   }
 
   return plans.map((plan) => ({
@@ -734,6 +738,46 @@ async function getManagedBillingPlans(currentPlanCode) {
     status: plan.status,
     stripePriceId: plan.stripePriceId
   }));
+}
+
+/**
+ * Platform plans are normally seeded by the migration script. Keep checkout
+ * self-healing for businesses created before that script ran (or after a
+ * fresh database was provisioned), so a paid Stripe subscription can always
+ * be linked to a local plan.
+ */
+export async function ensurePlatformPlan(planCode) {
+  const existing = await prisma.platformPlan.findUnique({
+    where: { code: planCode }
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  const catalogPlan = getPlanCatalog().find((plan) => plan.code === planCode);
+  if (!catalogPlan) {
+    throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
+  }
+
+  return prisma.platformPlan.upsert({
+    where: { code: planCode },
+    update: {},
+    create: {
+      code: catalogPlan.code,
+      name: catalogPlan.name,
+      monthlyPriceCents: catalogPlan.monthlyPriceCents,
+      description: catalogPlan.description,
+      features: catalogPlan.features,
+      limits: catalogPlan.limits,
+      stripePriceId:
+        catalogPlan.code === "TRIAL"
+          ? null
+          : getStripePriceIdForPlan(catalogPlan.code),
+      status: "ACTIVE",
+      sortOrder: catalogPlan.code === "TRIAL" ? 0 : catalogPlan.code === "BASIC" ? 1 : 2
+    }
+  });
 }
 
 export async function buildBillingState({ business, serviceCount, bookingCount }) {
@@ -872,10 +916,7 @@ export async function getCheckoutPriceId(planCode) {
     );
   }
 
-  const managedPlan = await prisma.platformPlan.findUnique({
-    where: { code: planCode },
-    select: { status: true, stripePriceId: true }
-  });
+  const managedPlan = await ensurePlatformPlan(planCode);
   if (managedPlan && managedPlan.status !== "ACTIVE") {
     throw new AppError("This plan is not available for new subscriptions.", 409);
   }
@@ -959,13 +1000,7 @@ export async function syncStripeSubscription(
     if (!dynamicPlan) throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
   }
 
-  const platformPlan = await prisma.platformPlan.findUnique({
-    where: { code: planCode },
-    select: { id: true }
-  });
-  if (!platformPlan) {
-    throw new AppError("Could not resolve ServiceFlow plan for Stripe subscription.", 422);
-  }
+  const platformPlan = await ensurePlatformPlan(planCode);
 
   const business = await prisma.business.findUnique({
     where: {

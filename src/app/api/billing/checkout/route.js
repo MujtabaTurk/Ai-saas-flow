@@ -5,7 +5,8 @@ import {
   findReusableCheckoutSession,
   getBillingBusinessForUser,
   getCheckoutIdempotencyKey,
-  getCheckoutPriceId
+  getCheckoutPriceId,
+  ensurePlatformPlan
 } from "@/features/billing/server";
 import {
   getBillingRequestId,
@@ -171,6 +172,7 @@ export async function POST(request) {
       throw new AppError("Manage your current subscription from the billing portal.", 409);
     }
 
+    const platformPlan = await ensurePlatformPlan(data.planCode);
     const priceId = await getCheckoutPriceId(data.planCode);
     const stripe = getStripe();
     const customerId = await ensureStripeCustomerForBusiness(business, {
@@ -217,7 +219,9 @@ export async function POST(request) {
       ...context,
       businessId: business.id,
       stripeCustomerId: customerId,
-      planCode: data.planCode
+      planId: platformPlan.id,
+      planCode: data.planCode,
+      stripePriceId: priceId
     });
 
     const checkoutSession = await stripe.checkout.sessions.create(
@@ -247,8 +251,11 @@ export async function POST(request) {
       businessId: business.id,
       stripeCustomerId: customerId,
       checkoutSessionId: checkoutSession.id,
+      checkoutUrl: checkoutSession.url,
       subscriptionId: checkoutSession.subscription || null,
-      planCode: data.planCode
+      planId: platformPlan.id,
+      planCode: data.planCode,
+      stripePriceId: priceId
     });
 
     return buildCheckoutResponse({

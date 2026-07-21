@@ -52,6 +52,7 @@ export async function PATCH(request, { params }) {
         audience: "BUSINESS"
       },
       data: {
+        isRead: data.isRead,
         readAt: data.isRead ? new Date() : null
       }
     });

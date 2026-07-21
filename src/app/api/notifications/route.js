@@ -62,7 +62,7 @@ export async function GET(request) {
         ? {
             audience: "BUSINESS",
             channel: "IN_APP",
-            readAt: null
+            OR: [{ isRead: false }, { readAt: null }]
           }
         : {})
     };
@@ -96,7 +96,7 @@ export async function GET(request) {
           businessId: business.id,
           audience: "BUSINESS",
           channel: "IN_APP",
-          readAt: null
+          OR: [{ isRead: false }, { readAt: null }]
         }
       }),
       prisma.notification.count({
